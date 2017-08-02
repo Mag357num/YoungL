@@ -1,0 +1,9 @@
+﻿  compilation object save succeeded; see E:\DxLearn\DxMain\x64\Debug\DxEngine\SamplePixelShader.cso
+  compilation object save succeeded; see E:\DxLearn\DxMain\x64\Debug\DxEngine\SampleVertexShader.cso
+  pch.cpp
+  App.cpp
+  DeviceResources.cpp
+  DxEngineMain.cpp
+  Sample3DSceneRenderer.cpp
+  DxEngine.vcxproj -> E:\DxLearn\DxMain\x64\Debug\DxEngine\DxEngine.exe
+  DxEngine.vcxproj -> E:\DxLearn\DxMain\x64\Debug\DxEngine\DxEngine.pdb (Partial PDB)
