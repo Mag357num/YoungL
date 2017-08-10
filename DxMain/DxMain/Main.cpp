@@ -1,18 +1,57 @@
-#include "stdsfx.h"
-#include "Sample.h"
+
 
 HWND m_hwnd = nullptr;
+
+//using namespace WRL.ComPtr;
 
 //main message handler for the sample
 LRESULT CALLBACK WinProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	return DefWindowProc(hwnd, message, lparam, wparam);
+	switch (message)
+	{
+	//case WM_CREATE:
+	//{
+	//	// Save the DXSample* passed in to CreateWindow.
+	//	LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
+	//	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+	//}
+	return 0;
+
+	case WM_KEYDOWN:
+		//if (pSample)
+		//{
+		//	pSample->OnKeyDown(static_cast<UINT8>(wParam));
+		//}
+		return 0;
+
+	case WM_KEYUP:
+		//if (pSample)
+		//{
+		//	pSample->OnKeyUp(static_cast<UINT8>(wParam));
+		//}
+		return 0;
+
+	case WM_PAINT:
+		//if (pSample)
+		//{
+		//	pSample->OnUpdate();
+		//	pSample->OnRender();
+		//}
+		return 0;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+
+	// Handle any messages the switch statement didn't.
+	return DefWindowProc(hwnd, message, wparam, lparam);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
 	//sample
-	Sample pSample;
+	Sample* pSample = new Sample();
 
 	//pass the command line
 	int argc;
@@ -56,6 +95,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 
 
 	//initialize dx sample
+	//load pipeline
+	pSample->LoadPipeline();
+
 
 	//show window
 	ShowWindow(m_hwnd, nCmdShow);

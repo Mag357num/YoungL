@@ -1,1 +1,4 @@
-﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.Cpp.Platform.targets(57,5): error MSB8020: The build tools for v141 (Platform Toolset = 'v141') cannot be found. To build using the v141 build tools, please install v141 build tools.  Alternatively, you may upgrade to the current Visual Studio tools by selecting the Project menu or right-click the solution, and then selecting "Retarget solution".
+﻿  Main.cpp
+  Sample.cpp
+e:\dxlearn\dxmain\dxmain\sample.cpp : fatal error C1107: could not find assembly 'platform.winmd': please specify the assembly search path using /AI or by setting the LIBPATH environment variable
+e:\dxlearn\dxmain\dxmain\main.cpp : fatal error C1107: could not find assembly 'platform.winmd': please specify the assembly search path using /AI or by setting the LIBPATH environment variable
