@@ -93,8 +93,8 @@ void DX::DeviceResources::CreateDeviceIndependentResources()
 // Configures the Direct3D device, and stores handles to it and the device context.
 void DX::DeviceResources::CreateDeviceResources()
 {
+
 #if defined(_DEBUG)
-	// If the project is in a debug build, enable debugging via SDK Layers.
 	{
 		ComPtr<ID3D12Debug> debugController;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
@@ -104,35 +104,31 @@ void DX::DeviceResources::CreateDeviceResources()
 	}
 #endif
 
+	//create factory
 	DX::ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory)));
 
+	//create device
 	ComPtr<IDXGIAdapter1> adapter;
 	GetHardwareAdapter(&adapter);
 
-	// Create the Direct3D 12 API device object
-	HRESULT hr = D3D12CreateDevice(
-		adapter.Get(),					// The hardware adapter.
-		D3D_FEATURE_LEVEL_11_0,			// Minimum feature level this app can support.
-		IID_PPV_ARGS(&m_d3dDevice)		// Returns the Direct3D device created.
-		);
+	HRESULT hr = D3D12CreateDevice(adapter.Get(),
+		D3D_FEATURE_LEVEL_11_0,
+		IID_PPV_ARGS(&m_d3dDevice)
+	);
 
-#if defined(_DEBUG)
+#if defined (_DEBUG)
 	if (FAILED(hr))
 	{
-		// If the initialization fails, fall back to the WARP device.
-		// For more information on WARP, see: 
-		// http://go.microsoft.com/fwlink/?LinkId=286690
+		ComPtr<IDXGIAdapter> wrapAdapter;
+		DX::ThrowIfFailed(m_dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&wrapAdapter)));
 
-		ComPtr<IDXGIAdapter> warpAdapter;
-		DX::ThrowIfFailed(m_dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-
-		hr = D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_d3dDevice));
+		hr = D3D12CreateDevice(wrapAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_d3dDevice));
 	}
 #endif
 
 	DX::ThrowIfFailed(hr);
 
-	// Create the command queue.
+	//create command queue
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -140,35 +136,114 @@ void DX::DeviceResources::CreateDeviceResources()
 	DX::ThrowIfFailed(m_d3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 	NAME_D3D12_OBJECT(m_commandQueue);
 
-	// Create descriptor heaps for render target views and depth stencil views.
+	//create rtv descriptor heap
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 	rtvHeapDesc.NumDescriptors = c_frameCount;
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
 	DX::ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 	NAME_D3D12_OBJECT(m_rtvHeap);
 
 	m_rtvDescriptorSize = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
+	//create dsv heap
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 1;
-	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+	DX::ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
 	NAME_D3D12_OBJECT(m_dsvHeap);
 
-	for (UINT n = 0; n < c_frameCount; n++)
+	for (UINT n = 0; n < c_frameCount; ++ n )
 	{
-		DX::ThrowIfFailed(
-			m_d3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n]))
-			);
+		DX::ThrowIfFailed(m_d3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
 	}
 
-	// Create synchronization objects.
+	//create synchronization objects
 	DX::ThrowIfFailed(m_d3dDevice->CreateFence(m_fenceValues[m_currentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-	m_fenceValues[m_currentFrame]++;
+	m_fenceValues[m_currentFrame] ++;
 
-	m_fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	m_fenceEvent = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+
+//
+//#if defined(_DEBUG)
+//	// If the project is in a debug build, enable debugging via SDK Layers.
+//	{
+//		ComPtr<ID3D12Debug> debugController;
+//		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+//		{
+//			debugController->EnableDebugLayer();
+//		}
+//	}
+//#endif
+//
+//	DX::ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory)));
+//
+//	ComPtr<IDXGIAdapter1> adapter;
+//	GetHardwareAdapter(&adapter);
+//
+//	// Create the Direct3D 12 API device object
+//	HRESULT hr = D3D12CreateDevice(
+//		adapter.Get(),					// The hardware adapter.
+//		D3D_FEATURE_LEVEL_11_0,			// Minimum feature level this app can support.
+//		IID_PPV_ARGS(&m_d3dDevice)		// Returns the Direct3D device created.
+//		);
+//
+//#if defined(_DEBUG)
+//	if (FAILED(hr))
+//	{
+//		// If the initialization fails, fall back to the WARP device.
+//		// For more information on WARP, see: 
+//		// http://go.microsoft.com/fwlink/?LinkId=286690
+//
+//		ComPtr<IDXGIAdapter> warpAdapter;
+//		DX::ThrowIfFailed(m_dxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+//
+//		hr = D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_d3dDevice));
+//	}
+//#endif
+//
+//	DX::ThrowIfFailed(hr);
+//
+//	// Create the command queue.
+//	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+//	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+//	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+//
+//	DX::ThrowIfFailed(m_d3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
+//	NAME_D3D12_OBJECT(m_commandQueue);
+//
+//	// Create descriptor heaps for render target views and depth stencil views.
+//	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+//	rtvHeapDesc.NumDescriptors = c_frameCount;
+//	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+//	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+//	DX::ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
+//	NAME_D3D12_OBJECT(m_rtvHeap);
+//
+//	m_rtvDescriptorSize = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+//
+//	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+//	dsvHeapDesc.NumDescriptors = 1;
+//	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+//	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+//	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
+//	NAME_D3D12_OBJECT(m_dsvHeap);
+//
+//	for (UINT n = 0; n < c_frameCount; n++)
+//	{
+//		DX::ThrowIfFailed(
+//			m_d3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n]))
+//			);
+//	}
+//
+//	// Create synchronization objects.
+//	DX::ThrowIfFailed(m_d3dDevice->CreateFence(m_fenceValues[m_currentFrame], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+//	m_fenceValues[m_currentFrame]++;
+//
+//	m_fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
 }
 
 // These resources need to be recreated every time the window size is changed.
@@ -564,22 +639,45 @@ DXGI_MODE_ROTATION DX::DeviceResources::ComputeDisplayRotation()
 // If no such adapter can be found, *ppAdapter will be set to nullptr.
 void DX::DeviceResources::GetHardwareAdapter(IDXGIAdapter1** ppAdapter)
 {
+	//ComPtr<IDXGIAdapter1> adapter;
+	//*ppAdapter = nullptr;
+
+	//for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != m_dxgiFactory->EnumAdapters1(adapterIndex, &adapter); adapterIndex++)
+	//{
+	//	DXGI_ADAPTER_DESC1 desc;
+	//	adapter->GetDesc1(&desc);
+
+	//	if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+	//	{
+	//		// Don't select the Basic Render Driver adapter.
+	//		continue;
+	//	}
+
+	//	// Check to see if the adapter supports Direct3D 12, but don't create the
+	//	// actual device yet.
+	//	if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+	//	{
+	//		break;
+	//	}
+	//}
+
+	//*ppAdapter = adapter.Detach();
+
 	ComPtr<IDXGIAdapter1> adapter;
 	*ppAdapter = nullptr;
 
-	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != m_dxgiFactory->EnumAdapters1(adapterIndex, &adapter); adapterIndex++)
+	for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != m_dxgiFactory->EnumAdapters1(adapterIndex, &adapter) ; adapterIndex++)
 	{
 		DXGI_ADAPTER_DESC1 desc;
 		adapter->GetDesc1(&desc);
 
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
 		{
-			// Don't select the Basic Render Driver adapter.
+			//don't select the basic render driver adapter
 			continue;
 		}
 
-		// Check to see if the adapter supports Direct3D 12, but don't create the
-		// actual device yet.
+		//check to see if the adapter supports direct3D12, but don't create the  actual device yet.
 		if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
 		{
 			break;
