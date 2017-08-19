@@ -152,7 +152,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 
 	// Initialize the sample. OnInit is defined in each child-implementation of DXSample.
 	//pSample->OnInit();
-	InitDx12();
+	//InitDx12();
 
 	ShowWindow(m_hwnd, nCmdShow);
 
