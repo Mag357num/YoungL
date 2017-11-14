@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F8F3BA84-79FE-469E-A3F9-1E41B0C163FE}</ProjectGuid>
+    <ProjectGuid>{7BB6B044-9E83-4C37-BA92-4155263787CC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DXEmpty</RootNamespace>
+    <RootNamespace>EngineBase</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -102,13 +102,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs>d3d12.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -148,14 +148,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DXBase.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="stdafx.cpp" />
+    <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="DXSample.h" />
+    <ClInclude Include="DXSampleHelper.h" />
+    <ClInclude Include="LearnHelloWindow.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="DXBase.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClCompile Include="DXSample.cpp" />
+    <ClCompile Include="LearnHelloWindow.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
