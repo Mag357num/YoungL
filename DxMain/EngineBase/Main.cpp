@@ -6,6 +6,6 @@
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
-	D3D12HelloTexture sample(1280, 720, L"Learn Hello Window");
+	TextureSample sample(1280, 720, L"Learn Hello Window");
 	return Win32Application::Run(&sample, hInstance, nCmdShow);
 }
