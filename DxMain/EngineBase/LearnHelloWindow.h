@@ -15,6 +15,8 @@ public:
 	virtual void OnRender();
 	virtual void OnDestroy();
 
+	void WaitForPreviousFrame();
+
 protected:
 
 	virtual void LoadAssets();
@@ -22,7 +24,6 @@ protected:
 private:
 
 	void LoadPipeline();
-	void WaitForPreviousFrame();
 
 protected:
 
@@ -46,6 +47,7 @@ protected:
 	ComPtr<ID3D12CommandQueue> m_commandQueue;
 	ComPtr<ID3D12RootSignature> m_rootSignature;
 	ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
+	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
 	ComPtr<ID3D12PipelineState> m_pipelineState;
 	ComPtr<ID3D12GraphicsCommandList> m_commandList;
 	//UINT m_rtvDescriptorSize;
