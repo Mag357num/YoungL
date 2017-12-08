@@ -15,6 +15,17 @@ TextureSample::~TextureSample()
 
 }
 
+void TextureSample::CreateDescriptorHeaps()
+{
+	__super::CreateDescriptorHeaps();
+
+	// Describe and create a shader resource view (SRV) heap for the texture.
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_srvHeap)));
+}
 
 void TextureSample::LoadAssets()
 {

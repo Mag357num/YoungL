@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ConstBuffer.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DXSample.h" />
     <ClInclude Include="DXSampleHelper.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConstBuffer.cpp" />
     <ClCompile Include="DXSample.cpp" />
     <ClCompile Include="LearnHelloWindow.cpp" />
     <ClCompile Include="Main.cpp" />

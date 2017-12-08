@@ -14,6 +14,8 @@ public:
 
 	virtual void PopulateCommandList() override;
 
+	virtual void CreateDescriptorHeaps() override;
+
 protected:
 
 	struct Vertex
@@ -28,6 +30,8 @@ private:
 	static const UINT TexturePixelSize = 4;	// The number of bytes used to represent a pixel in the texture.
 
 	ComPtr<ID3D12Resource> m_texture;
+
+	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
 
 	std::vector<UINT8> GenerateTextureData();
 };
