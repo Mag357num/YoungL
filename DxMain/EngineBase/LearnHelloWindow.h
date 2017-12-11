@@ -22,6 +22,7 @@ protected:
 	virtual void LoadAssets();
 	virtual void PopulateCommandList();
 	virtual void CreateDescriptorHeaps();
+	virtual void CreateRTAndCmdAllocator();
 private:
 
 	void LoadPipeline();

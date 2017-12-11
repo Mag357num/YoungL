@@ -12,11 +12,13 @@ public:
 
 	virtual void LoadAssets() override;
 
+	
+
+protected:
+
 	virtual void PopulateCommandList() override;
 
 	virtual void CreateDescriptorHeaps() override;
-
-protected:
 
 	struct Vertex
 	{

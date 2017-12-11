@@ -1,22 +1,39 @@
 #include "stdafx.h"
-#include "Triangle.h"
+#include "FrameBuffer.h"
 
-TriangleSample::TriangleSample(UINT width, UINT height, std::wstring name):
+FrameBufferSample::FrameBufferSample(UINT width, UINT height, std::wstring name) :
 	LearnHelloWindow(width, height, name)
 {
 	m_frameIndex = 0;
 	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
 	m_scissorRect = CD3DX12_RECT(0, 0, static_cast<LONG>(width), static_cast<LONG>(height));
 	m_rtvDescriptorSize = 0;
+
 }
 
-TriangleSample::~TriangleSample()
+FrameBufferSample::~FrameBufferSample()
 {
 
 }
 
+void FrameBufferSample::CreateRTAndCmdAllocator()
+{
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
-void TriangleSample::LoadAssets()
+		//create a RTV and a allocator for each frame
+		for (UINT n = 0 ; n < FrameCount; n++)
+		{
+			ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
+			m_device->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, rtvHandle);
+			rtvHandle.Offset(1, m_rtvDescriptorSize);
+
+			ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators[n])));
+		}
+	}
+}
+
+void FrameBufferSample::LoadAssets()
 {
 	//create empty root signature
 	{
@@ -72,7 +89,7 @@ void TriangleSample::LoadAssets()
 
 
 	//crate command list : device
-	ThrowIfFailed(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_commandList)));
+	ThrowIfFailed(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocators[m_frameIndex].Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_commandList)));
 
 	ThrowIfFailed(m_commandList->Close());
 
@@ -117,15 +134,20 @@ void TriangleSample::LoadAssets()
 		{
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
+
+		// Wait for the command list to execute; we are reusing the same command 
+		// list in our main loop but for now, we just want to wait for setup to 
+		// complete before continuing.
+		WaitForGPU();
 	}
 }
 
 
-void TriangleSample::PopulateCommandList()
+void FrameBufferSample::PopulateCommandList()
 {
-	ThrowIfFailed(m_commandAllocator->Reset());
+	ThrowIfFailed(m_commandAllocators[m_frameIndex]->Reset());
 
-	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), m_pipelineState.Get()));
 
 	//set necessary state
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
@@ -149,4 +171,58 @@ void TriangleSample::PopulateCommandList()
 		D3D12_RESOURCE_STATE_PRESENT));
 
 	ThrowIfFailed(m_commandList->Close());
+}
+
+void FrameBufferSample::OnRender()
+{
+	PopulateCommandList();
+
+	ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
+	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	ThrowIfFailed(m_swapChain->Present(1, 0));
+
+	MoveToNextFrame();
+}
+
+void FrameBufferSample::OnDestroy()
+{
+	// Ensure that the GPU is no longer referencing resources that are about to be
+	// cleaned up by the destructor.
+	WaitForGPU();
+
+	CloseHandle(m_fenceEvent);
+}
+
+void FrameBufferSample::WaitForGPU()
+{
+	//schedule a signal comamnd in the queue
+	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValues[m_frameIndex]));
+
+	//wait until the fence has been processed
+	ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValues[m_frameIndex], m_fenceEvent));
+	WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
+
+	//increment the fence value for the current frame.
+	m_fenceValues[m_frameIndex]++;
+}
+
+void FrameBufferSample::MoveToNextFrame()
+{
+	//schedule a signal comamnd in the queue
+	const UINT64 CurrentFenceValue = m_fenceValues[m_frameIndex];
+	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), CurrentFenceValue));
+
+	//update frame index
+	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+	//if the next frame is not ready to be rendered yet wait until it is ready
+	if (m_fence->GetCompletedValue() < m_fenceValues[m_frameIndex])
+	{
+		ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValues[m_frameIndex], m_fenceEvent));
+		WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
+	}
+
+	//set the fence value for the next frame
+	m_fenceValues[m_frameIndex] = CurrentFenceValue + 1;
 }

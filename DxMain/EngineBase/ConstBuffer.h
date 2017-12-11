@@ -10,15 +10,16 @@ public:
 	ConstBufferSample(UINT width, UINT height, std::wstring name);
 	~ConstBufferSample();
 
+	virtual void OnUpdate() override;
+
+protected:
+	
 	virtual void LoadAssets() override;
 
 	virtual void CreateDescriptorHeaps() override;
 
 	virtual void PopulateCommandList() override;
 
-	virtual void OnUpdate() override;
-
-protected:
 private:
 
 	struct Vertex

@@ -99,8 +99,18 @@ void LearnHelloWindow::LoadPipeline()
 
 	//create frame resource :device
 	{
+		CreateRTAndCmdAllocator();
+	}
+
+
+}
+
+void LearnHelloWindow::CreateRTAndCmdAllocator()
+{
+	//create frame resource :device
+	{
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
-		for (UINT n = 0; n < FrameCount; n ++)
+		for (UINT n = 0; n < FrameCount; n++)
 		{
 			ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
 			m_device->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, rtvHandle);

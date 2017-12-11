@@ -11,8 +11,10 @@ public:
 
 	virtual void LoadAssets() override;
 
-	virtual void PopulateCommandList() override;
+	
 
 protected:
+
+	virtual void PopulateCommandList() override;
 private:
 };
