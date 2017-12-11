@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "FrameBuffer.h"
 
+#include <iostream>
+
 FrameBufferSample::FrameBufferSample(UINT width, UINT height, std::wstring name) :
 	LearnHelloWindow(width, height, name)
 {
@@ -81,7 +83,7 @@ void FrameBufferSample::LoadAssets()
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_B8G8R8A8_UNORM;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 
 		ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
@@ -175,6 +177,8 @@ void FrameBufferSample::PopulateCommandList()
 
 void FrameBufferSample::OnRender()
 {
+	OutputDebugString(L"Onrender start*************\r\n");
+
 	PopulateCommandList();
 
 	ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
@@ -209,6 +213,8 @@ void FrameBufferSample::WaitForGPU()
 
 void FrameBufferSample::MoveToNextFrame()
 {
+	OutputDebugString(L"MoveToNextFrame start ******\r\n");
+	
 	//schedule a signal comamnd in the queue
 	const UINT64 CurrentFenceValue = m_fenceValues[m_frameIndex];
 	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), CurrentFenceValue));
@@ -219,10 +225,17 @@ void FrameBufferSample::MoveToNextFrame()
 	//if the next frame is not ready to be rendered yet wait until it is ready
 	if (m_fence->GetCompletedValue() < m_fenceValues[m_frameIndex])
 	{
+		
 		ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValues[m_frameIndex], m_fenceEvent));
+		std::printf("WaitForSingleObjectEx start************");
+		
+		OutputDebugString(L"WaitForSingleObjectEx start ******\r\n");
 		WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
+		OutputDebugString(L"WaitForSingleObjectEx end ******\r\n");
 	}
 
 	//set the fence value for the next frame
 	m_fenceValues[m_frameIndex] = CurrentFenceValue + 1;
+
+	OutputDebugString(L"MoveToNextFrame end ******\r\n\r\n\r\n");
 }
