@@ -15,7 +15,7 @@ FrameBufferSample::FrameBufferSample(UINT width, UINT height, std::wstring name)
 
 FrameBufferSample::~FrameBufferSample()
 {
-  
+
 }
 
 void FrameBufferSample::CreateRTAndCmdAllocator()
