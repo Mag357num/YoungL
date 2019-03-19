@@ -78,8 +78,8 @@ void ConstBufferSample::LoadAssets()
 		UINT compileFlags = 0;
 #endif
 
-		D3DCompileFromFile(GetAssetFullPath(L"constbuffer.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
-		D3DCompileFromFile(GetAssetFullPath(L"constbuffer.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
+		D3DCompileFromFile(GetAssetFullPath(L"Shaders/constbuffer.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr);
+		D3DCompileFromFile(GetAssetFullPath(L"Shaders/constbuffer.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr);
 
 		//define vertex input layout
 		D3D12_INPUT_ELEMENT_DESC inputElementDesc[] = 

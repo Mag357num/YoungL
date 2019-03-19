@@ -60,6 +60,7 @@ void LearnHelloWindow::LoadPipeline()
 		));
 	}
 
+	
 	//command queue : device
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -102,7 +103,6 @@ void LearnHelloWindow::LoadPipeline()
 		CreateRTAndCmdAllocator();
 	}
 
-
 }
 
 void LearnHelloWindow::CreateRTAndCmdAllocator()
@@ -119,6 +119,7 @@ void LearnHelloWindow::CreateRTAndCmdAllocator()
 	}
 
 	ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator)));
+
 }
 
 void LearnHelloWindow::CreateDescriptorHeaps()
@@ -130,6 +131,7 @@ void LearnHelloWindow::CreateDescriptorHeaps()
 	ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 
 	m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
 }
 
 void LearnHelloWindow::LoadAssets()
