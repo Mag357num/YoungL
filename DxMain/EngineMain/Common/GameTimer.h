@@ -4,13 +4,15 @@ class GameTimer
 {
 public:
 	GameTimer();
-	
 	float GameTime() const;
 	float DeltaTime() const;
+	float TotalTime() const;
 
 	void Start();
 	void Stop();
 	void Tick();
+	void Reset();
+
 private:
 	double mSecondsPerCount;
 	double mDeltaTime;
