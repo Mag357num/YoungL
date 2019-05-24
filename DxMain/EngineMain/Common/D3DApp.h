@@ -68,6 +68,7 @@ protected:
 	{
 		return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
+	
 
 	void CalculateFrameStats();
 
@@ -92,10 +93,12 @@ protected:
 	GameTimer mTimer;
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
-	Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> mSwapChain;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 
 	Microsoft::WRL::ComPtr<ID3D12Fence> md3d12Fence;
+	UINT64 mCurrentFence = 0;
+
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mCommandAllocate;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;

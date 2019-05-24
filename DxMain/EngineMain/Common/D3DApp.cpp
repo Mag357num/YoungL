@@ -88,7 +88,35 @@ bool D3DApp::InitMainWindow()
 
 int D3DApp::Run()
 {
-	return 1;
+	MSG msg = {0};
+	
+	mTimer.Reset();
+	
+	while (msg.message != WM_QUIT)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			mTimer.Tick();
+
+			if (!mAppPaused)
+			{
+				CalculateFrameStats();
+				Update(mTimer);
+				Draw(mTimer);
+			}
+			else
+			{
+				Sleep(100);
+			}
+		}
+	}
+
+	return (int)msg.wParam;
 }
 
 bool D3DApp::Initialize()
@@ -182,12 +210,35 @@ void D3DApp::CreateCommandObjects()
 
 void D3DApp::FlushCommandQueue()
 {
+	mCurrentFence++;
+	
+	ThrowIfFailed(mCommandQueue->Signal(md3d12Fence.Get(), mCurrentFence));
+
+	if (md3d12Fence->GetCompletedValue() < mCurrentFence)
+	{
+		HANDLE EventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(md3d12Fence->SetEventOnCompletion(mCurrentFence, EventHandle));
+		WaitForSingleObject(EventHandle, INFINITE);
+		CloseHandle(EventHandle);
+	}
 
 }
 
 void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 {
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	rtvHeapDesc.NodeMask = 0;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap)));
 
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	dsvHeapDesc.NodeMask = 0;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap)));
 }
 
 void D3DApp::CreateSwapChain()
@@ -210,22 +261,218 @@ void D3DApp::CreateSwapChain()
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	
-	ThrowIfFailed(mdxgiFactory->CreateSwapChain(mCommandQueue.Get(), &swapChainDesc, IID_PPV_ARGS(mSwapChain.GetAddressOf())));
+	ThrowIfFailed(mdxgiFactory->CreateSwapChain(mCommandQueue.Get(), &swapChainDesc, mSwapChain.GetAddressOf()));
 }
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM sParam, LPARAM lParam)
 {
-	return S_OK;
+	switch (msg)
+	{
+	case WM_ACTIVATE:
+		if (LOWORD(sParam) == WA_INACTIVE)
+		{
+			mAppPaused = true;
+			mTimer.Stop();
+		}
+		else
+		{
+			mAppPaused = false;
+			mTimer.Start();
+		}
+		return 0;
+
+	case WM_SIZE:
+		mClientWidth = LOWORD(lParam);
+		mClientHeight = HIWORD(lParam);
+
+		if (md3dDevice)
+		{
+			if (sParam == SIZE_MINIMIZED)
+			{
+				mAppPaused = true;
+				mMinimized = true;
+				mMaximized = false;
+			}
+			else if (sParam == SIZE_MAXIMIZED)
+			{
+				mAppPaused = false;
+				mMinimized = false;
+				mMaximized = true;
+			}
+			else if (sParam == SIZE_RESTORED)
+			{
+				if (mMinimized)
+				{
+					mAppPaused = false;
+					mAppPaused = false;
+					OnResize();
+				}
+				else if (mMaximized)
+				{
+					mAppPaused = false;
+					mAppPaused = false;
+					OnResize();
+				}
+				else if (mResizing)
+				{
+				}
+				else
+				{
+					OnResize();
+				}
+			}
+		}
+		return 0;
+
+	case WM_ENTERSIZEMOVE:
+		mAppPaused = true;
+		mResizing = true;
+		mTimer.Stop();
+		return 0;
+
+	case WM_EXITSIZEMOVE:
+		mAppPaused = false;
+		mResizing = false;
+		mTimer.Start();
+		OnResize();
+		return 0;
+
+	case  WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+
+	case  WM_MENUCHAR:
+		return MAKELRESULT(0, MNC_CLOSE);
+
+	case WM_GETMINMAXINFO:
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+		return 0;
+
+	case  WM_LBUTTONDOWN:
+	case  WM_MBUTTONDOWN:
+	case  WM_RBUTTONDOWN:
+		OnMouseDown(sParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		return 0;
+
+	case  WM_LBUTTONUP:
+	case  WM_MBUTTONUP:
+	case  WM_RBUTTONUP:
+		OnMouseUp(sParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		return 0;
+
+	case  WM_MOUSEMOVE:
+		OnMouseMove(sParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		return 0;
+
+	case WM_KEYUP:
+		if (sParam == VK_ESCAPE)
+		{
+			PostQuitMessage(0);
+		}
+		else if (sParam == VK_F2)
+		{
+			Set4xMsaaState(!m4xMsaaState);
+		}
+		return 0;
+
+	}
+
+	return DefWindowProc(hwnd, msg, sParam, lParam);
 }
 
 void D3DApp::OnResize()
 {
+	assert(md3dDevice);
+	assert(mSwapChain);
+	assert(mCommandAllocate);
 
+	FlushCommandQueue();
+
+	ThrowIfFailed(mCommandList->Reset(mCommandAllocate.Get(), nullptr));
+	for (int i =0; i<SwapChainBufferCount; ++i)
+	{
+		mSwapChainBuffer[i].Reset();
+	}
+	mDepthStencilBuffer.Reset();
+
+	//resize swapchain
+	ThrowIfFailed(mSwapChain->ResizeBuffers(
+		SwapChainBufferCount,
+		mClientWidth,
+		mClientHeight,
+		mBackBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+	));
+	mCurrBackBuffer = 0;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
+	for (int i = 0; i < SwapChainBufferCount; i++)
+	{
+		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
+		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHandle);
+		rtvHandle.Offset(i, mRtvDescriptorSize);
+	}
+
+	//create depth stencil buffer
+	D3D12_RESOURCE_DESC depthStencilDesc;
+	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Alignment = 0;
+	depthStencilDesc.Width = mClientWidth;
+	depthStencilDesc.Height = mClientHeight;
+	depthStencilDesc.DepthOrArraySize = 1;
+	depthStencilDesc.MipLevels = 1;
+
+	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
+	// the depth buffer.  Therefore, because we need to create two views to the same resource:
+	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
+	// we need to create the depth buffer resource with a typeless format.  
+	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+
+	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
+	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	D3D12_CLEAR_VALUE optClear;
+	optClear.Format = mDepthStencilFormat;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&depthStencilDesc,
+		D3D12_RESOURCE_STATE_COMMON,
+		&optClear,
+		IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())
+	));
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvViewDesc;
+	dsvViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+	dsvViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvViewDesc.Format = mDepthStencilFormat;
+	dsvViewDesc.Texture2D.MipSlice = 0;
+
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+	ThrowIfFailed(mCommandList->Close());
+	ID3D12CommandList* cmdLists[] = {mCommandList.Get()};
+	mCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	FlushCommandQueue();
+
+	mScreenViewport.TopLeftX = 0;
+	mScreenViewport.TopLeftY = 0;
+	mScreenViewport.Width = static_cast<float>(mClientWidth);
+	mScreenViewport.Height = static_cast<float>(mClientHeight);
+
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
+
+	mScissorRect = {0, 0, mClientWidth, mClientHeight};
 }
-
-
-
-
 
 HWND D3DApp::MainWnd() const
 {
@@ -251,6 +498,11 @@ void D3DApp::Set4xMsaaState(bool value)
 		CreateSwapChain();
 		OnResize();
 	}
+}
+
+void D3DApp::CalculateFrameStats()
+{
+
 }
 
 void D3DApp::LogAdapters()
