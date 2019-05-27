@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "D3DApp.h"
 #include "WindowsX.h"
-#include "../DXSampleHelper.h"
+#include "DXSampleHelper.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace std;

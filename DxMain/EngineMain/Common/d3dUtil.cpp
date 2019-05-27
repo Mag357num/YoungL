@@ -3,7 +3,7 @@
 #include <comdef.h>
 #include <fstream>
 
-#include "../DXSampleHelper.h"
+#include "DXSampleHelper.h"
 
 using Microsoft::WRL::ComPtr;
 
