@@ -7,7 +7,7 @@ class UploadBuffer
 {
 public:
 	UploadBuffer(ID3D12Device* device, UINT elementCount, bool isContantBuffer)
-		:mIsConstantBuffer(isContantBuffer);
+		:mIsConstantBuffer(isContantBuffer)
 	{
 		mElementByteSize = sizeof(T);
 

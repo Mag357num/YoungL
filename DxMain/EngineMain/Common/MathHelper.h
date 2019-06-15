@@ -13,6 +13,11 @@ public:
 
 	static float RandF(float a, float b)
 	{
+		return a + RandF()*(b - a);
+	}
+
+	static int Rand(int a, int b)
+	{
 		return a + rand() % ((b - a) + 1);
 	}
 
@@ -42,6 +47,18 @@ public:
 
 	static float AngleFromXY(float x, float y);
 
+	static DirectX::XMFLOAT4X4 Identity4x4()
+	{
+		static DirectX::XMFLOAT4X4 I(
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f);
+
+		return I;
+	};
+
+	static const float PI;
 private:
 
 };
