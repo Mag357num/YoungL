@@ -44,8 +44,6 @@ HINSTANCE D3DApp::AppInst() const
 	return mhAppInst;
 }
 
-
-
 bool D3DApp::InitMainWindow()
 {
 	WNDCLASS wc;
@@ -179,8 +177,8 @@ bool D3DApp::InitDirect3D()
 	ThrowIfFailed(md3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
 		&msQualityLevels,
 		sizeof(msQualityLevels)));
-	m4xMsaaState = msQualityLevels.NumQualityLevels;
-	assert(m4xMsaaState && "Unexpected MSAA Quality level.");
+	m4xMsasQuality = msQualityLevels.NumQualityLevels;
+	assert(m4xMsasQuality > 0 && "Unexpected MSAA Quality level.");
 
 #if _DEBUG
 	LogAdapters();
@@ -224,6 +222,21 @@ void D3DApp::FlushCommandQueue()
 
 }
 
+ID3D12Resource* D3DApp::CurrentBackBuffer()const
+{
+	return mSwapChainBuffer[mCurrBackBuffer].Get();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView()const 
+{
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(mRtvHeap->GetCPUDescriptorHandleForHeapStart(), mCurrBackBuffer, mRtvDescriptorSize);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView()const
+{
+	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
 void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
@@ -231,14 +244,14 @@ void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap)));
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	dsvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mDsvHeap)));
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
 }
 
 void D3DApp::CreateSwapChain()
@@ -246,16 +259,17 @@ void D3DApp::CreateSwapChain()
 	mSwapChain.Reset();
 
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	swapChainDesc.BufferCount = SwapChainBufferCount;
 	swapChainDesc.BufferDesc.Width = mClientHeight;
 	swapChainDesc.BufferDesc.Height = mClientHeight;
-	swapChainDesc.BufferDesc.Format = mBackBufferFormat;
 	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferDesc.Format = mBackBufferFormat;
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	swapChainDesc.BufferUsage = m4xMsaaState ? (m4xMsaaState - 1) : 0;
+	swapChainDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = SwapChainBufferCount;
 	swapChainDesc.OutputWindow = mhMainWnd;
 	swapChainDesc.Windowed = true;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -411,7 +425,7 @@ void D3DApp::OnResize()
 	{
 		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
 		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHandle);
-		rtvHandle.Offset(i, mRtvDescriptorSize);
+		rtvHandle.Offset(1, mRtvDescriptorSize);
 	}
 
 	//create depth stencil buffer
@@ -454,6 +468,7 @@ void D3DApp::OnResize()
 	dsvViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvViewDesc.Format = mDepthStencilFormat;
 	dsvViewDesc.Texture2D.MipSlice = 0;
+	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), &dsvViewDesc, DepthStencilView());
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 

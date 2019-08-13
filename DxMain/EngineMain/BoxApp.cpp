@@ -119,7 +119,7 @@ void BoxApp::Draw(const GameTimer& gt)
 	mCommandQueue->ExecuteCommandLists(_countof(cmdList), cmdList);
 
 	//swap back and front buffers
-	mSwapChain->Present(0, 0);
+	ThrowIfFailed(mSwapChain->Present(0, 0));
 	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
 
 	//wait until frame commands are complete. this waiting is inefficient and is done for simplicity. later we will show how to organize our rendering code
@@ -224,8 +224,8 @@ void BoxApp::BuildRootSignature()
 void BoxApp::BuildShadersAndInputLayout()
 {
 	HRESULT hr = S_OK;
-	mvsByteCode = d3dUtil::CompileShader(L"Shaders\\Color.hlsl", nullptr, "VS", "vs_5_0");
-	mvsByteCode = d3dUtil::CompileShader(L"Shaders\\Color.hlsl", nullptr, "PS", "ps_5_0");
+	mvsByteCode = d3dUtil::CompileShader(L"shaders\\Box_Color.hlsl", nullptr, "VS", "vs_5_0");
+	mpsByteCode = d3dUtil::CompileShader(L"shaders\\Box_Color.hlsl", nullptr, "PS", "ps_5_0");
 
 	mInputLayout = 
 	{
@@ -286,10 +286,10 @@ void BoxApp::BuildBoxGeometry()
 	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mBoxGeo->IndexBufferCPU));
 	CopyMemory(mBoxGeo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	mBoxGeo->VertexBufferGPU = d3dUtil::CreateaDefaultBuffer(md3dDevice.Get(),
+	mBoxGeo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), vertices.data(), vbByteSize, mBoxGeo->VertexBufferUpload);
 
-	mBoxGeo->IndexBufferGPU = d3dUtil::CreateaDefaultBuffer(md3dDevice.Get(),
+	mBoxGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, mBoxGeo->IndexBufferUpload);
 
 	mBoxGeo->VertextByteStride = sizeof(Vertex);

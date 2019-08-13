@@ -108,7 +108,7 @@ public:
 
 	static Microsoft::WRL::ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename);
 
-	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateaDefaultBuffer(
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
 		ID3D12Device* device,
 		ID3D12GraphicsCommandList* cmdList,
 		const void* initdata,
