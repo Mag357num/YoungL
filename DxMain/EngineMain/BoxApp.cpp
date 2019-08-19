@@ -64,7 +64,7 @@ void BoxApp::Update(const GameTimer& gt)
 
 	XMMATRIX world = XMLoadFloat4x4(&mWorld);
 	XMMATRIX proj = XMLoadFloat4x4(&mProj);
-	XMMATRIX worldViewProj = world * proj;
+	XMMATRIX worldViewProj = world * view * proj;
 
 	//update the constant buffer with latest worldviewproj matrix;
 	ObjectContants objConstants;
@@ -149,8 +149,8 @@ void BoxApp::OnMouseMove(WPARAM btnState, int x, int y)
 	}
 	else if ((btnState & MK_RBUTTON) != 0)
 	{
-		float dx = XMConvertToRadians(0.005f*static_cast<float>(x - mLastMousePos.x));
-		float dy = XMConvertToRadians(0.005f*static_cast<float>(y - mLastMousePos.y));
+		float dx = 0.005f*static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.005f*static_cast<float>(y - mLastMousePos.y);
 
 		mRadius += dx - dy;
 
@@ -230,7 +230,7 @@ void BoxApp::BuildShadersAndInputLayout()
 	mInputLayout = 
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 }
 
