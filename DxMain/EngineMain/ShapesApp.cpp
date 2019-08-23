@@ -401,11 +401,71 @@ void ShapeApp::OnResize()
 	D3DApp::OnResize();
 
 	//the window resized, so update the aspect ratio and recompute the projection matrix
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25*MathHelper::PI, AspectRatio(), 1.0f, 1000.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::PI, AspectRatio(), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&mProj, P);
 }
 
 void ShapeApp::Update(const GameTimer& gt)
+{
+	OnKeyboardInput(gt);
+
+	UpdateCamera(gt);
+
+	mCurrentFrameResourceIndex = (mCurrentFrameResourceIndex + 1) % gNumFrameResources;
+	mCurrentFrameResource = mFrameResources[mCurrentFrameResourceIndex].get();
+
+	if (mCurrentFrameResource->Fence !=0 && md3d12Fence->GetCompletedValue() < mCurrentFrameResource->Fence )
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(md3d12Fence->SetEventOnCompletion(mCurrentFrameResource->Fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	UpdataObjectCBs(gt);
+	UpdateMainPassCBs(gt);
+
+}
+
+void ShapeApp::OnKeyboardInput(const GameTimer& gt)
+{
+	if (GetAsyncKeyState('1') & 0x8000)
+	{
+		mIsWireframe = true;
+	}
+	else
+	{
+		mIsWireframe = false;
+	}
+}
+
+void ShapeApp::UpdateCamera(const GameTimer& gt)
+{
+	//calc view matrix
+	mEyePos.x = mRadius * sinf(mPhi)*cosf(mTheta);
+	mEyePos.y = mRadius * sinf(mPhi)*sinf(mTheta);
+	mEyePos.z = mRadius * cosf(mPhi);
+
+	//build the view matrix
+	XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&mView, view);
+}
+
+void ShapeApp::UpdataObjectCBs(const GameTimer& gt)
+{
+
+}
+
+void ShapeApp::UpdateMainPassCBs(const GameTimer& gt)
+{
+
+}
+
+void ShapeApp::Draw(const GameTimer& gt)
 {
 
 }
