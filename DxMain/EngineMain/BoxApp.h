@@ -13,7 +13,7 @@ struct Vertex
 	XMFLOAT4 Color;
 };
 
-struct ObjectContants
+struct ObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 };
@@ -23,7 +23,7 @@ class BoxApp : public D3DApp
 public:
 	BoxApp(HINSTANCE hInstance);
 	BoxApp(const BoxApp& rhs) = delete;
-	BoxApp& operato(const BoxApp& rhs) = delete;
+	BoxApp& operator=(const BoxApp& rhs) = delete;
 	~BoxApp();
 
 	virtual bool Initialize()override;
@@ -48,7 +48,7 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 
-	std::unique_ptr<UploadBuffer<ObjectContants>> mObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
 
 	std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;
 

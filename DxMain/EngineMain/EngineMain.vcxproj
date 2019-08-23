@@ -153,11 +153,14 @@
     <ClInclude Include="Common\d3dUtil.h" />
     <ClInclude Include="Common\d3dx12.h" />
     <ClInclude Include="Common\DXSampleHelper.h" />
+    <ClInclude Include="Common\FrameResource.h" />
     <ClInclude Include="Common\GameTimer.h" />
+    <ClInclude Include="Common\GeometryGenerator.h" />
     <ClInclude Include="Common\MathHelper.h" />
     <ClInclude Include="Common\UploadBuffer.h" />
     <ClInclude Include="EngineMain.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ShapesApp.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -165,9 +168,12 @@
     <ClCompile Include="BoxApp.cpp" />
     <ClCompile Include="Common\D3DApp.cpp" />
     <ClCompile Include="Common\d3dUtil.cpp" />
+    <ClCompile Include="Common\FrameResource.cpp" />
     <ClCompile Include="Common\GameTimer.cpp" />
+    <ClCompile Include="Common\GeometryGenerator.cpp" />
     <ClCompile Include="Common\MathHelp.cpp" />
     <ClCompile Include="EngineMain.cpp" />
+    <ClCompile Include="ShapesApp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
