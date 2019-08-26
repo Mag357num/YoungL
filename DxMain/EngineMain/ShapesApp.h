@@ -8,7 +8,7 @@
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
-const int gNumFrameResources = 3;
+const int gNumFrameResources_ShapesApp = 3;
 
 struct ShapeRenderItem
 {
@@ -23,7 +23,7 @@ struct ShapeRenderItem
 	//because we have an object cbuffer for each frameresource, we have to apply the update to each frameresource
 	// Thus, when we modify obect data we should set 
 	// NumFramesDirty = gNumFrameResources so that each frame resource gets the update.
-	int NumFramesDirty = gNumFrameResources;
+	int NumFramesDirty = gNumFrameResources_ShapesApp;
 
 	//index into GPU constant buffer corresponding to the object CB for this render item
 	UINT ObjCBIndex = -1;
@@ -72,7 +72,7 @@ private:
 	void BuildPSOs();
 	void BuildFrameResources();
 	void BuildRenderItems();
-	void DrawRenderItems(ID3D12CommandList* cmdList, const std::vector<ShapeRenderItem*>& rItems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<ShapeRenderItem*>& rItems);
 
 private:
 	std::vector<std::unique_ptr<FrameResource>> mFrameResources;

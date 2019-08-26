@@ -7,13 +7,13 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
-struct Vertex
+struct Vertex_BoxApp
 {
 	XMFLOAT3 Pos;
 	XMFLOAT4 Color;
 };
 
-struct ObjectConstants
+struct ObjectConstants_BoxApp
 {
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 };
@@ -48,7 +48,7 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 
-	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants_BoxApp>> mObjectCB = nullptr;
 
 	std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;
 

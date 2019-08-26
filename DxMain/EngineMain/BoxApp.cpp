@@ -67,7 +67,7 @@ void BoxApp::Update(const GameTimer& gt)
 	XMMATRIX worldViewProj = world * view * proj;
 
 	//update the constant buffer with latest worldviewproj matrix;
-	ObjectConstants objConstants;
+	ObjectConstants_BoxApp objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 	mObjectCB->CopyData(0, objConstants);
 
@@ -179,9 +179,9 @@ void BoxApp::BuildDescriptors()
 
 void BoxApp::BuildConstantBuffers()
 {
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), 1, true);
+	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants_BoxApp>>(md3dDevice.Get(), 1, true);
 
-	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants_BoxApp));
 
 	D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 	//offset to the ith object constant buffer in the buffer.
@@ -190,7 +190,7 @@ void BoxApp::BuildConstantBuffers()
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 	cbvDesc.BufferLocation = cbAddress;
-	cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants_BoxApp));
 
 	md3dDevice->CreateConstantBufferView(&cbvDesc, mCbvHeap->GetCPUDescriptorHandleForHeapStart());
 }
@@ -236,16 +236,16 @@ void BoxApp::BuildShadersAndInputLayout()
 
 void BoxApp::BuildBoxGeometry()
 {
-	std::array<Vertex, 8> vertices = 
+	std::array<Vertex_BoxApp, 8> vertices = 
 	{
-		Vertex({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White)}),
-		Vertex({XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black)}),
-		Vertex({XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red)}),
-		Vertex({XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green)}),
-		Vertex({XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue)}),
-		Vertex({XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow)}),
-		Vertex({XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan)}),
-		Vertex({XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta)})
+		Vertex_BoxApp({XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White)}),
+		Vertex_BoxApp({XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black)}),
+		Vertex_BoxApp({XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Red)}),
+		Vertex_BoxApp({XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::Green)}),
+		Vertex_BoxApp({XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue)}),
+		Vertex_BoxApp({XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow)}),
+		Vertex_BoxApp({XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan)}),
+		Vertex_BoxApp({XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta)})
 	};
 
 	std::array<std::uint16_t, 36> indices =
@@ -275,7 +275,7 @@ void BoxApp::BuildBoxGeometry()
 		4, 3, 7
 	};
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex_BoxApp);
 	const UINT ibByteSize = (UINT)indices.size()* sizeof(std::uint16_t);
 
 	mBoxGeo = std::make_unique<MeshGeometry>();
@@ -292,7 +292,7 @@ void BoxApp::BuildBoxGeometry()
 	mBoxGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, mBoxGeo->IndexBufferUpload);
 
-	mBoxGeo->VertextByteStride = sizeof(Vertex);
+	mBoxGeo->VertextByteStride = sizeof(Vertex_BoxApp);
 	mBoxGeo->VertextBufferByteSize = vbByteSize;
 	mBoxGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	mBoxGeo->IndexBufferByteSize = ibByteSize;
