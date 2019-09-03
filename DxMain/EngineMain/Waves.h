@@ -33,7 +33,7 @@ public:
 private:
 
 	int mNumRows = 0;
-	int mNumColumn = 0;
+	int mNumCols = 0;
 
 	int mVertexCount = 0;
 	int mTriangleCount = 0;

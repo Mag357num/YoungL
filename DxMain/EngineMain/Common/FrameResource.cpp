@@ -8,7 +8,7 @@ FrameResource::FrameResource(ID3D12Device* Device, UINT passCount, UINT objectCo
 	PassCB = std::make_unique<UploadBuffer<PassConstants>>(Device, passCount, true);
 	ObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(Device, objectCount, true);
 
-	WavesVB = std::make_unique<UploadBuffer<Vertex>>(Device, WaveVertCount, true);
+	WavesVB = std::make_unique<UploadBuffer<Vertex>>(Device, WaveVertCount, false);
 }
 
 FrameResource::~FrameResource()
