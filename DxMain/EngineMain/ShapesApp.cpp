@@ -241,7 +241,7 @@ void ShapeApp::BuildFrameResources()
 {
 	for (int i = 0; i < gNumFrameResources_ShapesApp; i++)
 	{
-		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(), 1, (UINT)mAllItems.size()));
+		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(), 1, (UINT)mAllItems.size(), 0));
 	}
 }
 

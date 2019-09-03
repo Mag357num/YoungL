@@ -43,7 +43,7 @@ struct Vertex
 struct FrameResource
 {
 public:
-	FrameResource(ID3D12Device* Device, UINT passCount, UINT objectCount);
+	FrameResource(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT WaveVertCount);
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
 	~FrameResource();
@@ -56,6 +56,10 @@ public:
 	//that reference it . so each frame needs their own cbuffers.
 	std::unique_ptr<UploadBuffer<PassConstants>> PassCB = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
+
+	//we cannot update  a dynamic vertex buffer until the gpu is done processing
+	//the commands that reference it. so each frame needs their own.
+	std::unique_ptr<UploadBuffer<Vertex>> WavesVB = nullptr;
 
 	//fence value to mark commands up to the fence point. this lets up 
 	//check if these frame resources are still in use by the GPU
