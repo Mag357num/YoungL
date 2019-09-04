@@ -21,7 +21,7 @@
 #include <cassert>
 #include "d3dx12.h"
 //#include "DDSTextureLoader.h"
-//#include "MathHelper.h"
+#include "MathHelper.h"
 
 extern const int gNumFrameResources;
 
@@ -198,6 +198,67 @@ struct MeshGeometry
 		VertexBufferUpload = nullptr;
 		IndexBufferUpload = nullptr;
 	}
+};
+
+struct Light
+{
+	DirectX::XMFLOAT3 Strength = {0.5f, 0.5f, 0.5f};
+	float FalloffStart = 1.0f;//point, spot light only
+	DirectX::XMFLOAT3 Direction = {0.0f, -1.0f, 0.0f};//directional/ spot light only
+	float FalloffEnd = 10.0f;//point/spot light only
+	DirectX::XMFLOAT3 Position = {0.0f, 0.0f,0.0f};//point/spot light only
+	float SpotPower = 64.0f;//spot light only
+};
+
+#define MaxLights 16
+
+struct MaterialConstants
+{
+	DirectX::XMFLOAT4 DiffuseAlbedo = {1.0f, 1.0f, 1.0f, 1.0f};
+	DirectX::XMFLOAT3 FresnelR0 = {0.01f, 0.01f, 0.01f};
+	float Roughness = 0.25f;
+
+	//used in texture mapping
+	DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+};
+
+//simple struct to represent a material 
+struct Material
+{
+	std::string Name;
+
+	//index into constant buffer corresponding to this material
+	int MatCBIndex = -1;
+
+	//index into SRV heap for diffuse texture.
+	int DiffuseSrvHeapIndex = -1;
+
+	//index into SRV heap for normal texture.
+	int NormalSrvHeapIndex = -1;
+
+	//dirth flag indicating the material has changed and we need to update the constant buffer.
+	//because we have a material constant buffer for each framereource. we have to apply the 
+	//update to each frameresource. thus, when we modify a material we should set
+	//NumFramesDirty  = gNumFrameResources so that each frame resource gets the updata.
+	int NumFramesDirty = gNumFrameResources;
+
+	//material constant buffer data for shading
+	DirectX::XMFLOAT4 DiffuseAlbedo = {1.0f, 1.0f, 1.0f, 1.0f};
+	DirectX::XMFLOAT3 FresnelR0 = {0.01f, 0.01f, 0.01f};
+	float Roughness = .25f;
+	DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+
+};
+
+struct Texture
+{
+	//unique texuture name for lookup
+	std::string Name;
+
+	std::wstring FileName;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
 };
 
 #ifndef ReleaseCom
