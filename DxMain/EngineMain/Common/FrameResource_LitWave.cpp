@@ -9,7 +9,7 @@ FrameResource_LitWave::FrameResource_LitWave(ID3D12Device* Device, UINT passCoun
 	PassCB = std::make_unique<UploadBuffer<PassConstants_LitWave>>(Device, passCount, true);
 	ObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(Device, objectCount, true);
 
-	WavesVB = std::make_unique<UploadBuffer<Vertex>>(Device, WaveVertCount, false);
+	WavesVB = std::make_unique<UploadBuffer<Vertex_LitWave>>(Device, WaveVertCount, false);
 
 	MaterialCB = std::make_unique<UploadBuffer<MaterialConstants>>(Device, MaterialCount, true);
 }

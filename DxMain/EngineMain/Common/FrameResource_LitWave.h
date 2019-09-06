@@ -58,7 +58,7 @@ public:
 
 	//we cannot update  a dynamic vertex buffer until the gpu is done processing
 	//the commands that reference it. so each frame needs their own.
-	std::unique_ptr<UploadBuffer<Vertex>> WavesVB = nullptr;
+	std::unique_ptr<UploadBuffer<Vertex_LitWave>> WavesVB = nullptr;
 
 	std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialCB = nullptr;
 

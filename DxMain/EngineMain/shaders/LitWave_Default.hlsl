@@ -18,7 +18,7 @@
 #endif
 
 // Include structures and functions for lighting.
-#include "LightingUtil.hlsl"
+#include "LitWav_LightingUtil.hlsl"
 
 // Constant data that varies per frame.
 
