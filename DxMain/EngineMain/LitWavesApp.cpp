@@ -141,7 +141,7 @@ void LitWaveApp::BuildLandGeometry()
 
 float LitWaveApp::GetHillsHeight(float x, float z)const
 {
-	return 0.3f*(z * sinf(0.1f*x)) + x * cosf(0.1f*z);
+	return 0.3f*(z * sinf(0.1f*x) + x * cosf(0.1f*z));
 }
 
 XMFLOAT3 LitWaveApp::GetHillsNormal(float x, float z)const
@@ -342,6 +342,8 @@ void LitWaveApp::OnMouseMove(WPARAM btnState, int x, int y)
 		mRadius = MathHelper::Clamp(mRadius, 5.0f, 150.0f);
 	}
 
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
 }
 
 void LitWaveApp::OnMouseUp(WPARAM btnState, int x, int y)
@@ -531,12 +533,12 @@ void LitWaveApp::UpdateMainPassCB(const GameTimer& gt)
 	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
 	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
 
-	XMStoreFloat4x4(&mMainPassCB.View, view);
-	XMStoreFloat4x4(&mMainPassCB.Proj, proj);
-	XMStoreFloat4x4(&mMainPassCB.ViewProj, viewProj);
-	XMStoreFloat4x4(&mMainPassCB.InvView, invView);
-	XMStoreFloat4x4(&mMainPassCB.InvProj, invProj);
-	XMStoreFloat4x4(&mMainPassCB.InvViewProj, invViewProj);
+	XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
 	mMainPassCB.EyePosw = mEyePos;
 	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
 	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f/mClientWidth, 1.0f/mClientHeight);
