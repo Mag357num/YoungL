@@ -168,6 +168,7 @@
     <ClInclude Include="EngineMain.h" />
     <ClInclude Include="LandAndWaveApp.h" />
     <ClInclude Include="LitWave\FrameResource_LitWave.h" />
+    <ClInclude Include="LitWave\LitColumnsApp.h" />
     <ClInclude Include="LitWave\LitWavesApp.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShapesApp.h" />
@@ -186,6 +187,7 @@
     <ClCompile Include="EngineMain.cpp" />
     <ClCompile Include="LandAndWaveApp.cpp" />
     <ClCompile Include="LitWave\FrameResource_LitWave.cpp" />
+    <ClCompile Include="LitWave\LitColumnsApp.cpp" />
     <ClCompile Include="LitWave\LitWavesApp.cpp" />
     <ClCompile Include="ShapesApp.cpp" />
     <ClCompile Include="stdafx.cpp">
