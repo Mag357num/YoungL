@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FrameResource_LitWave.h"
-#include "FrameResource.h"
+#include "../Common/FrameResource.h"
 
 FrameResource_LitWave::FrameResource_LitWave(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT MaterialCount, UINT WaveVertCount)
 {

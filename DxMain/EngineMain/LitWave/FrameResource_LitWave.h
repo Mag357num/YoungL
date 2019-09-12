@@ -1,9 +1,9 @@
 #pragma once
 
-#include "d3dUtil.h"
-#include "MathHelper.h"
-#include "UploadBuffer.h"
-#include "FrameResource.h"
+#include "../Common/d3dUtil.h"
+#include "../Common/MathHelper.h"
+#include "../Common/UploadBuffer.h"
+#include "../Common/FrameResource.h"
 
 struct PassConstants_LitWave
 {

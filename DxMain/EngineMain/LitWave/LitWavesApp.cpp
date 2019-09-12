@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "LitWavesApp.h"
-#include "Common/d3dUtil.h"
+#include "../Common/d3dUtil.h"
 
 using namespace DirectX;
 

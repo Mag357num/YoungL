@@ -5,7 +5,7 @@
 #include "Common/UploadBuffer.h"
 #include "Common/GeometryGenerator.h"
 #include "Common/FrameResource.h"
-#include "Waves.h"
+#include "Common/Waves.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;

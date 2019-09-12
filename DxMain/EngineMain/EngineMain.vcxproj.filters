@@ -22,6 +22,12 @@
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{07870556-1ed7-4a0a-9054-d69fcadd2474}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\LitWave">
+      <UniqueIdentifier>{d246db57-3d46-4613-8e68-1f38886371a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\LitWave">
+      <UniqueIdentifier>{ef02957e-f75e-401c-9c18-ee4f1ddc8d3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -69,17 +75,17 @@
     <ClInclude Include="Common\GeometryGenerator.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Waves.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LandAndWaveApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common\FrameResource_LitWave.h">
-      <Filter>Header Files\Common</Filter>
+    <ClInclude Include="LitWave\FrameResource_LitWave.h">
+      <Filter>Header Files\LitWave</Filter>
     </ClInclude>
-    <ClInclude Include="LitWavesApp.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="LitWave\LitWavesApp.h">
+      <Filter>Header Files\LitWave</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Waves.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -113,17 +119,17 @@
     <ClCompile Include="Common\GeometryGenerator.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Waves.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LandAndWaveApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Common\FrameResource_LitWave.cpp">
-      <Filter>Source Files\Common</Filter>
+    <ClCompile Include="LitWave\FrameResource_LitWave.cpp">
+      <Filter>Source Files\LitWave</Filter>
     </ClCompile>
-    <ClCompile Include="LitWavesApp.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="LitWave\LitWavesApp.cpp">
+      <Filter>Source Files\LitWave</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Waves.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
