@@ -98,7 +98,8 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /e /r /y /i $(ProjectDir)shaders $(OutDir)shaders
-xcopy /e /r /y /i $(ProjectDir)Models $(OutDir)Models</Command>
+xcopy /e /r /y /i $(ProjectDir)Models $(OutDir)Models
+xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -158,10 +159,13 @@ xcopy /e /r /y /i $(ProjectDir)Models $(OutDir)Models</Command>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Blend\BlendApp.h" />
+    <ClInclude Include="Blend\FrameResource_Blend.h" />
     <ClInclude Include="BoxApp.h" />
     <ClInclude Include="Common\D3DApp.h" />
     <ClInclude Include="Common\d3dUtil.h" />
     <ClInclude Include="Common\d3dx12.h" />
+    <ClInclude Include="Common\DDSTextureLoader.h" />
     <ClInclude Include="Common\DXSampleHelper.h" />
     <ClInclude Include="Common\FrameResource.h" />
     <ClInclude Include="Common\GameTimer.h" />
@@ -180,9 +184,12 @@ xcopy /e /r /y /i $(ProjectDir)Models $(OutDir)Models</Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Blend\BlendApp.cpp" />
+    <ClCompile Include="Blend\FrameResource_Blend.cpp" />
     <ClCompile Include="BoxApp.cpp" />
     <ClCompile Include="Common\D3DApp.cpp" />
     <ClCompile Include="Common\d3dUtil.cpp" />
+    <ClCompile Include="Common\DDSTextureLoader.cpp" />
     <ClCompile Include="Common\FrameResource.cpp" />
     <ClCompile Include="Common\GameTimer.cpp" />
     <ClCompile Include="Common\GeometryGenerator.cpp" />

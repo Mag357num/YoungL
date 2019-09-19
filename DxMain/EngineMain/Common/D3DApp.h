@@ -109,7 +109,7 @@ protected:
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvDescriptorSize = 0;
 
-	std::wstring mMainWndCaption = L"d3d App";
+	std::wstring mMainWndCaption = L"DX12Test";
 	D3D_DRIVER_TYPE md3dDriveType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;

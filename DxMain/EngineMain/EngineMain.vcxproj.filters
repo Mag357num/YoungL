@@ -28,6 +28,12 @@
     <Filter Include="Source Files\LitWave">
       <UniqueIdentifier>{ef02957e-f75e-401c-9c18-ee4f1ddc8d3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Blend">
+      <UniqueIdentifier>{be21f845-1ae8-4cd4-a91c-ea6deca300af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Blend">
+      <UniqueIdentifier>{c129def2-c595-4cef-b158-138f10f88fc9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -90,6 +96,15 @@
     <ClInclude Include="LitWave\LitColumnsApp.h">
       <Filter>Header Files\LitWave</Filter>
     </ClInclude>
+    <ClInclude Include="Common\DDSTextureLoader.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Blend\FrameResource_Blend.h">
+      <Filter>Header Files\Blend</Filter>
+    </ClInclude>
+    <ClInclude Include="Blend\BlendApp.h">
+      <Filter>Header Files\Blend</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -136,6 +151,15 @@
     </ClCompile>
     <ClCompile Include="LitWave\LitColumnsApp.cpp">
       <Filter>Source Files\LitWave</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DDSTextureLoader.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Blend\FrameResource_Blend.cpp">
+      <Filter>Source Files\Blend</Filter>
+    </ClCompile>
+    <ClCompile Include="Blend\BlendApp.cpp">
+      <Filter>Source Files\Blend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
