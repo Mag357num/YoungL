@@ -54,7 +54,7 @@ void BlendApp::OnResize()
 {
 	D3DApp::OnResize();
 
-	XMMATRIX proj = XMMatrixPerspectiveFovLH(0.25f*XM_PI, AspectRatio(), 1000.0f, 1.0f);
+	XMMATRIX proj = XMMatrixPerspectiveFovLH(0.25f*XM_PI, AspectRatio(), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&mProj, proj);
 }
 
@@ -111,11 +111,11 @@ void BlendApp::Draw(const GameTimer& gt)
 
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Blend::Opaque]);
 
-	//mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Blend::AlphaTested]);
+	mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Blend::AlphaTested]);
 
-	//mCommandList->SetPipelineState(mPSOs["transparent"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Blend::Transparent]);
+	mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Blend::Transparent]);
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
@@ -438,13 +438,6 @@ void BlendApp::BuildDescriptorHeaps()
 
 void BlendApp::BuildShaderInputAndLayout()
 {
-	/*mInputLayout=
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-	};*/
-
 	const D3D_SHADER_MACRO defines[] = 
 	{
 		"FOG","1",
@@ -460,8 +453,8 @@ void BlendApp::BuildShaderInputAndLayout()
 	
 
 	mShaders["standardVS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", nullptr, "VS", "vs_5_0");
-	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", nullptr, "PS", "ps_5_0");
-	mShaders["alphaTestedPS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", nullptr, "PS", "ps_5_0");
+	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", defines, "PS", "ps_5_0");
+	mShaders["alphaTestedPS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", alphaTestedDefines, "PS", "ps_5_0");
 
 	mInputLayout =
 	{
