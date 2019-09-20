@@ -63,8 +63,8 @@ private:
 	void BuildPSOs();
 
 	std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamples();
-	float GetHillsHeight(float x, float z);
-	XMFLOAT3 GetHillsNormal(float x, float z);
+	float GetHillsHeight(float x, float z)const;
+	XMFLOAT3 GetHillsNormal(float x, float z)const;
 
 	virtual void Draw(const GameTimer& gt)override;
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem_Blend*> &rItems);
