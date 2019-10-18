@@ -34,6 +34,12 @@
     <Filter Include="Source Files\Blend">
       <UniqueIdentifier>{c129def2-c595-4cef-b158-138f10f88fc9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Stencil">
+      <UniqueIdentifier>{d8e13870-0f05-4ae4-849e-5302a918bc56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Stencil">
+      <UniqueIdentifier>{eb75c4c6-8cfc-43f7-be70-b4e48b235aa0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -105,6 +111,12 @@
     <ClInclude Include="Blend\BlendApp.h">
       <Filter>Header Files\Blend</Filter>
     </ClInclude>
+    <ClInclude Include="Stencil\FrameResource_Stencil.h">
+      <Filter>Header Files\Stencil</Filter>
+    </ClInclude>
+    <ClInclude Include="Stencil\StencilApp.h">
+      <Filter>Header Files\Stencil</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -161,6 +173,12 @@
     <ClCompile Include="Blend\BlendApp.cpp">
       <Filter>Source Files\Blend</Filter>
     </ClCompile>
+    <ClCompile Include="Stencil\FrameResource_Stencil.cpp">
+      <Filter>Source Files\Stencil</Filter>
+    </ClCompile>
+    <ClCompile Include="Stencil\StencilApp.cpp">
+      <Filter>Source Files\Stencil</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -189,6 +207,12 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\shapes_color.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\Blend_Default.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\Blend_LightingUtil.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

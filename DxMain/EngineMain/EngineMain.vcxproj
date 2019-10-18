@@ -181,6 +181,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShapesApp.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Stencil\FrameResource_Stencil.h" />
+    <ClInclude Include="Stencil\StencilApp.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +209,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Stencil\FrameResource_Stencil.cpp" />
+    <ClCompile Include="Stencil\StencilApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc" />
@@ -216,6 +220,12 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="shaders\Blend_Default.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\Blend_LightingUtil.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="shaders\Box_color.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
