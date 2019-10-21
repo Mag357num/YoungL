@@ -54,6 +54,25 @@ public:
 	virtual bool Initialize()override;
 
 private:
+	virtual void Draw(const GameTimer& gt)override;
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<RenderItem_Stencil*>& ritems);
+
+	virtual void OnResize()override;
+	virtual void Update(const GameTimer& gt)override;
+
+	virtual void OnMouseDown(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseUp(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseMove(WPARAM btnState, int x, int y)override;
+
+	void OnKeyboardInput(const GameTimer& gt);
+	void UpdateCamera(const GameTimer& gt);
+	void AnimateMaterials(const GameTimer& gt);
+	void UpdateObjectCBs(const GameTimer& gt);
+	void UpdateMaterialCBs(const GameTimer& gt);
+	void UpdateMainPassCB(const GameTimer& gt);
+	void UpdateReflectedPassCB(const GameTimer& gt);
+
+private:
 	void LoadTextures();
 	void BuildRootSignature();
 	void BuildDescriptorHeaps();
@@ -65,11 +84,12 @@ private:
 	void BuildFrameResource();
 	void BuildPSOs();
 
+
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6>  GetStaticSamplers();
 
 private:
 	std::vector<std::unique_ptr<FrameResource_Stencil>> mFrameResources;
-	FrameResource_Stencil* CurrentFrameResource;
+	FrameResource_Stencil* mCurrentFrameResource;
 	int mCurrentFrameResourceIndex = 0;
 
 	UINT mCbvSrvHeapDescriptorSize = 0;
