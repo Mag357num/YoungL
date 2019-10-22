@@ -115,54 +115,61 @@ void StencilApp::BuildRootSignature()
 
 void StencilApp::BuildDescriptorHeaps()
 {
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	heapDesc.NumDescriptors = 4;
-	heapDesc.NodeMask = 0;
+	//
+	// Create the SRV heap.
+	//
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 4;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDesctiptorHeap)));
 
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mSrvDesctiptorHeap)));
+	//
+	// Fill out the heap with actual descriptors.
+	//
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDesctiptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mSrvDesctiptorHeap->GetCPUDescriptorHandleForHeapStart());
-	
 	auto bricksTex = mTextures["bricksTex"]->Resource;
 	auto checkboardTex = mTextures["checkboardTex"]->Resource;
 	auto iceTex = mTextures["iceTex"]->Resource;
 	auto white1x1Tex = mTextures["white1x1Tex"]->Resource;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvViewDesc = {};
-	srvViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvViewDesc.Texture2D.MostDetailedMip = 0;
-	srvViewDesc.Texture2D.MipLevels = -1;
-	srvViewDesc.Format = bricksTex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(bricksTex.Get(), &srvViewDesc, handle);
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = bricksTex->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
+	md3dDevice->CreateShaderResourceView(bricksTex.Get(), &srvDesc, hDescriptor);
 
-	handle.Offset(1, mCbvSrvHeapDescriptorSize);
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srvViewDesc.Format = checkboardTex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(checkboardTex.Get(), &srvViewDesc, handle);
+	srvDesc.Format = checkboardTex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(checkboardTex.Get(), &srvDesc, hDescriptor);
 
-	handle.Offset(1, mCbvSrvHeapDescriptorSize);
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srvViewDesc.Format = iceTex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(iceTex.Get(), &srvViewDesc, handle);
+	srvDesc.Format = iceTex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(iceTex.Get(), &srvDesc, hDescriptor);
 
-	handle.Offset(1, mCbvSrvHeapDescriptorSize);
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srvViewDesc.Format = white1x1Tex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(white1x1Tex.Get(), &srvViewDesc, handle);
+	srvDesc.Format = white1x1Tex->GetDesc().Format;
+	md3dDevice->CreateShaderResourceView(white1x1Tex.Get(), &srvDesc, hDescriptor);
 }
 
 void StencilApp::BuildShadersAndInputlayout()
 {
-	const D3D_SHADER_MACRO defines[]=
+	const D3D_SHADER_MACRO defines[] =
 	{
 		"FOG", "1",
 		NULL, NULL
 	};
 
-	const D3D_SHADER_MACRO alphaTestDefines[]=
+	const D3D_SHADER_MACRO alphaTestDefines[] =
 	{
 		"FOG", "1",
 		"ALPHA_TEST", "1",
@@ -175,9 +182,9 @@ void StencilApp::BuildShadersAndInputlayout()
 
 	mInputLayout =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 }
 
@@ -297,6 +304,7 @@ void StencilApp::BuildRoomGeometry()
 void StencilApp::BuildSkullGeometry()
 {
 	std::ifstream fin("Models/skull_stencil.txt");
+
 	if (!fin)
 	{
 		MessageBox(0, L"Models/skull.txt not found.", 0, 0);
@@ -333,33 +341,41 @@ void StencilApp::BuildSkullGeometry()
 
 	fin.close();
 
-	const UINT vbBytesize = (UINT)vertices.size() * sizeof(Vertex_Stencil);
-	const UINT ibBytesize = (UINT)indices.size() * sizeof(std::int32_t);
+	//
+	// Pack the indices of all the meshes into one index buffer.
+	//
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex_Stencil);
+
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::int32_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
 	geo->Name = "skullGeo";
 
-	ThrowIfFailed(D3DCreateBlob(vbBytesize, &geo->VertexBufferCPU));
-	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbBytesize);
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
 
-	ThrowIfFailed(D3DCreateBlob(ibBytesize, &geo->IndexBufferCPU));
-	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibBytesize);
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
-	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), vertices.data(), vbBytesize, geo->VertexBufferUpload);
-	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), indices.data(), ibBytesize, geo->IndexBufferUpload);
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUpload);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUpload);
 
 	geo->VertextByteStride = sizeof(Vertex_Stencil);
-	geo->VertextBufferByteSize = ibBytesize;
+	geo->VertextBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R32_UINT;
-	geo->VertextBufferByteSize = vbBytesize;
+	geo->IndexBufferByteSize = ibByteSize;
 
 	SubmeshGeometry submesh;
-	submesh.StartIndexLocation = 0;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
 
 	geo->DrawArgs["skull"] = submesh;
+
 	mGeometries[geo->Name] = std::move(geo);
 
 }
@@ -497,10 +513,13 @@ void StencilApp::BuildFrameResource()
 
 void StencilApp::BuildPSOs()
 {
-	//pso for opaque
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
+
+	//
+	// PSO for opaque objects.
+	//
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaquePsoDesc.InputLayout = {mInputLayout.data(), (UINT)mInputLayout.size()};
+	opaquePsoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
 	opaquePsoDesc.pRootSignature = mRootSignature.Get();
 	opaquePsoDesc.VS =
 	{
@@ -522,84 +541,93 @@ void StencilApp::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	opaquePsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
-	md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mPSOs["opaque"]));
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
 
-	//pso for transparent
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC TransparentPsoDesc = opaquePsoDesc;
+	//
+	// PSO for transparent objects
+	//
 
-	D3D12_RENDER_TARGET_BLEND_DESC BlendRTStateDesc;
-	BlendRTStateDesc.BlendEnable = true;
-	BlendRTStateDesc.LogicOpEnable = false;
-	BlendRTStateDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	BlendRTStateDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	BlendRTStateDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentPsoDesc = opaquePsoDesc;
 
-	BlendRTStateDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
-	BlendRTStateDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
-	BlendRTStateDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	BlendRTStateDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
-	BlendRTStateDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	TransparentPsoDesc.BlendState.RenderTarget[0] = BlendRTStateDesc;
-	md3dDevice->CreateGraphicsPipelineState(&TransparentPsoDesc, IID_PPV_ARGS(&mPSOs["transparent"]));
+	D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc;
+	transparencyBlendDesc.BlendEnable = true;
+	transparencyBlendDesc.LogicOpEnable = false;
+	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
-	//pso for mirror
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC mirrorPsoDesc;
-	mirrorPsoDesc = opaquePsoDesc;
+	transparentPsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&transparentPsoDesc, IID_PPV_ARGS(&mPSOs["transparent"])));
 
-	CD3DX12_BLEND_DESC mirrorBlendDesc(D3D12_DEFAULT);
-	mirrorBlendDesc.RenderTarget[0].RenderTargetWriteMask = 0;
+	//
+	// PSO for marking stencil mirrors.
+	//
 
-	CD3DX12_DEPTH_STENCIL_DESC mirrorStencilDesc(D3D12_DEFAULT);
-	mirrorStencilDesc.DepthEnable = true;
-	mirrorStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-	mirrorStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	mirrorStencilDesc.StencilEnable = true;
-	mirrorStencilDesc.StencilReadMask = 0xff;
-	mirrorStencilDesc.StencilWriteMask = 0xff;
+	CD3DX12_BLEND_DESC mirrorBlendState(D3D12_DEFAULT);
+	mirrorBlendState.RenderTarget[0].RenderTargetWriteMask = 0;
 
-	mirrorStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-	mirrorStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	mirrorStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-	mirrorStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	D3D12_DEPTH_STENCIL_DESC mirrorDSS;
+	mirrorDSS.DepthEnable = true;
+	mirrorDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	mirrorDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	mirrorDSS.StencilEnable = true;
+	mirrorDSS.StencilReadMask = 0xff;
+	mirrorDSS.StencilWriteMask = 0xff;
 
-	mirrorStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-	mirrorStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	mirrorStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-	mirrorStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	mirrorDSS.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.FrontFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	mirrorDSS.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
-	mirrorPsoDesc.BlendState = mirrorBlendDesc;
-	mirrorPsoDesc.DepthStencilState = mirrorStencilDesc;
-	md3dDevice->CreateGraphicsPipelineState(&mirrorPsoDesc, IID_PPV_ARGS(&mPSOs["markStencilMirrors"]));
+	// We are not rendering backfacing polygons, so these settings do not matter.
+	mirrorDSS.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	mirrorDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	mirrorDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
-	//pso for reflection
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC reflectionPsoDesc;
-	reflectionPsoDesc = opaquePsoDesc;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC markMirrorsPsoDesc = opaquePsoDesc;
+	markMirrorsPsoDesc.BlendState = mirrorBlendState;
+	markMirrorsPsoDesc.DepthStencilState = mirrorDSS;
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&markMirrorsPsoDesc, IID_PPV_ARGS(&mPSOs["markStencilMirrors"])));
 
-	CD3DX12_DEPTH_STENCIL_DESC reflectionStencilDesc(D3D12_DEFAULT);
-	reflectionStencilDesc.DepthEnable = true;
-	reflectionStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
-	reflectionStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	reflectionStencilDesc.StencilEnable = true;
-	reflectionStencilDesc.StencilReadMask = 0xff;
-	reflectionStencilDesc.StencilWriteMask = 0xff;
+	//
+	// PSO for stencil reflections.
+	//
 
-	reflectionStencilDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
-	reflectionStencilDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	reflectionStencilDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-	reflectionStencilDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	D3D12_DEPTH_STENCIL_DESC reflectionsDSS;
+	reflectionsDSS.DepthEnable = true;
+	reflectionsDSS.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	reflectionsDSS.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	reflectionsDSS.StencilEnable = true;
+	reflectionsDSS.StencilReadMask = 0xff;
+	reflectionsDSS.StencilWriteMask = 0xff;
 
-	reflectionStencilDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
-	reflectionStencilDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	reflectionStencilDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-	reflectionStencilDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+	reflectionsDSS.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
 
-	reflectionPsoDesc.DepthStencilState = reflectionStencilDesc;
-	reflectionPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-	reflectionPsoDesc.RasterizerState.FrontCounterClockwise = true;
+	// We are not rendering backfacing polygons, so these settings do not matter.
+	reflectionsDSS.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	reflectionsDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
 
-	md3dDevice->CreateGraphicsPipelineState(&reflectionPsoDesc, IID_PPV_ARGS(&mPSOs["drawStencilReflections"]));
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC drawReflectionsPsoDesc = opaquePsoDesc;
+	drawReflectionsPsoDesc.DepthStencilState = reflectionsDSS;
+	drawReflectionsPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+	drawReflectionsPsoDesc.RasterizerState.FrontCounterClockwise = true;
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&drawReflectionsPsoDesc, IID_PPV_ARGS(&mPSOs["drawStencilReflections"])));
 
-	//pso for shadow
+	//
+	// PSO for shadow objects
+	//
+
 	// We are going to draw shadows with transparency, so base it off the transparency description.
 	D3D12_DEPTH_STENCIL_DESC shadowDSS;
 	shadowDSS.DepthEnable = true;
@@ -620,11 +648,9 @@ void StencilApp::BuildPSOs()
 	shadowDSS.BackFace.StencilPassOp = D3D12_STENCIL_OP_INCR;
 	shadowDSS.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_EQUAL;
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowPsoDesc = TransparentPsoDesc;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowPsoDesc = transparentPsoDesc;
 	shadowPsoDesc.DepthStencilState = shadowDSS;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowPsoDesc, IID_PPV_ARGS(&mPSOs["shadow"])));
-
-	
 }
 
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> StencilApp::GetStaticSamplers()
@@ -714,27 +740,27 @@ void StencilApp::Draw(const GameTimer& gt)
 	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Opaque]);
 
 	// Mark the visible mirror pixels in the stencil buffer with the value 1
-	//mCommandList->OMSetStencilRef(1);
-	//mCommandList->SetPipelineState(mPSOs["markStencilMirrors"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Mirrors]);
+	mCommandList->OMSetStencilRef(1);
+	mCommandList->SetPipelineState(mPSOs["markStencilMirrors"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Mirrors]);
 
-	//// Draw the reflection into the mirror only (only for pixels where the stencil buffer is 1).
-	//// Note that we must supply a different per-pass constant buffer--one with the lights reflected.
-	//mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress() + 1 * passCBByteSize);
-	//mCommandList->SetPipelineState(mPSOs["drawStencilReflections"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Reflected]);
+	// Draw the reflection into the mirror only (only for pixels where the stencil buffer is 1).
+	// Note that we must supply a different per-pass constant buffer--one with the lights reflected.
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress() + 1 * passCBByteSize);
+	mCommandList->SetPipelineState(mPSOs["drawStencilReflections"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Reflected]);
 
-	//// Restore main pass constants and stencil ref.
-	//mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
-	//mCommandList->OMSetStencilRef(0);
+	// Restore main pass constants and stencil ref.
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+	mCommandList->OMSetStencilRef(0);
 
-	//// Draw mirror with transparency so reflection blends through.
-	//mCommandList->SetPipelineState(mPSOs["transparent"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Transparent]);
+	// Draw mirror with transparency so reflection blends through.
+	mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Transparent]);
 
-	//// Draw shadows
-	//mCommandList->SetPipelineState(mPSOs["shadow"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Shadow]);
+	// Draw shadows
+	mCommandList->SetPipelineState(mPSOs["shadow"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_Stencil::Shadow]);
 
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
