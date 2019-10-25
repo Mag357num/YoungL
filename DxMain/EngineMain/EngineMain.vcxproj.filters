@@ -117,6 +117,9 @@
     <ClInclude Include="Stencil\StencilApp.h">
       <Filter>Header Files\Stencil</Filter>
     </ClInclude>
+    <ClInclude Include="Blend\GeometryShaderApp.h">
+      <Filter>Header Files\Blend</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="Stencil\StencilApp.cpp">
       <Filter>Source Files\Stencil</Filter>
+    </ClCompile>
+    <ClCompile Include="Blend\GeometryShaderApp.cpp">
+      <Filter>Source Files\Blend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

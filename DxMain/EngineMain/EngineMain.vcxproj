@@ -161,6 +161,7 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
   <ItemGroup>
     <ClInclude Include="Blend\BlendApp.h" />
     <ClInclude Include="Blend\FrameResource_Blend.h" />
+    <ClInclude Include="Blend\GeometryShaderApp.h" />
     <ClInclude Include="BoxApp.h" />
     <ClInclude Include="Common\D3DApp.h" />
     <ClInclude Include="Common\d3dUtil.h" />
@@ -188,6 +189,7 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
   <ItemGroup>
     <ClCompile Include="Blend\BlendApp.cpp" />
     <ClCompile Include="Blend\FrameResource_Blend.cpp" />
+    <ClCompile Include="Blend\GeometryShaderApp.cpp" />
     <ClCompile Include="BoxApp.cpp" />
     <ClCompile Include="Common\D3DApp.cpp" />
     <ClCompile Include="Common\d3dUtil.cpp" />
