@@ -12,7 +12,7 @@ BlendApp::BlendApp(HINSTANCE hInstance)
 BlendApp::~BlendApp()
 {
 	if (md3dDevice != nullptr)
-		FlushCommandQueue();
+		FlushCommandQueue(); 
 }
 
 bool BlendApp::Initialize()
