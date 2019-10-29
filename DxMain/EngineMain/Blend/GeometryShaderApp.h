@@ -24,6 +24,14 @@ public:
 	virtual bool Initialize()override;
 
 	virtual void Draw(const GameTimer& gt)override;
+
+	virtual void OnResize()override;
+
+	virtual void Update(const GameTimer& gt)override;
+
+	virtual void OnMouseDown(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseUp(WPARAM btnState, int x, int y)override;
+	virtual void OnMouseMove(WPARAM btnState, int x, int y)override;
 	
 private:
 	void LoadTextures();
@@ -44,7 +52,15 @@ private:
 	std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamples();
 
 private:
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderLayer_Blend*>& rItems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem_Blend*>& rItems);
+
+	void OnKeyboardInput(const GameTimer& gt);
+	void UpdateCamera(const GameTimer& gt);
+	void AnimateMaterials(const GameTimer& gt);
+	void UpdateObjectCBs(const GameTimer& gt);
+	void UpdatematerialCBs(const GameTimer& gt);
+	void UpdateMainPassCBs(const GameTimer& gt);
+	void UpdateWaves(const GameTimer& gt);
 
 private:
 	std::vector<std::unique_ptr<FrameResource_Blend>> mFrameResources;

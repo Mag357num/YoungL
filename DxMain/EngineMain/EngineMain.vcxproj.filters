@@ -227,5 +227,8 @@
     <FxCompile Include="shaders\Stencil_LightingUtil.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
+    <FxCompile Include="shaders\GeometryShader_TreeSprite.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -99,7 +99,7 @@ void GeometryShaderApp::BuildRootSignature()
 	slotRootParamaters[3].InitAsConstantBufferView(2);
 
 	auto StaticSamples = GetStaticSamples();
-	D3D12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParamaters, (UINT)StaticSamples.size(), StaticSamples.data(), 
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParamaters, (UINT)StaticSamples.size(), StaticSamples.data(), 
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> errorBlob = nullptr;
@@ -118,7 +118,7 @@ void GeometryShaderApp::BuildRootSignature()
 
 void GeometryShaderApp::BuildDescriptorHeaps()
 {
-	D3D12_DESCRIPTOR_HEAP_DESC desHeapDesc;
+	D3D12_DESCRIPTOR_HEAP_DESC desHeapDesc = {};
 	desHeapDesc.NumDescriptors = 4;
 	desHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -131,7 +131,7 @@ void GeometryShaderApp::BuildDescriptorHeaps()
 	auto fenceTex = mTextures["fenceTex"]->Resource;
 	auto treeArrayTex = mTextures["treeArrayTex"]->Resource;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = grassTex->GetDesc().Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -139,15 +139,15 @@ void GeometryShaderApp::BuildDescriptorHeaps()
 	srvDesc.Texture2D.MipLevels = -1;
 	md3dDevice->CreateShaderResourceView(grassTex.Get(), &srvDesc, hDescriptor);
 
-	hDescriptor.Offset(1);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	srvDesc.Format = waterTex->GetDesc().Format;
 	md3dDevice->CreateShaderResourceView(waterTex.Get(), &srvDesc, hDescriptor);
 
-	hDescriptor.Offset(1);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	srvDesc.Format = fenceTex->GetDesc().Format;
-	md3dDevice->CreateShaderResourceView(fenceTex.Get, &srvDesc, hDescriptor);
+	md3dDevice->CreateShaderResourceView(fenceTex.Get(), &srvDesc, hDescriptor);
 
-	hDescriptor.Offset(1);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Format = treeArrayTex->GetDesc().Format;
 	srvDesc.Texture2DArray.MostDetailedMip = 0;
@@ -161,36 +161,36 @@ void GeometryShaderApp::BuildShadersInputAndLayout()
 {
 	const D3D_SHADER_MACRO defines[] =
 	{
-		"FOG", "1",
+		//"FOG", "0",
 		NULL, NULL
 	};
 
 	const D3D_SHADER_MACRO alphaTestDefines[] =
 	{
-		"FOG", "1",
+		//"FOG", "0",
 		"ALPHA_TEST", "1",
 		NULL, NULL
 	};
 
-	mShaders["StandardVS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", nullptr, "VS", "vs_5_0");
+	mShaders["standardVS"] = d3dUtil::CompileShader(L"shaders\\Blend_Default.hlsl", nullptr, "VS", "vs_5_0");
 	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\Blend_default.hlsl", defines, "PS", "ps_5_0");
 	mShaders["alphaTestedPS"] = d3dUtil::CompileShader(L"shaders\\Blend_default.hlsl", alphaTestDefines, "PS", "ps_5_0");
 
-	mShaders["treeSpritePS"] = d3dUtil::CompileShader(L"shaders\\TreeSprite.hlsl", nullptr, "VS", "vs_5_0");
-	mShaders["treeSpriteGS"] = d3dUtil::CompileShader(L"shaders\\TreeSprite.hlsl", nullptr, "GS", "gs_5_0");
-	mShaders["treeSpritePS"] = d3dUtil::CompileShader(L"shaders\\TreeSprite.hlsl", alphaTestDefines, "PS", "ps_5_0");
+	mShaders["treeSpriteVS"] = d3dUtil::CompileShader(L"shaders\\GeometryShader_TreeSprite.hlsl", nullptr, "VS", "vs_5_0");
+	mShaders["treeSpriteGS"] = d3dUtil::CompileShader(L"shaders\\GeometryShader_TreeSprite.hlsl", nullptr, "GS", "gs_5_0");
+	mShaders["treeSpritePS"] = d3dUtil::CompileShader(L"shaders\\GeometryShader_TreeSprite.hlsl", alphaTestDefines, "PS", "ps_5_0");
 
 	mStdInputLayout =
 	{
-		{"POSITION", 0,DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 
 	mTreeSpriteInputLayout =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 }
 
@@ -215,7 +215,7 @@ void GeometryShaderApp::BuildLandGeometry()
 		vertices[i].TexC = grid.Vertices[i].TexC;
 	}
 
-	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex_Blend);
 
 	std::vector<std::uint16_t> indices = grid.GetIndices16();
 	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
@@ -321,8 +321,8 @@ void GeometryShaderApp::BuildBoxGeometry()
 
 	std::vector<std::uint16_t> Indices = box.GetIndices16();
 
-	UINT VertexBufferSize = Vetices.size()* sizeof(Vertex_Blend);
-	UINT IndexBufferSize = Indices.size()*sizeof(uint16_t);
+	UINT VertexBufferSize = (UINT)Vetices.size()* sizeof(Vertex_Blend);
+	UINT IndexBufferSize = (UINT)Indices.size()*sizeof(uint16_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
 	geo->Name = "boxGeo";
@@ -459,13 +459,15 @@ void GeometryShaderApp::BuildPSOs()
 	//pso for opaque
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueDesc;
 	ZeroMemory(&opaqueDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaqueDesc.InputLayout = { mStdInputLayout.data(), mStdInputLayout.size() };
+	opaqueDesc.InputLayout = { mStdInputLayout.data(), (UINT)mStdInputLayout.size() };
 	opaqueDesc.pRootSignature = mRootSignature.Get();
-	opaqueDesc.PS = {
+	opaqueDesc.VS =
+	{
 		reinterpret_cast<BYTE*>(mShaders["standardVS"]->GetBufferPointer()),
 		mShaders["standardVS"]->GetBufferSize()
 	};
-	opaqueDesc.VS = {
+	opaqueDesc.PS =
+	{
 		reinterpret_cast<BYTE*>(mShaders["opaquePS"]->GetBufferPointer()),
 		mShaders["opaquePS"]->GetBufferSize()
 	};
@@ -480,7 +482,7 @@ void GeometryShaderApp::BuildPSOs()
 	opaqueDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	opaqueDesc.NumRenderTargets = 1;
 
-	opaqueDesc.SampleDesc.Count = m4xMsaaState ? 4 : 0;
+	opaqueDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	opaqueDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality -1) : 0;
 
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaqueDesc, IID_PPV_ARGS(mPSOs["opaque"].GetAddressOf())));
@@ -501,42 +503,44 @@ void GeometryShaderApp::BuildPSOs()
 
 	blendDesc.LogicOpEnable = false;
 	blendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+
+	blendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	
 	transparentDesc.BlendState.RenderTarget[0] = blendDesc;
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&transparentDesc, IID_PPV_ARGS(mShaders["transparent"].GetAddressOf())));
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&transparentDesc, IID_PPV_ARGS(mPSOs["transparent"].GetAddressOf())));
 	
 	//pso for alphatest
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaTestDesc = opaqueDesc;
 	alphaTestDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["alphaTestedPS"]->GetBufferPointer()),
-		mShaders["alphaTestPS"]->GetBufferSize()
+		mShaders["alphaTestedPS"]->GetBufferSize()
 	};
 	alphaTestDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-	md3dDevice->CreateGraphicsPipelineState(&alphaTestDesc, IID_PPV_ARGS(mPSOs["alphaTested"].GetAddressOf()));
+	md3dDevice->CreateGraphicsPipelineState(&alphaTestDesc, IID_PPV_ARGS(&mPSOs["alphaTested"]));
 
 	//pso for sprite tree
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC treeSpriteDesc = opaqueDesc;
-	treeSpriteDesc.VS = 
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC treeSpritePsoDesc = opaqueDesc;
+	treeSpritePsoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["treeSpriteVS"]->GetBufferPointer()),
 		mShaders["treeSpriteVS"]->GetBufferSize()
 	};
-	treeSpriteDesc.GS =
+	treeSpritePsoDesc.GS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["treeSpriteGS"]->GetBufferPointer()),
 		mShaders["treeSpriteGS"]->GetBufferSize()
 	};
-	treeSpriteDesc.PS =
+	treeSpritePsoDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["treeSpritePS"]->GetBufferPointer()),
 		mShaders["treeSpritePS"]->GetBufferSize()
 	};
-	treeSpriteDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-	transparentDesc.InputLayout = { mTreeSpriteInputLayout.data(), mTreeSpriteInputLayout.size() };
-	treeSpriteDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	treeSpritePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	treeSpritePsoDesc.InputLayout = { mTreeSpriteInputLayout.data(), (UINT)mTreeSpriteInputLayout.size() };
+	treeSpritePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&treeSpriteDesc, IID_PPV_ARGS(&mPSOs["treeSprites"])));
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&treeSpritePsoDesc, IID_PPV_ARGS(&mPSOs["treeSprites"])));
 }
 
 void GeometryShaderApp::BuildRenderItems()
@@ -638,7 +642,7 @@ std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GeometryShaderApp::GetStaticSamples()
 	);
 
 	const CD3DX12_STATIC_SAMPLER_DESC PointClamp(
-		0,
+		1,
 		D3D12_FILTER_MIN_MAG_MIP_POINT,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
@@ -646,7 +650,7 @@ std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GeometryShaderApp::GetStaticSamples()
 	);
 
 	const CD3DX12_STATIC_SAMPLER_DESC LinearWrap(
-		0,
+		2,
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
@@ -654,7 +658,7 @@ std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GeometryShaderApp::GetStaticSamples()
 	);
 
 	const CD3DX12_STATIC_SAMPLER_DESC LinearClamp(
-		0,
+		3,
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
@@ -662,7 +666,7 @@ std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GeometryShaderApp::GetStaticSamples()
 	);
 
 	const CD3DX12_STATIC_SAMPLER_DESC AnisotropicWrap(
-		0,
+		4,
 		D3D12_FILTER_ANISOTROPIC,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
@@ -670,7 +674,7 @@ std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> GeometryShaderApp::GetStaticSamples()
 	);
 
 	const CD3DX12_STATIC_SAMPLER_DESC AnisotropicClamp(
-		0,
+		5,
 		D3D12_FILTER_ANISOTROPIC,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
@@ -701,9 +705,303 @@ void GeometryShaderApp::Draw(const GameTimer& gt)
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+	ID3D12DescriptorHeap* descriptorHeaps[] = {mSrvDescriptorHeap.Get()};
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+
+	auto passCB = mCurrFrameResource->PassCB->Resource();
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_GeometryShader::Opaque]);
+
+	mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_GeometryShader::AlphaTested]);
+
+	mCommandList->SetPipelineState(mPSOs["treeSprites"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_GeometryShader::AlphaTestedTreeSprites]);
+
+	mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayer[(int)RenderLayer_GeometryShader::Transparent]);
+
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), 
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	ThrowIfFailed(mCommandList->Close());
+
+	ID3D12CommandList* cmdLists[] = {mCommandList.Get()};
+	mCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+	
+	ThrowIfFailed(mSwapChain->Present(0, 0));
+	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
+	mCurrFrameResource->Fence = ++mCurrentFence;
+
+	mCommandQueue->Signal(md3d12Fence.Get(), mCurrentFence);
 }
 
-void GeometryShaderApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderLayer_Blend *>& rItems)
+void GeometryShaderApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem_Blend *>& rItems)
+{
+	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants_Blend));
+	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
+
+	auto objCB = mCurrFrameResource->ObjectCB->Resource();
+	auto matCB = mCurrFrameResource->MaterialCB->Resource();
+
+	for (size_t i = 0; i < rItems.size(); i++)
+	{
+		auto ri = rItems[i];
+
+		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
+		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
+		cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+
+		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+		tex.Offset(ri->Mat->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
+
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objCB->GetGPUVirtualAddress() + ri->ObjCBIndex * objCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->Mat->MatCBIndex * matCBByteSize;
+
+		cmdList->SetGraphicsRootDescriptorTable(0, tex);
+		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
+
+		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
+	}
+}
+
+void GeometryShaderApp::OnResize()
+{
+	D3DApp::OnResize();
+
+	XMMATRIX pro = XMMatrixPerspectiveFovLH(MathHelper::PI * 0.25f, AspectRatio(), 1.0f, 1000.0f);
+	XMStoreFloat4x4(&mProj, pro);
+}
+
+void GeometryShaderApp::Update(const GameTimer& gt)
+{
+	OnKeyboardInput(gt);
+	UpdateCamera(gt);
+
+	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources_Blend;
+	mCurrFrameResource = mFrameResources[mCurrFrameResourceIndex].get();
+
+	if (mCurrFrameResource->Fence != 0 && mCurrFrameResource->Fence > md3d12Fence->GetCompletedValue())
+	{
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(md3d12Fence->SetEventOnCompletion(mCurrFrameResource->Fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
+	}
+
+	AnimateMaterials(gt);
+	UpdateObjectCBs(gt);
+	UpdatematerialCBs(gt);
+	UpdateMainPassCBs(gt);
+
+	UpdateWaves(gt);
+}
+
+void GeometryShaderApp::OnKeyboardInput(const GameTimer& gt)
 {
 
+}
+
+void GeometryShaderApp::UpdateCamera(const GameTimer& gt)
+{
+	mEyePos.x = mRadius * sinf(mPhi)*cosf(mTheta);
+	mEyePos.z = mRadius * sinf(mPhi)*sinf(mTheta);
+	mEyePos.y = mRadius * cos(mPhi);
+
+	XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
+	XMVECTOR target = XMVectorZero();
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+	XMStoreFloat4x4(&mView, view);
+}
+
+void GeometryShaderApp::AnimateMaterials(const GameTimer& gt)
+{
+	auto Watermat = mMaterials["water"].get();
+	
+	float& tu = Watermat->MatTransform(3, 0);
+	float& tv = Watermat->MatTransform(3, 1);
+
+	tu += 0.1f * gt.DeltaTime();
+	tv += 0.02f*gt.DeltaTime();
+
+	if (tu >= 1.0f)
+	{
+		tu -= 1.0f;
+	}
+
+	if (tv >= 1.0f)
+	{
+		tv -= 1.0f;
+	}
+
+	Watermat->MatTransform(3, 0) = tu;
+	Watermat->MatTransform(3, 1) = tv;
+
+	Watermat->NumFramesDirty = gNumFrameResources_Blend;
+}
+
+void GeometryShaderApp::UpdateObjectCBs(const GameTimer& gt)
+{
+	auto CurrObjCB = mCurrFrameResource->ObjectCB.get();
+
+	for (auto& e: mAllRitems )
+	{
+		if (e->NumFramesDirty >0)
+		{
+			XMMATRIX World = XMLoadFloat4x4(&e->World);
+			XMMATRIX TexTransform = XMLoadFloat4x4(&e->TexTransform);
+
+			ObjectConstants_Blend objConstants;
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(World));
+			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(TexTransform));
+
+			CurrObjCB->CopyData(e->ObjCBIndex, objConstants);
+			e->NumFramesDirty--;
+		}
+	}
+}
+
+void GeometryShaderApp::UpdatematerialCBs(const GameTimer& gt)
+{
+	auto currMaterialCB = mCurrFrameResource->MaterialCB.get();
+	for (auto& e : mMaterials)
+	{
+		// Only update the cbuffer data if the constants have changed.  If the cbuffer
+		// data changes, it needs to be updated for each FrameResource.
+		Material* mat = e.second.get();
+		if (mat->NumFramesDirty > 0)
+		{
+			XMMATRIX matTransform = XMLoadFloat4x4(&mat->MatTransform);
+
+			MaterialConstants matConstants;
+			matConstants.DiffuseAlbedo = mat->DiffuseAlbedo;
+			matConstants.FresnelR0 = mat->FresnelR0;
+			matConstants.Roughness = mat->Roughness;
+			XMStoreFloat4x4(&matConstants.MatTransform, XMMatrixTranspose(matTransform));
+
+			currMaterialCB->CopyData(mat->MatCBIndex, matConstants);
+
+			// Next FrameResource need to be updated too.
+			mat->NumFramesDirty--;
+		}
+	}
+}
+
+void GeometryShaderApp::UpdateMainPassCBs(const GameTimer& gt)
+{
+	XMMATRIX view = XMLoadFloat4x4(&mView);
+	XMMATRIX proj = XMLoadFloat4x4(&mProj);
+
+	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+
+	XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
+	mMainPassCB.EyePosw = mEyePos;
+	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
+	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
+	mMainPassCB.NearZ = 1.0f;
+	mMainPassCB.FarZ = 1000.0f;
+	mMainPassCB.TotalTime = gt.TotalTime();
+	mMainPassCB.DeltaTime = gt.DeltaTime();
+	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+	mMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[0].Strength = { 0.6f, 0.6f, 0.6f };
+	mMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[1].Strength = { 0.3f, 0.3f, 0.3f };
+	mMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
+	mMainPassCB.Lights[2].Strength = { 0.15f, 0.15f, 0.15f };
+
+	auto currPassCB = mCurrFrameResource->PassCB.get();
+	currPassCB->CopyData(0, mMainPassCB);
+}
+
+void GeometryShaderApp::UpdateWaves(const GameTimer& gt)
+{
+	// Every quarter second, generate a random wave.
+	static float t_base = 0.0f;
+	if ((mTimer.TotalTime() - t_base) >= 0.25f)
+	{
+		t_base += 0.25f;
+
+		int i = MathHelper::Rand(4, mWaves->RowCount() - 5);
+		int j = MathHelper::Rand(4, mWaves->ColumnCount() - 5);
+
+		float r = MathHelper::RandF(0.2f, 0.5f);
+
+		mWaves->Disturb(i, j, r);
+	}
+
+	// Update the wave simulation.
+	mWaves->Update(gt.DeltaTime());
+
+	// Update the wave vertex buffer with the new solution.
+	auto currWavesVB = mCurrFrameResource->WavesVB.get();
+	for (int i = 0; i < mWaves->VertexCount(); ++i)
+	{
+		Vertex_Blend v;
+
+		v.Pos = mWaves->Position(i);
+		v.Normal = mWaves->Normal(i);
+
+		// Derive tex-coords from position by 
+		// mapping [-w/2,w/2] --> [0,1]
+		v.TexC.x = 0.5f + v.Pos.x / mWaves->Width();
+		v.TexC.y = 0.5f - v.Pos.z / mWaves->Depth();
+
+		currWavesVB->CopyData(i, v);
+	}
+
+	// Set the dynamic VB of the wave renderitem to the current frame VB.
+	mWavesRitem->Geo->VertexBufferGPU = currWavesVB->Resource();
+}
+
+void GeometryShaderApp::OnMouseDown(WPARAM btnState, int x, int y)
+{
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
+
+	SetCapture(mhMainWnd);
+}
+
+void GeometryShaderApp::OnMouseUp(WPARAM btnState, int x, int y)
+{
+	ReleaseCapture();
+}
+
+void GeometryShaderApp::OnMouseMove(WPARAM btnState, int x, int y)
+{
+	if ((btnState & MK_LBUTTON) != 0)
+	{
+		float dx = XMConvertToRadians(0.25f*static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f*static_cast<float>(y - mLastMousePos.y));
+
+		mTheta += dx;
+		mPhi += dy;
+
+		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::PI - 0.1f);
+	}
+	else if ((btnState & MK_RBUTTON) != 0)
+	{
+		float dx = 0.2f*static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.2f * static_cast<float>(y - mLastMousePos.y);
+		mRadius += dx - dy;
+		mRadius = MathHelper::Clamp(mRadius, 5.0f, 150.0f);
+	}
+
+	mLastMousePos.x = x;
+	mLastMousePos.y = y;
 }
