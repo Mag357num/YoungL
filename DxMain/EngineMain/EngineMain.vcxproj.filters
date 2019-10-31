@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Stencil">
       <UniqueIdentifier>{eb75c4c6-8cfc-43f7-be70-b4e48b235aa0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\CS">
+      <UniqueIdentifier>{cc559817-c3c2-4dc6-b25c-259c258a3108}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CS">
+      <UniqueIdentifier>{fc495514-7d58-4075-93b8-655d3d50b5af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -120,6 +126,12 @@
     <ClInclude Include="Blend\GeometryShaderApp.h">
       <Filter>Header Files\Blend</Filter>
     </ClInclude>
+    <ClInclude Include="CS\VecAddApp.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="CS\FrameResource_CS.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -185,6 +197,12 @@
     <ClCompile Include="Blend\GeometryShaderApp.cpp">
       <Filter>Source Files\Blend</Filter>
     </ClCompile>
+    <ClCompile Include="CS\VecAddApp.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="CS\FrameResource_CS.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -228,6 +246,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\GeometryShader_TreeSprite.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\CS_VecAdd.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
