@@ -39,7 +39,7 @@ bool VecAddApp::Initialize()
 	FlushCommandQueue();
 
 	//do compute work
-	//DoComputerWork();
+	DoComputerWork();
 
 	return true;
 }
