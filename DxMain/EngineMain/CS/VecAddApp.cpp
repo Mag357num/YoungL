@@ -10,7 +10,7 @@ VecAddApp::VecAddApp(HINSTANCE hInstance)
 
 VecAddApp::~VecAddApp()
 {
-	if (!md3dDevice.Get())
+	if (md3dDevice != nullptr)
 	{
 		FlushCommandQueue();
 	}
