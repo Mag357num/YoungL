@@ -24,6 +24,8 @@ bool WavesCsApp::Initialize()
 		return false;
 	}
 
+	ThrowIfFailed(mCommandList->Reset(mCommandAllocate.Get(), nullptr));
+
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	mWaves = std::make_unique<GPUWave>(md3dDevice.Get(), mCommandList.Get(), 256, 256, 0.25f, 0.03f, 2.0f, 0.2f);
@@ -57,7 +59,7 @@ void WavesCsApp::LoadTextures()
 {
 	auto grassTex = std::make_unique<Texture>();
 	grassTex->FileName = L"Textures/grass.dds";
-	grassTex->Name = "grassText";
+	grassTex->Name = "grassTex";
 	ThrowIfFailed(
 		DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(), mCommandList.Get(), grassTex->FileName.c_str(), grassTex->Resource, grassTex->UploadHeap));
 
@@ -156,25 +158,32 @@ void WavesCsApp::BuildWaveRootSignature()
 
 void WavesCsApp::BuildDescriptorHeaps()
 {
-	UINT SrvCount = 3;
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	heapDesc.NumDescriptors = SrvCount + mWaves->DescriptorCount();
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	UINT srvCount = 3;
 
-	md3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(mSrvDescriptorHeap.GetAddressOf()));
+	//
+	// Create the SRV heap.
+	//
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = srvCount + mWaves->DescriptorCount();
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
+	//
+	// Fill out the heap with actual descriptors.  
+	//
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	auto GrassTex = mTextures["grassTex"]->Resource;
 	auto WaterTex = mTextures["waterTex"]->Resource;
 	auto FenceTex = mTextures["fenceTex"]->Resource;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC SrvViewDesc;
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvViewDesc = {};
 	SrvViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	SrvViewDesc.Texture2D.MostDetailedMip= 0;
 	SrvViewDesc.Texture2D.MipLevels = -1;
 	SrvViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
 	SrvViewDesc.Format = GrassTex->GetDesc().Format;
 	md3dDevice->CreateShaderResourceView(GrassTex.Get(), &SrvViewDesc, handle);
 
@@ -187,8 +196,8 @@ void WavesCsApp::BuildDescriptorHeaps()
 	md3dDevice->CreateShaderResourceView(FenceTex.Get(), &SrvViewDesc, handle);
 
 	mWaves->BuildDescriptorHeap(
-	CD3DX12_CPU_DESCRIPTOR_HANDLE(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), SrvCount, mCbvSrvDescriptorSize),
-		CD3DX12_GPU_DESCRIPTOR_HANDLE(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), SrvCount, mCbvSrvDescriptorSize),
+	CD3DX12_CPU_DESCRIPTOR_HANDLE(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvCount, mCbvSrvDescriptorSize),
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), srvCount, mCbvSrvDescriptorSize),
 		mCbvSrvDescriptorSize
 	);
 }
@@ -197,7 +206,7 @@ void WavesCsApp::BuildShadersAndInputLayout()
 {
 	const D3D_SHADER_MACRO defines[]=
 	{
-		"FOG","1",
+		"FOG","0",
 		NULL, NULL
 	};
 
@@ -223,7 +232,7 @@ void WavesCsApp::BuildShadersAndInputLayout()
 
 	mInputLayout = 
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 0},
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
@@ -231,8 +240,8 @@ void WavesCsApp::BuildShadersAndInputLayout()
 
 void WavesCsApp::BuildLandGeometry()
 {
-	GeometryGenerator GeoGenerator;
-	GeometryGenerator::MeshData grid = GeoGenerator.CreateGrid(160.0f, 160.0f, 50, 50);
+	GeometryGenerator geoGen;
+	GeometryGenerator::MeshData grid = geoGen.CreateGrid(160.0f, 160.0f, 50, 50);
 
 	std::vector<Vertex_CS> vertices(grid.Vertices.size());
 	for (size_t i = 0; i < grid.Vertices.size(); ++i)
@@ -264,7 +273,7 @@ void WavesCsApp::BuildLandGeometry()
 	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
 		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUpload);
 
-	geo->VertextByteStride = sizeof(Vertex);
+	geo->VertextByteStride = sizeof(Vertex_CS);
 	geo->VertextBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -375,11 +384,8 @@ void WavesCsApp::BuildPSOs()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueDesc;
 	ZeroMemory(&opaqueDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaqueDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	opaqueDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	opaqueDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	opaqueDesc.pRootSignature = mRootSignature.Get();
 	opaqueDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
+	opaqueDesc.pRootSignature = mRootSignature.Get();
 	opaqueDesc.VS = 
 	{
 		reinterpret_cast<BYTE*>(mShaders["standardVS"]->GetBufferPointer()),
@@ -390,6 +396,10 @@ void WavesCsApp::BuildPSOs()
 		reinterpret_cast<BYTE*>(mShaders["opaquePS"]->GetBufferPointer()),
 		mShaders["opaquePS"]->GetBufferSize()
 	};
+
+	opaqueDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaqueDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaqueDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
 	opaqueDesc.SampleMask = UINT_MAX;
 	opaqueDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -505,6 +515,7 @@ void WavesCsApp::BuildRenderItems()
 	XMStoreFloat4x4(&wavesRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	wavesRitem->TexTransform = MathHelper::Identity4x4();
 	wavesRitem->Geo = mGeometries["waterGeo"].get();
+	wavesRitem->ObjCBIndex = 0;
 	wavesRitem->Mat = mMaterials["water"].get();
 	wavesRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	wavesRitem->IndexCount = wavesRitem->Geo->DrawArgs["grid"].IndexCount;
@@ -555,7 +566,7 @@ void WavesCsApp::Draw(const GameTimer& gt)
 	ID3D12DescriptorHeap* descriptorHeap[] = {mSrvDescriptorHeap.Get()};
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeap), descriptorHeap);
 
-	UpdateWavesGPU(gt);
+	//UpdateWavesGPU(gt);
 
 	mCommandList->SetPipelineState(mPSOs["opaque"].Get());
 
@@ -576,14 +587,14 @@ void WavesCsApp::Draw(const GameTimer& gt)
 
 	DrawRenderItems(mCommandList.Get(), mRitemLayers[(UINT)RenderLayer_WaveCS::Opaque]);
 
-	mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::AlphaTested]);
+	//mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::AlphaTested]);
 
-	mCommandList->SetPipelineState(mPSOs["transparent"].Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::Transparent]);
+	//mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::Transparent]);
 
-	mCommandList->SetPipelineState(mPSOs["wavesRender"].Get());
-	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::GPUWaves]);
+	//mCommandList->SetPipelineState(mPSOs["wavesRender"].Get());
+	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::GPUWaves]);
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	
