@@ -135,11 +135,11 @@ void VecAddApp::BuildBuffers()
 	std::vector<Data> InputB(NumDataElements);
 	for (int i = 0; i < NumDataElements; i++)
 	{
-		InputA[i].v1 = XMFLOAT3(i , i , i);
-		InputA[i].v2 = XMFLOAT2(i, 0);
+		InputA[i].v1 = XMFLOAT3(i*1.0f , i*1.0f, i*1.0f);
+		InputA[i].v2 = XMFLOAT2(i*1.0f, 0);
 
-		InputB[i].v1 = XMFLOAT3(-i, i, 0.0f);
-		InputB[i].v2 = XMFLOAT2(0, -i);
+		InputB[i].v1 = XMFLOAT3(-i * 1.0f, i*1.0f, 0.0f);
+		InputB[i].v2 = XMFLOAT2(0, -i * 1.0f);
 	}
 
 	UINT64 BufferSize = InputA.size() * sizeof(Data);
@@ -213,7 +213,7 @@ void VecAddApp::BuildFrameResources()
 {
 	for (int i = 0; i < gNumFrameResource_VecAdd; i++)
 	{
-		mFrameResources.push_back(std::make_unique<FrameResource_CS>(md3dDevice.Get(), 0, 0, 0, 0));
+		mFrameResources.push_back(std::make_unique<FrameResource_CS>(md3dDevice.Get(), 0, 0, 0));
 	}
 }
 

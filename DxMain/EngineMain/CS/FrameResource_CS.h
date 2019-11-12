@@ -61,7 +61,7 @@ struct Vertex_CS
 struct FrameResource_CS
 {
 public:
-	FrameResource_CS(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT MaterialCount, UINT WaveVertCount);
+	FrameResource_CS(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT MaterialCount);
 	FrameResource_CS(const FrameResource_CS& rhs) = delete;
 	FrameResource_CS& operator=(const FrameResource_CS& rhs) = delete;
 	~FrameResource_CS();

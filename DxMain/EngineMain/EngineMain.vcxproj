@@ -175,7 +175,9 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClInclude Include="Common\UploadBuffer.h" />
     <ClInclude Include="Common\Waves.h" />
     <ClInclude Include="CS\FrameResource_CS.h" />
+    <ClInclude Include="CS\GPUWave.h" />
     <ClInclude Include="CS\VecAddApp.h" />
+    <ClInclude Include="CS\WavesCsApp.h" />
     <ClInclude Include="EngineMain.h" />
     <ClInclude Include="LandAndWaveApp.h" />
     <ClInclude Include="LitWave\FrameResource_LitWave.h" />
@@ -202,7 +204,9 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClCompile Include="Common\MathHelp.cpp" />
     <ClCompile Include="Common\Waves.cpp" />
     <ClCompile Include="CS\FrameResource_CS.cpp" />
+    <ClCompile Include="CS\GPUWave.cpp" />
     <ClCompile Include="CS\VecAddApp.cpp" />
+    <ClCompile Include="CS\WavesCsApp.cpp" />
     <ClCompile Include="EngineMain.cpp" />
     <ClCompile Include="LandAndWaveApp.cpp" />
     <ClCompile Include="LitWave\FrameResource_LitWave.cpp" />
@@ -257,6 +261,15 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shaders\Stencil_LightingUtil.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_Default.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_LightingUtil.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_WaveSim.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>

@@ -132,6 +132,12 @@
     <ClInclude Include="CS\FrameResource_CS.h">
       <Filter>Header Files\CS</Filter>
     </ClInclude>
+    <ClInclude Include="CS\WavesCsApp.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="CS\GPUWave.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -203,6 +209,12 @@
     <ClCompile Include="CS\FrameResource_CS.cpp">
       <Filter>Source Files\CS</Filter>
     </ClCompile>
+    <ClCompile Include="CS\WavesCsApp.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="CS\GPUWave.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -249,6 +261,15 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\CS_VecAdd.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_Default.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_LightingUtil.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\WaveCS_WaveSim.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

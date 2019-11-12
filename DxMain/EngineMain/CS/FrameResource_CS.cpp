@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FrameResource_CS.h"
 
-FrameResource_CS::FrameResource_CS(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT MaterialCount, UINT WaveVertCount)
+FrameResource_CS::FrameResource_CS(ID3D12Device* Device, UINT passCount, UINT objectCount, UINT MaterialCount)
 {
 	ThrowIfFailed(Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(CmdListAlloc.GetAddressOf())));
 
@@ -13,11 +13,6 @@ FrameResource_CS::FrameResource_CS(ID3D12Device* Device, UINT passCount, UINT ob
 	if (objectCount > 0)
 	{
 		ObjectCB = std::make_unique<UploadBuffer<ObjectConstants_CS>>(Device, objectCount, true);
-	}
-
-	if (WaveVertCount > 0)
-	{
-		WavesVB = std::make_unique<UploadBuffer<Vertex_CS>>(Device, WaveVertCount, false);
 	}
 
 	if (MaterialCount >0)
