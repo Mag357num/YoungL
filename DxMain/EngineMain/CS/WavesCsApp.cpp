@@ -17,6 +17,14 @@ WavesCsApp::~WavesCsApp()
 	}
 }
 
+void WavesCsApp::OnResize()
+{
+	D3DApp::OnResize();
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::PI, AspectRatio(), 1.0f, 1000.0f);
+	XMStoreFloat4x4(&mProj, P);
+}
+
 bool WavesCsApp::Initialize()
 {
 	if (!D3DApp::Initialize())
@@ -136,7 +144,7 @@ void WavesCsApp::BuildWaveRootSignature()
 	uavTable2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 2);
 
 	CD3DX12_ROOT_PARAMETER rootSlotpara[4];
-	rootSlotpara[0].InitAsConstants(0, 0);
+	rootSlotpara[0].InitAsConstants(6, 0);
 	rootSlotpara[1].InitAsDescriptorTable(1, &uavTable0);
 	rootSlotpara[2].InitAsDescriptorTable(1, &uavTable1);
 	rootSlotpara[3].InitAsDescriptorTable(1, &uavTable2);
@@ -204,16 +212,16 @@ void WavesCsApp::BuildDescriptorHeaps()
 
 void WavesCsApp::BuildShadersAndInputLayout()
 {
-	const D3D_SHADER_MACRO defines[]=
+	const D3D_SHADER_MACRO defines[] =
 	{
-		"FOG","0",
+		"FOG", "1",
 		NULL, NULL
 	};
 
 	const D3D_SHADER_MACRO alphaTestDefines[] =
 	{
-		"FOG", "1"
-		"ALPHATEXT", "1",
+		"FOG", "1",
+		"ALPHA_TEST", "1",
 		NULL, NULL
 	};
 
@@ -347,7 +355,7 @@ void WavesCsApp::BuildWaveGeometry()
 
 	std::vector<std::uint32_t> indices = grid.Indices32;
 
-	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertex);
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertex_CS);
 	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint32_t);
 
 	auto geo = std::make_unique<MeshGeometry>();
@@ -363,9 +371,9 @@ void WavesCsApp::BuildWaveGeometry()
 		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUpload);
 
 	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUpload);
+		mCommandList.Get(), indices.data(), ibByteSize, geo->VertexBufferUpload);
 
-	geo->VertextByteStride = sizeof(Vertex);
+	geo->VertextByteStride = sizeof(Vertex_CS);
 	geo->VertextBufferByteSize = vbByteSize;
 	geo->IndexFormat = DXGI_FORMAT_R32_UINT;
 	geo->IndexBufferByteSize = ibByteSize;
@@ -382,36 +390,37 @@ void WavesCsApp::BuildWaveGeometry()
 
 void WavesCsApp::BuildPSOs()
 {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaqueDesc;
-	ZeroMemory(&opaqueDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaqueDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
-	opaqueDesc.pRootSignature = mRootSignature.Get();
-	opaqueDesc.VS = 
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
+
+	//
+	// PSO for opaque objects.
+	//
+	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	opaquePsoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
+	opaquePsoDesc.pRootSignature = mRootSignature.Get();
+	opaquePsoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["standardVS"]->GetBufferPointer()),
 		mShaders["standardVS"]->GetBufferSize()
 	};
-	opaqueDesc.PS =
+	opaquePsoDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["opaquePS"]->GetBufferPointer()),
 		mShaders["opaquePS"]->GetBufferSize()
 	};
+	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.SampleMask = UINT_MAX;
+	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	opaquePsoDesc.NumRenderTargets = 1;
+	opaquePsoDesc.RTVFormats[0] = mBackBufferFormat;
+	opaquePsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	opaquePsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
+	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
 
-	opaqueDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	opaqueDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	opaqueDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-
-	opaqueDesc.SampleMask = UINT_MAX;
-	opaqueDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	opaqueDesc.NumRenderTargets = 1;
-	opaqueDesc.RTVFormats[0] = mBackBufferFormat;
-	opaqueDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	opaqueDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality -1) : 0;
-	opaqueDesc.DSVFormat = mDepthStencilFormat;
-
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaqueDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentDesc = opaqueDesc;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC transparentDesc = opaquePsoDesc;
 
 	D3D12_RENDER_TARGET_BLEND_DESC blendDesc;
 	blendDesc.BlendEnable = true;
@@ -431,7 +440,7 @@ void WavesCsApp::BuildPSOs()
 	transparentDesc.BlendState.RenderTarget[0] = blendDesc;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&transparentDesc, IID_PPV_ARGS(&mPSOs["transparent"])));
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaTestedDesc = opaqueDesc;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC alphaTestedDesc = opaquePsoDesc;
 	alphaTestedDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["alphaTestedPS"]->GetBufferPointer()),
@@ -560,41 +569,47 @@ void WavesCsApp::BuildRenderItems()
 void WavesCsApp::Draw(const GameTimer& gt)
 {
 	auto cmdListAlloc = mCurrentFrameResource->CmdListAlloc;
+
 	ThrowIfFailed(cmdListAlloc->Reset());
+
 	ThrowIfFailed(mCommandList->Reset(cmdListAlloc.Get(), mPSOs["opaque"].Get()));
 
-	ID3D12DescriptorHeap* descriptorHeap[] = {mSrvDescriptorHeap.Get()};
-	mCommandList->SetDescriptorHeaps(_countof(descriptorHeap), descriptorHeap);
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	//UpdateWavesGPU(gt);
+	UpdateWavesGPU(gt);
 
 	mCommandList->SetPipelineState(mPSOs["opaque"].Get());
 
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	// Indicate a state transition on the resource usage.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+	// Clear the back buffer and depth buffer.
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), (float*)&mMainPassCB.FogColor, 0, nullptr);
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	// Specify the buffers we are going to render to.
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-	auto PassCB = mCurrentFrameResource->PassCB->Resource();
-	mCommandList->SetGraphicsRootConstantBufferView(2, PassCB->GetGPUVirtualAddress());
+
+	auto passCB = mCurrentFrameResource->PassCB->Resource();
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
 	mCommandList->SetGraphicsRootDescriptorTable(4, mWaves->DisplacementMap());
 
-	DrawRenderItems(mCommandList.Get(), mRitemLayers[(UINT)RenderLayer_WaveCS::Opaque]);
+	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::Opaque]);
 
-	//mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::AlphaTested]);
+	mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::AlphaTested]);
 
-	//mCommandList->SetPipelineState(mPSOs["transparent"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::Transparent]);
 
-	//mCommandList->SetPipelineState(mPSOs["wavesRender"].Get());
-	//DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::GPUWaves]);
+	mCommandList->SetPipelineState(mPSOs["wavesRender"].Get());
+	DrawRenderItems(mCommandList.Get(), mRitemLayers[(int)RenderLayer_WaveCS::GPUWaves]);
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	
@@ -613,13 +628,14 @@ void WavesCsApp::Draw(const GameTimer& gt)
 
 void WavesCsApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<RenderItem_WaveCS *>& ritems)
 {
-	UINT ObjCBSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants_CS));
-	UINT MatCBSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
+	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT matCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
-	auto ObjCB = mCurrentFrameResource->ObjectCB->Resource();
-	auto MatCB = mCurrentFrameResource->MaterialCB->Resource();
+	auto objectCB = mCurrentFrameResource->ObjectCB->Resource();
+	auto matCB = mCurrentFrameResource->MaterialCB->Resource();
 
-	for (size_t i = 0; i < ritems.size(); i++)
+	// For each render item...
+	for (size_t i = 0; i < ritems.size(); ++i)
 	{
 		auto ri = ritems[i];
 
@@ -630,12 +646,12 @@ void WavesCsApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector
 		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 		tex.Offset(ri->Mat->DiffuseSrvHeapIndex, mCbvSrvDescriptorSize);
 
-		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = ObjCB->GetGPUVirtualAddress() + ri->ObjCBIndex * ObjCBSize;
-		D3D12_GPU_VIRTUAL_ADDRESS objMatCBAddress = MatCB->GetGPUVirtualAddress() + ri->Mat->MatCBIndex * MatCBSize;
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex*objCBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->Mat->MatCBIndex*matCBByteSize;
 
 		cmdList->SetGraphicsRootDescriptorTable(0, tex);
 		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
-		cmdList->SetGraphicsRootConstantBufferView(3, objMatCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
 		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
 	}
@@ -666,15 +682,18 @@ void WavesCsApp::Update(const GameTimer& gt)
 	OnKeyboardInput(gt);
 	UpdateCamer(gt);
 
+	// Cycle through the circular frame resource array.
 	currentFrameIndex = (currentFrameIndex + 1) % gNumFrameResources_WaveCs;
 	mCurrentFrameResource = mFrameResources[currentFrameIndex].get();
 
+	// Has the GPU finished processing the commands of the current frame resource?
+	// If not, wait until the GPU has completed commands up to this fence point.
 	if (mCurrentFrameResource->Fence != 0 && md3d12Fence->GetCompletedValue() < mCurrentFrameResource->Fence)
 	{
-		HANDLE EventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
-		md3d12Fence->SetEventOnCompletion(mCurrentFrameResource->Fence, EventHandle);
-		WaitForSingleObject(EventHandle, INFINITE);
-		CloseHandle(EventHandle);
+		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+		ThrowIfFailed(md3d12Fence->SetEventOnCompletion(mCurrentFrameResource->Fence, eventHandle));
+		WaitForSingleObject(eventHandle, INFINITE);
+		CloseHandle(eventHandle);
 	}
 
 	Animatematerials(gt);
@@ -705,8 +724,6 @@ void WavesCsApp::UpdateCamer(const GameTimer& gt)
 
 void WavesCsApp::Animatematerials(const GameTimer& gt)
 {
-	
-
 	// Scroll the water material texture coordinates.
 	auto waterMat = mMaterials["water"].get();
 

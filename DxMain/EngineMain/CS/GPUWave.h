@@ -75,5 +75,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> mPrevUploadBuffer = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> mCurrUploadBuffer = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> mNextUploadBuffer = nullptr;
 
 };
