@@ -97,7 +97,7 @@ std::vector<float> BlurFilter::CalcGauseWeights(float sigma)
 
 	int blurRadius = (int)ceil(2.0f*sigma);
 
-	assert(blurRadius < MaxBlurSize);
+	assert(blurRadius <= MaxBlurSize);
 
 	std::vector<float> weights;
 	weights.reserve(2 * blurRadius + 1);
@@ -166,12 +166,14 @@ void BlurFilter::BuildDescriptors()
 	srvDesc.Format = mFormat;
 	srvDesc.Texture2D.MipLevels = 1;
 	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.PlaneSlice = 0;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	uavDesc.Format = mFormat;
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = 0;
+	uavDesc.Texture2D.PlaneSlice = 0;
 
 	md3dDevice->CreateShaderResourceView(mBlurMap0.Get(), &srvDesc, mBlur0CPUSrc);
 	md3dDevice->CreateUnorderedAccessView(mBlurMap0.Get(), nullptr, &uavDesc, mBlur0CPUUav);

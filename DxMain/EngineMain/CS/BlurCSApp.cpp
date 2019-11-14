@@ -278,10 +278,10 @@ void BlurCSApp::BuildDescriptorHeap()
 	int TextureDescriptorCount = 3;
 	int BlurDescriptorCount = 4;
 
-	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc;
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.NumDescriptors = TextureDescriptorCount + BlurDescriptorCount;
-	srvHeapDesc.NodeMask = UINT_MAX;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
 	md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mCbvSrvUavDescriptorHeap));
 
@@ -291,11 +291,11 @@ void BlurCSApp::BuildDescriptorHeap()
 	auto waterTex = mTextures["water"]->Resource;
 	auto fenceTex = mTextures["fence"]->Resource;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Format = grassTex->GetDesc().Format;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MipLevels = -1;
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	md3dDevice->CreateShaderResourceView(grassTex.Get(), &srvDesc, hDescriptor);
 
@@ -331,10 +331,10 @@ void BlurCSApp::BuildShadersAndInputLayout()
 	};
 
 	mShaders["standardVS"] = d3dUtil::CompileShader(L"shaders\\BlurCS_Default.hlsl", nullptr, "VS", "vs_5_0");
-	mShaders["opaquePS"] = d3dUtil::CompileShader(L"Shaders\\Default.hlsl", defines, "PS", "ps_5_0");
-	mShaders["alphaTestedPS"] = d3dUtil::CompileShader(L"Shaders\\Default.hlsl", alphaTestDefines, "PS", "ps_5_0");
-	mShaders["horzBlurCS"] = d3dUtil::CompileShader(L"Shaders\\Blur.hlsl", nullptr, "HorzBlurCS", "cs_5_0");
-	mShaders["vertBlurCS"] = d3dUtil::CompileShader(L"Shaders\\Blur.hlsl", nullptr, "VertBlurCS", "cs_5_0");
+	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\BlurCS_Default.hlsl", defines, "PS", "ps_5_0");
+	mShaders["alphaTestedPS"] = d3dUtil::CompileShader(L"shaders\\BlurCS_Default.hlsl", alphaTestDefines, "PS", "ps_5_0");
+	mShaders["horzBlurCS"] = d3dUtil::CompileShader(L"shaders\\BlurCS_Blur.hlsl", nullptr, "HorzBlurCS", "cs_5_0");
+	mShaders["vertBlurCS"] = d3dUtil::CompileShader(L"shaders\\BlurCS_Blur.hlsl", nullptr, "VertBlurCS", "cs_5_0");
 
 	mInputLayout = 
 	{
@@ -485,7 +485,7 @@ void BlurCSApp::BuildRenderItems()
 	auto gridRitem = std::make_unique<RenderItem_BlurCS>();
 	gridRitem->World = MathHelper::Identity4x4();
 	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
-	gridRitem->ObjCBIndex = 1;
+	gridRitem->ObjCBIndex = 0;
 	gridRitem->Mat = mMaterials["grass"].get();
 	gridRitem->Geo = mGeometries["landGeo"].get();
 	gridRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -497,8 +497,8 @@ void BlurCSApp::BuildRenderItems()
 
 	auto boxRitem = std::make_unique<RenderItem_BlurCS>();
 	XMStoreFloat4x4(&boxRitem->World, XMMatrixTranslation(3.0f, 2.0f, -9.0f));
-	boxRitem->ObjCBIndex = 2;
-	boxRitem->Mat = mMaterials["wirefence"].get();
+	boxRitem->ObjCBIndex = 1;
+	boxRitem->Mat = mMaterials["fence"].get();
 	boxRitem->Geo = mGeometries["boxGeo"].get();
 	boxRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	boxRitem->IndexCount = boxRitem->Geo->DrawArgs["box"].IndexCount;
