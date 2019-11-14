@@ -138,6 +138,12 @@
     <ClInclude Include="CS\GPUWave.h">
       <Filter>Header Files\CS</Filter>
     </ClInclude>
+    <ClInclude Include="CS\BlurCSApp.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="CS\BlurFilter.h">
+      <Filter>Header Files\CS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -215,6 +221,12 @@
     <ClCompile Include="CS\GPUWave.cpp">
       <Filter>Source Files\CS</Filter>
     </ClCompile>
+    <ClCompile Include="CS\BlurCSApp.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="CS\BlurFilter.cpp">
+      <Filter>Source Files\CS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -270,6 +282,15 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\WaveCS_WaveSim.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\BlurCS_Blur.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\BlurCS_Default.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\BlurCS_LightingUtil.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
