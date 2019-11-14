@@ -100,14 +100,14 @@ std::vector<float> BlurFilter::CalcGauseWeights(float sigma)
 	assert(blurRadius <= MaxBlurSize);
 
 	std::vector<float> weights;
-	weights.reserve(2 * blurRadius + 1);
+	weights.resize(2 * blurRadius + 1);
 
 	float weightSum = 0.0f;
 
 	for (int i = -blurRadius; i <= blurRadius; i++)
 	{
 		float x = (float)i;
-		weights[i + blurRadius] = expf(-x*x/twoSigma2);
+		weights[i + blurRadius] = expf(-x * x / twoSigma2);
 
 		weightSum += weights[i + blurRadius];
 	}

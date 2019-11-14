@@ -115,9 +115,12 @@ void BlurCSApp::Draw(const GameTimer& gt)
 		mPSOs["vertBlur"].Get(),
 		CurrentBackBuffer(),
 		4
-		);
+	);
 
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST));
+
+	mCommandList->CopyResource(CurrentBackBuffer(), mBlurFilter->Output());
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT));
 
 	ThrowIfFailed(mCommandList->Close());
 	ID3D12CommandList* cmdLists[] = {mCommandList.Get()};
@@ -699,7 +702,10 @@ void BlurCSApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<
 	UINT ObjConstantSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants_CS));
 	UINT MatConstantSize = d3dUtil::CalcConstantBufferByteSize(sizeof(MaterialConstants));
 
-	for (int i = 0; i < rItems.size(); i++)
+	auto ObjCB = mCurrFrameResource->ObjectCB->Resource();
+	auto MatCB = mCurrFrameResource->MaterialCB->Resource();
+
+	for (size_t i = 0; i < rItems.size(); i++)
 	{
 		auto rItem = rItems[i];
 
@@ -710,14 +716,14 @@ void BlurCSApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<
 		CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mCbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 		tex.Offset(rItem->Mat->DiffuseSrvHeapIndex, mSrvDescriptorSize);
 
-		auto ObjCB = mCurrFrameResource->ObjectCB->Resource();
-		auto MatCB = mCurrFrameResource->MaterialCB->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = ObjCB->GetGPUVirtualAddress() + rItem->ObjCBIndex*ObjConstantSize;
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = MatCB->GetGPUVirtualAddress() + rItem->Mat->MatCBIndex*MatConstantSize;
 
 		cmdList->SetGraphicsRootDescriptorTable(0, tex);
-		cmdList->SetGraphicsRootConstantBufferView(1, ObjCB->GetGPUVirtualAddress() + rItem->ObjCBIndex * ObjConstantSize);
-		cmdList->SetGraphicsRootConstantBufferView(3, MatCB->GetGPUVirtualAddress() + rItem->Mat->MatCBIndex * MatConstantSize);
+		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(3, matCBAddress);
 
-		cmdList->DrawIndexedInstanced(1, rItem->IndexCount, rItem->StartIndexLocation, rItem->BaseVertexLocation, 0);
+		cmdList->DrawIndexedInstanced(rItem->IndexCount, 1, rItem->StartIndexLocation, rItem->BaseVertexLocation, 0);
 	}
 
 }
