@@ -46,6 +46,12 @@
     <Filter Include="Source Files\CS">
       <UniqueIdentifier>{fc495514-7d58-4075-93b8-655d3d50b5af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Tessellation">
+      <UniqueIdentifier>{e0e83580-67b0-47d4-97e1-627cafe0d606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tessellation">
+      <UniqueIdentifier>{479a8315-65aa-49b8-99fa-0fabb8bba623}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -144,6 +150,12 @@
     <ClInclude Include="CS\BlurFilter.h">
       <Filter>Header Files\CS</Filter>
     </ClInclude>
+    <ClInclude Include="Tessellation\FrameResource_Tessellation.h">
+      <Filter>Header Files\Tessellation</Filter>
+    </ClInclude>
+    <ClInclude Include="Tessellation\BasicTessellation.h">
+      <Filter>Header Files\Tessellation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -227,6 +239,12 @@
     <ClCompile Include="CS\BlurFilter.cpp">
       <Filter>Source Files\CS</Filter>
     </ClCompile>
+    <ClCompile Include="Tessellation\FrameResource_Tessellation.cpp">
+      <Filter>Source Files\Tessellation</Filter>
+    </ClCompile>
+    <ClCompile Include="Tessellation\BasicTessellation.cpp">
+      <Filter>Source Files\Tessellation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -291,6 +309,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\BlurCS_LightingUtil.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\Tessellation_Basic.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
