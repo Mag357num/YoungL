@@ -192,6 +192,7 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClInclude Include="Stencil\StencilApp.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tessellation\BasicTessellation.h" />
+    <ClInclude Include="Tessellation\BezierPatchApp.h" />
     <ClInclude Include="Tessellation\FrameResource_Tessellation.h" />
   </ItemGroup>
   <ItemGroup>
@@ -228,6 +229,7 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClCompile Include="Stencil\FrameResource_Stencil.cpp" />
     <ClCompile Include="Stencil\StencilApp.cpp" />
     <ClCompile Include="Tessellation\BasicTessellation.cpp" />
+    <ClCompile Include="Tessellation\BezierPatchApp.cpp" />
     <ClCompile Include="Tessellation\FrameResource_Tessellation.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +240,9 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="shaders\BezierTessellation.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="shaders\Blend_Default.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>

@@ -156,6 +156,9 @@
     <ClInclude Include="Tessellation\BasicTessellation.h">
       <Filter>Header Files\Tessellation</Filter>
     </ClInclude>
+    <ClInclude Include="Tessellation\BezierPatchApp.h">
+      <Filter>Header Files\Tessellation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -245,6 +248,9 @@
     <ClCompile Include="Tessellation\BasicTessellation.cpp">
       <Filter>Source Files\Tessellation</Filter>
     </ClCompile>
+    <ClCompile Include="Tessellation\BezierPatchApp.cpp">
+      <Filter>Source Files\Tessellation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -312,6 +318,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\Tessellation_Basic.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\BezierTessellation.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
