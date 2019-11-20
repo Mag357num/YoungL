@@ -52,6 +52,12 @@
     <Filter Include="Source Files\Tessellation">
       <UniqueIdentifier>{479a8315-65aa-49b8-99fa-0fabb8bba623}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\CameraAndDynamicIndex">
+      <UniqueIdentifier>{3fd159ad-928f-4d79-86b7-289bd42579a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CameraAndDynamicIndex">
+      <UniqueIdentifier>{b505759b-45b6-480d-aea1-3425c77caacf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -159,6 +165,15 @@
     <ClInclude Include="Tessellation\BezierPatchApp.h">
       <Filter>Header Files\Tessellation</Filter>
     </ClInclude>
+    <ClInclude Include="CameraAndDynamicIndex\FrameResource_CameraDyIndex.h">
+      <Filter>Header Files\CameraAndDynamicIndex</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraAndDynamicIndex\CameraAndDynamicIndexApp.h">
+      <Filter>Header Files\CameraAndDynamicIndex</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Camera.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -251,6 +266,15 @@
     <ClCompile Include="Tessellation\BezierPatchApp.cpp">
       <Filter>Source Files\Tessellation</Filter>
     </ClCompile>
+    <ClCompile Include="CameraAndDynamicIndex\FrameResource_CameraDyIndex.cpp">
+      <Filter>Source Files\CameraAndDynamicIndex</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraAndDynamicIndex\CameraAndDynamicIndexApp.cpp">
+      <Filter>Source Files\CameraAndDynamicIndex</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Camera.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -321,6 +345,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\BezierTessellation.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\CameraDyIndex_Default.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
