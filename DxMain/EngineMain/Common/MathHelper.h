@@ -68,6 +68,8 @@ public:
 		return I;
 	};
 
+	static const float Infinity;
+
 	static const float PI;
 private:
 

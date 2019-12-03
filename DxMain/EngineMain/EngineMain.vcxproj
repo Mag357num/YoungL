@@ -184,6 +184,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClInclude Include="CS\VecAddApp.h" />
     <ClInclude Include="CS\WavesCsApp.h" />
     <ClInclude Include="EngineMain.h" />
+    <ClInclude Include="InstanceAndCull\FrameResrouce_Instance.h" />
+    <ClInclude Include="InstanceAndCull\InstanceAndCullApp.h" />
     <ClInclude Include="LandAndWaveApp.h" />
     <ClInclude Include="LitWave\FrameResource_LitWave.h" />
     <ClInclude Include="LitWave\LitColumnsApp.h" />
@@ -221,6 +223,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClCompile Include="CS\VecAddApp.cpp" />
     <ClCompile Include="CS\WavesCsApp.cpp" />
     <ClCompile Include="EngineMain.cpp" />
+    <ClCompile Include="InstanceAndCull\FrameResource_Instance.cpp" />
+    <ClCompile Include="InstanceAndCull\InstanceAndCullApp.cpp" />
     <ClCompile Include="LandAndWaveApp.cpp" />
     <ClCompile Include="LitWave\FrameResource_LitWave.cpp" />
     <ClCompile Include="LitWave\LitColumnsApp.cpp" />
@@ -274,6 +278,9 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shaders\GeometryShader_TreeSprite.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\Instance_Default.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shaders\landwave_color.hlsl">

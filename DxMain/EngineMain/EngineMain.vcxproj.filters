@@ -58,6 +58,12 @@
     <Filter Include="Source Files\CameraAndDynamicIndex">
       <UniqueIdentifier>{b505759b-45b6-480d-aea1-3425c77caacf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\InstanceAndCull">
+      <UniqueIdentifier>{8ff6a977-0286-4029-8fe8-b48c13581280}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\InstanceAndCull">
+      <UniqueIdentifier>{a924685f-70ed-4095-a1c1-6478aa3878fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -174,6 +180,12 @@
     <ClInclude Include="Common\Camera.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
+    <ClInclude Include="InstanceAndCull\FrameResrouce_Instance.h">
+      <Filter>Header Files\InstanceAndCull</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceAndCull\InstanceAndCullApp.h">
+      <Filter>Header Files\InstanceAndCull</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -275,6 +287,12 @@
     <ClCompile Include="Common\Camera.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
+    <ClCompile Include="InstanceAndCull\FrameResource_Instance.cpp">
+      <Filter>Source Files\InstanceAndCull</Filter>
+    </ClCompile>
+    <ClCompile Include="InstanceAndCull\InstanceAndCullApp.cpp">
+      <Filter>Source Files\InstanceAndCull</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngineMain.rc">
@@ -348,6 +366,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shaders\CameraDyIndex_Default.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\Instance_Default.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>

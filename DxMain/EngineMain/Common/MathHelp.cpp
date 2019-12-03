@@ -2,6 +2,7 @@
 
 #include "MathHelper.h"
 
+const float MathHelper::Infinity = FLT_MAX;
 const float MathHelper::PI = 3.1415196535f;
 
 float MathHelper::AngleFromXY(float x, float y)
