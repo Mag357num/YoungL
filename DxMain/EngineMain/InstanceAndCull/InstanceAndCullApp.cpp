@@ -54,6 +54,7 @@ void InstanceAndCullApp::OnResize()
 	D3DApp::OnResize();
 
 	mCamera.SetLens(0.25f*MathHelper::PI, AspectRatio(), 1.0f, 1000.0f);
+
 	BoundingFrustum::CreateFromMatrix(mCamFrustum, mCamera.GetProj());
 }
 
@@ -79,59 +80,89 @@ void InstanceAndCullApp::Update(const GameTimer& gt)
 
 void InstanceAndCullApp::Draw(const GameTimer& gt)
 {
-	auto cmdAlloc = mCurrentFrameResource->cmdListAlloc;
-	ThrowIfFailed(cmdAlloc->Reset());
-	ThrowIfFailed(mCommandList->Reset(cmdAlloc.Get(), mPSOs["opaque"].Get()));
+	auto cmdListAlloc = mCurrentFrameResource->cmdListAlloc;
+
+	// Reuse the memory associated with command recording.
+	// We can only reset when the associated command lists have finished execution on the GPU.
+	ThrowIfFailed(cmdListAlloc->Reset());
+
+	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
+	// Reusing the command list reuses memory.
+	ThrowIfFailed(mCommandList->Reset(cmdListAlloc.Get(), mPSOs["opaque"].Get()));
 
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	// Indicate a state transition on the resource usage.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	// Clear the back buffer and depth buffer.
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	// Specify the buffers we are going to render to.
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-	
-	ID3D12DescriptorHeap* desHeaps[] = {mSrvDescriptorHeap.Get()};
-	mCommandList->SetDescriptorHeaps(_countof(desHeaps), desHeaps);
-	
-	auto materialBuffer = mCurrentFrameResource->MaterialBuffer->Resource();
-	mCommandList->SetGraphicsRootShaderResourceView(1, materialBuffer->GetGPUVirtualAddress());
 
-	auto PassCB = mCurrentFrameResource->PassCB->Resource();
-	mCommandList->SetComputeRootConstantBufferView(2, PassCB->GetGPUVirtualAddress());
+	// Bind all the materials used in this scene.  For structured buffers, we can bypass the heap and 
+	// set as a root descriptor.
+	auto matBuffer = mCurrentFrameResource->MaterialBuffer->Resource();
+	mCommandList->SetGraphicsRootShaderResourceView(1, matBuffer->GetGPUVirtualAddress());
 
+	auto passCB = mCurrentFrameResource->PassCB->Resource();
+	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+
+	// Bind all the textures used in this scene.
 	mCommandList->SetGraphicsRootDescriptorTable(3, mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	
+
 	DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
-	
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	// Indicate a state transition on the resource usage.
+	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	// Done recording commands.
 	ThrowIfFailed(mCommandList->Close());
 
-	ID3D12CommandList* cmdLists[] = { mCommandList.Get() };
-	mCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+	// Add the command list to the queue for execution.
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	mSwapChain->Present(0, 0);
+	// Swap the back and front buffers
+	ThrowIfFailed(mSwapChain->Present(0, 0));
 	mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
+
+	// Advance the fence value to mark commands up to this fence point.
 	mCurrentFrameResource->Fence = ++mCurrentFence;
 
+	// Add an instruction to the command queue to set a new fence point. 
+	// Because we are on the GPU timeline, the new fence point won't be 
+	// set until the GPU finishes processing all the commands prior to this Signal().
 	mCommandQueue->Signal(md3d12Fence.Get(), mCurrentFence);
 }
 
 void InstanceAndCullApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, std::vector<RenderItem_InstanceAndCull *> mRitems)
 {
-	for (size_t i = 0; i < mRitems.size(); i++)
+	// For each render item...
+	for (size_t i = 0; i < mRitems.size(); ++i)
 	{
 		auto ri = mRitems[i];
+
 		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
 		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
 		cmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
+		// Set the instance buffer to use for this render-item.  For structured buffers, we can bypass 
+		// the heap and set as a root descriptor.
 		auto instanceBuffer = mCurrentFrameResource->InstanceBuffer->Resource();
-		cmdList->SetGraphicsRootShaderResourceView(0, instanceBuffer->GetGPUVirtualAddress());
+		mCommandList->SetGraphicsRootShaderResourceView(0, instanceBuffer->GetGPUVirtualAddress());
 
-		cmdList->DrawIndexedInstanced(ri->IndexCount, ri->InstanceCount, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
+		cmdList->DrawIndexedInstanced(ri->IndexCount, 3, ri->StartIndexLocation, ri->BaseVertexLocation, 0);//ri->InstanceCount
 	}
 }
 
@@ -194,10 +225,12 @@ void InstanceAndCullApp::OnKeyboardInput(const GameTimer& gt)
 		mFrustumCullingEnabled = true;
 	}
 
-	if (GetAsyncKeyState('1') & 0x8000)
+	if (GetAsyncKeyState('2') & 0x8000)
 	{
 		mFrustumCullingEnabled = false;
 	}
+
+	mCamera.UpdateViewMatrix();
 }
 
 void InstanceAndCullApp::AnimateMaterials(const GameTimer& gt)
@@ -208,42 +241,50 @@ void InstanceAndCullApp::AnimateMaterials(const GameTimer& gt)
 void InstanceAndCullApp::UpdateInstanceBufferse(const GameTimer& gt)
 {
 	XMMATRIX view = mCamera.GetView();
-	XMMATRIX inView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-	
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+
 	auto currInstanceBuffer = mCurrentFrameResource->InstanceBuffer.get();
-	for (auto& e:mAllRitems)
+	for (auto& e : mAllRitems)
 	{
 		const auto& instanceData = e->Instantces;
+
 		int visibleInstanceCount = 0;
 
-		for (UINT i = 0; i < instanceData.size(); i++)
+		for (UINT i = 0; i < (UINT)instanceData.size(); ++i)
 		{
 			XMMATRIX world = XMLoadFloat4x4(&instanceData[i].World);
-			XMMATRIX TexTransform = XMLoadFloat4x4(&instanceData[i].TexTransform);
+			XMMATRIX texTransform = XMLoadFloat4x4(&instanceData[i].TexTransform);
 
 			XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(world), world);
-			XMMATRIX viewToLocal = XMMatrixMultiply(inView, invWorld);
-			
+
+			// View space to the object's local space.
+			XMMATRIX viewToLocal = XMMatrixMultiply(invView, invWorld);
+
+			// Transform the camera frustum from view space to the object's local space.
 			BoundingFrustum localSpaceFrustum;
 			mCamFrustum.Transform(localSpaceFrustum, viewToLocal);
-			if (localSpaceFrustum.Contains(e->Bounds) != DirectX::DISJOINT || (mFrustumCullingEnabled == false))
+
+			// Perform the box/frustum intersection test in local space.
+			if ((localSpaceFrustum.Contains(e->Bounds) != DirectX::DISJOINT) || (mFrustumCullingEnabled == false))
 			{
 				InstanceData data;
 				XMStoreFloat4x4(&data.World, XMMatrixTranspose(world));
-				XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(TexTransform));
+				XMStoreFloat4x4(&data.TexTransform, XMMatrixTranspose(texTransform));
 				data.MaterialIndex = instanceData[i].MaterialIndex;
+
+				// Write the instance data to structured buffer for the visible objects.
 				currInstanceBuffer->CopyData(visibleInstanceCount++, data);
 			}
 		}
 
-		e->IndexCount = visibleInstanceCount;
+		e->InstanceCount = visibleInstanceCount;
 
-		std::wostringstream outs;
-		outs.precision(6);
-		outs << L"Instancing and Culling Demo" <<
-			L"    " << e->InstanceCount <<
-			L" objects visible out of " << e->Instantces.size();
-		mMainWndCaption = outs.str();
+		//std::wostringstream outs;
+		//outs.precision(6);
+		//outs << L"Instancing and Culling Demo" <<
+		//	L"    " << e->InstanceCount <<
+		//	L" objects visible out of " << e->Instantces.size();
+		//mMainWndCaption = outs.str();
 	}
 }
 
@@ -253,17 +294,16 @@ void InstanceAndCullApp::UpdateMainPassCBs(const GameTimer& gt)
 	XMMATRIX proj = mCamera.GetProj();
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-	XMMATRIX inView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-	XMMATRIX inProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
-	XMMATRIX inViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
 
 	XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(inView));
+	XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
 	XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
-	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(inProj));
+	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
-	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(inViewProj));
-
+	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
 	mMainPassCB.EyePosW = mCamera.GetPosition3f();
 	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
 	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
@@ -271,7 +311,7 @@ void InstanceAndCullApp::UpdateMainPassCBs(const GameTimer& gt)
 	mMainPassCB.FarZ = 1000.0f;
 	mMainPassCB.TotalTime = gt.TotalTime();
 	mMainPassCB.DeltaTime = gt.DeltaTime();
-	mMainPassCB.AmbientLight = {0.25f, 0.25f, 0.35f, 1.0f};
+	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	mMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
 	mMainPassCB.Lights[0].Strength = { 0.8f, 0.8f, 0.8f };
 	mMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
@@ -287,8 +327,10 @@ void InstanceAndCullApp::UpdateMainPassCBs(const GameTimer& gt)
 void InstanceAndCullApp::UpdateMaterialBuffers(const GameTimer& gt)
 {
 	auto currMaterialBuffer = mCurrentFrameResource->MaterialBuffer.get();
-	for (auto& e:mMaterials )
+	for (auto& e : mMaterials)
 	{
+		// Only update the cbuffer data if the constants have changed.  If the cbuffer
+		// data changes, it needs to be updated for each FrameResource.
 		Material* mat = e.second.get();
 		if (mat->NumFramesDirty > 0)
 		{
@@ -311,11 +353,13 @@ void InstanceAndCullApp::UpdateMaterialBuffers(const GameTimer& gt)
 
 void InstanceAndCullApp::LoadTextures()
 {
-	auto brickTex = std::make_unique<Texture>();
-	brickTex->Name = "bricksTex";
-	brickTex->FileName = L"Textures/bricks.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(), mCommandList.Get(), brickTex->FileName.c_str(), brickTex->Resource, brickTex->UploadHeap));
-	
+	auto bricksTex = std::make_unique<Texture>();
+	bricksTex->Name = "bricksTex";
+	bricksTex->FileName = L"Textures/bricks.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), bricksTex->FileName.c_str(),
+		bricksTex->Resource, bricksTex->UploadHeap));
+
 	auto stoneTex = std::make_unique<Texture>();
 	stoneTex->Name = "stoneTex";
 	stoneTex->FileName = L"Textures/stone.dds";
@@ -358,7 +402,7 @@ void InstanceAndCullApp::LoadTextures()
 		mCommandList.Get(), defaultTex->FileName.c_str(),
 		defaultTex->Resource, defaultTex->UploadHeap));
 
-	mTextures[brickTex->Name] = std::move(brickTex);
+	mTextures[bricksTex->Name] = std::move(bricksTex);
 	mTextures[stoneTex->Name] = std::move(stoneTex);
 	mTextures[tileTex->Name] = std::move(tileTex);
 	mTextures[crateTex->Name] = std::move(crateTex);
@@ -399,16 +443,18 @@ void InstanceAndCullApp::BuildRootSignature()
 
 void InstanceAndCullApp::BuildDescriptorHeap()
 {
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	heapDesc.NumDescriptors = 7;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 7;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
-	md3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap));
+	//
+	// Fill out the heap with actual descriptors.
+	//
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE Hanle(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-	auto brickTxt = mTextures["bricksTex"]->Resource;
+	auto bricksTex = mTextures["bricksTex"]->Resource;
 	auto stoneTex = mTextures["stoneTex"]->Resource;
 	auto tileTex = mTextures["tileTex"]->Resource;
 	auto crateTex = mTextures["crateTex"]->Resource;
@@ -416,54 +462,56 @@ void InstanceAndCullApp::BuildDescriptorHeap()
 	auto grassTex = mTextures["grassTex"]->Resource;
 	auto defaultTex = mTextures["defaultTex"]->Resource;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srcDesc;
-	srcDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srcDesc.Format = brickTxt->GetDesc().Format;
-	srcDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srcDesc.Texture2D.MostDetailedMip = 0;
-	srcDesc.Texture2D.MipLevels = brickTxt->GetDesc().MipLevels;
-	srcDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-	md3dDevice->CreateShaderResourceView(brickTxt.Get(), &srcDesc, Hanle);
-	Hanle.Offset(1, mSrvCbvDescriptorSize);
-
-	srcDesc.Format = stoneTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = stoneTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(stoneTex.Get(), &srcDesc, Hanle);
-	// next descriptor
-	Hanle.Offset(1, mCbvSrvDescriptorSize);
-
-	srcDesc.Format = tileTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = tileTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(tileTex.Get(), &srcDesc, Hanle);
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = bricksTex->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = bricksTex->GetDesc().MipLevels;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	md3dDevice->CreateShaderResourceView(bricksTex.Get(), &srvDesc, hDescriptor);
 
 	// next descriptor
-	Hanle.Offset(1, mCbvSrvDescriptorSize);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srcDesc.Format = crateTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = crateTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(crateTex.Get(), &srcDesc, Hanle);
-
-	// next descriptor
-	Hanle.Offset(1, mCbvSrvDescriptorSize);
-
-	srcDesc.Format = iceTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = iceTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(iceTex.Get(), &srcDesc, Hanle);
+	srvDesc.Format = stoneTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = stoneTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(stoneTex.Get(), &srvDesc, hDescriptor);
 
 	// next descriptor
-	Hanle.Offset(1, mCbvSrvDescriptorSize);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srcDesc.Format = grassTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = grassTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(grassTex.Get(), &srcDesc, Hanle);
+	srvDesc.Format = tileTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = tileTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(tileTex.Get(), &srvDesc, hDescriptor);
 
 	// next descriptor
-	Hanle.Offset(1, mCbvSrvDescriptorSize);
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 
-	srcDesc.Format = defaultTex->GetDesc().Format;
-	srcDesc.Texture2D.MipLevels = defaultTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(defaultTex.Get(), &srcDesc, Hanle);
+	srvDesc.Format = crateTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = crateTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(crateTex.Get(), &srvDesc, hDescriptor);
+
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = iceTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = iceTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(iceTex.Get(), &srvDesc, hDescriptor);
+
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = grassTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = grassTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(grassTex.Get(), &srvDesc, hDescriptor);
+
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = defaultTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = defaultTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(defaultTex.Get(), &srvDesc, hDescriptor);
 }
 
 void InstanceAndCullApp::BuildShadersAndInputLayout()
@@ -474,8 +522,8 @@ void InstanceAndCullApp::BuildShadersAndInputLayout()
 		NULL, NULL
 	};
 
-	mShaders["standardVS"] = d3dUtil::CompileShader(L"shaders\\default.hlsl", nullptr, "VS", "vs_5_1");
-	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\default.hlsl", nullptr, "PS", "ps_5_1");
+	mShaders["standardVS"] = d3dUtil::CompileShader(L"shaders\\Instance_default.hlsl", nullptr, "VS", "vs_5_1");
+	mShaders["opaquePS"] = d3dUtil::CompileShader(L"shaders\\Instance_default.hlsl", nullptr, "PS", "ps_5_1");
 
 
 	mInputLayout = 
@@ -510,7 +558,7 @@ void InstanceAndCullApp::LoadSkullGeometry()
 	XMVECTOR vMax = XMLoadFloat3(&vMaxf3);
 
 	std::vector<Vertex_Instance> vertices(vcount);
-	for (UINT i = 0; i < vcount; i ++)
+	for (UINT i = 0; i < vcount; ++i)
 	{
 		fin >> vertices[i].Pos.x >> vertices[i].Pos.y >> vertices[i].Pos.z;
 		fin >> vertices[i].Normal.x >> vertices[i].Normal.y >> vertices[i].Normal.z;
@@ -595,32 +643,35 @@ void InstanceAndCullApp::LoadSkullGeometry()
 
 void InstanceAndCullApp::BuildPSos()
 {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	psoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
 
-	psoDesc.pRootSignature = mRootSignature.Get();
-	psoDesc.VS =
+	//
+	// PSO for opaque objects.
+	//
+	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	opaquePsoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
+	opaquePsoDesc.pRootSignature = mRootSignature.Get();
+	opaquePsoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["standardVS"]->GetBufferPointer()),
 		mShaders["standardVS"]->GetBufferSize()
 	};
-	psoDesc.PS =
+	opaquePsoDesc.PS =
 	{
 		reinterpret_cast<BYTE*>(mShaders["opaquePS"]->GetBufferPointer()),
 		mShaders["opaquePS"]->GetBufferSize()
 	};
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = mBackBufferFormat;
-	psoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	psoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
-	psoDesc.DSVFormat = mDepthStencilFormat;
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
+	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.SampleMask = UINT_MAX;
+	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	opaquePsoDesc.NumRenderTargets = 1;
+	opaquePsoDesc.RTVFormats[0] = mBackBufferFormat;
+	opaquePsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	opaquePsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsasQuality - 1) : 0;
+	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
 }
 
 void InstanceAndCullApp::BuildFrameResources()
@@ -701,20 +752,23 @@ void InstanceAndCullApp::BuildMaterials()
 
 void InstanceAndCullApp::BuildRenderItems()
 {
-	auto SkullRitem = std::make_unique<RenderItem_InstanceAndCull>();
-	SkullRitem->World = MathHelper::Identity4x4();
-	SkullRitem->TexTransfrom = MathHelper::Identity4x4();
-	SkullRitem->ObjCBIndex = 0;
-	SkullRitem->Mat = mMaterials["tile0"].get();
-	SkullRitem->Geo = mGeometries["skullGeo"].get();
-	SkullRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	SkullRitem->InstanceCount = 0;
-	SkullRitem->StartIndexLocation = SkullRitem->Geo->DrawArgs["skull"].StartIndexLocation;
-	SkullRitem->BaseVertexLocation = SkullRitem->Geo->DrawArgs["skull"].BaseVertexLocation;
-	SkullRitem->Bounds = SkullRitem->Geo->DrawArgs["skull"].Bounds;
+	auto skullRitem = std::make_unique<RenderItem_InstanceAndCull>();
+	skullRitem->World = MathHelper::Identity4x4();
+	skullRitem->TexTransfrom = MathHelper::Identity4x4();
+	skullRitem->ObjCBIndex = 0;
+	skullRitem->Mat = mMaterials["tile0"].get();
+	skullRitem->Geo = mGeometries["skullGeo"].get();
+	skullRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	skullRitem->InstanceCount = 0;
+	skullRitem->IndexCount = skullRitem->Geo->DrawArgs["skull"].IndexCount;
+	skullRitem->StartIndexLocation = skullRitem->Geo->DrawArgs["skull"].StartIndexLocation;
+	skullRitem->BaseVertexLocation = skullRitem->Geo->DrawArgs["skull"].BaseVertexLocation;
+	skullRitem->Bounds = skullRitem->Geo->DrawArgs["skull"].Bounds;
+
+	// Generate instance data.
 	const int n = 5;
 	mInstantceCount = n * n*n;
-	SkullRitem->Instantces.resize(mInstantceCount);
+	skullRitem->Instantces.resize(mInstantceCount);
 
 
 	float width = 200.0f;
@@ -735,20 +789,20 @@ void InstanceAndCullApp::BuildRenderItems()
 			{
 				int index = k * n*n + i * n + j;
 				// Position instanced along a 3D grid.
-				SkullRitem->Instantces[index].World = XMFLOAT4X4(
+				skullRitem->Instantces[index].World = XMFLOAT4X4(
 					1.0f, 0.0f, 0.0f, 0.0f,
 					0.0f, 1.0f, 0.0f, 0.0f,
 					0.0f, 0.0f, 1.0f, 0.0f,
 					x + j * dx, y + i * dy, z + k * dz, 1.0f);
 
-				XMStoreFloat4x4(&SkullRitem->Instantces[index].TexTransform, XMMatrixScaling(2.0f, 2.0f, 1.0f));
-				SkullRitem->Instantces[index].MaterialIndex = index % mMaterials.size();
+				XMStoreFloat4x4(&skullRitem->Instantces[index].TexTransform, XMMatrixScaling(2.0f, 2.0f, 1.0f));
+				skullRitem->Instantces[index].MaterialIndex = index % mMaterials.size();
 			}
 		}
 	}
 
 
-	mAllRitems.push_back(std::move(SkullRitem));
+	mAllRitems.push_back(std::move(skullRitem));
 
 	// All the render items are opaque.
 	for (auto& e : mAllRitems)
