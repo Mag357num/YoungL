@@ -190,6 +190,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClInclude Include="LitWave\FrameResource_LitWave.h" />
     <ClInclude Include="LitWave\LitColumnsApp.h" />
     <ClInclude Include="LitWave\LitWavesApp.h" />
+    <ClInclude Include="Picking\FrameResource_Picking.h" />
+    <ClInclude Include="Picking\PickingApp.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ShapesApp.h" />
     <ClInclude Include="stdafx.h" />
@@ -229,6 +231,8 @@ xcopy /e /r /y /i $(ProjectDir)Textures $(OutDir)Textures</Command>
     <ClCompile Include="LitWave\FrameResource_LitWave.cpp" />
     <ClCompile Include="LitWave\LitColumnsApp.cpp" />
     <ClCompile Include="LitWave\LitWavesApp.cpp" />
+    <ClCompile Include="Picking\FrameResource_Picking.cpp" />
+    <ClCompile Include="Picking\PickingApp.cpp" />
     <ClCompile Include="ShapesApp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
