@@ -79,7 +79,7 @@ private:
 	void BuildFrameResources();
 	void BuildPSOs();
 
-	void OnKeyboardInputEvent();
+	void OnKeyboardInputEvent(const GameTimer& gt);
 	void UpdateObjCBs();
 	void UpdatePassCBs();
 	void UpdateMaterialCBs();
