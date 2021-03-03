@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\Misc">
+      <UniqueIdentifier>{ae6565b0-7720-4142-af4f-3837f82fab95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Misc">
+      <UniqueIdentifier>{7fa99895-5273-4be9-9a6e-48207fa1e068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Math">
+      <UniqueIdentifier>{0d8d4175-27c4-4da9-9e2f-72b66b709f61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Math">
+      <UniqueIdentifier>{65b9eda3-24e9-4c8a-a70a-258014781866}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Graphics">
+      <UniqueIdentifier>{991a99d7-55cf-480e-a1f5-4d833f13037a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Graphics">
+      <UniqueIdentifier>{c07da6ea-4f79-4d1f-a0a4-06ecb5f32993}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EngineCore.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCore.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\GameTimer.cpp">
+      <Filter>源文件\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\GameInput.cpp">
+      <Filter>源文件\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\Utility.cpp">
+      <Filter>源文件\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\GraphicsCore.cpp">
+      <Filter>源文件\Graphics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\GameTimer.h">
+      <Filter>头文件\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\GameInput.h">
+      <Filter>头文件\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\Utility.h">
+      <Filter>头文件\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Common.h">
+      <Filter>头文件\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GraphicsCore.h">
+      <Filter>头文件\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GPUResource.h">
+      <Filter>头文件\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\GPUBuffer.h">
+      <Filter>头文件\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
