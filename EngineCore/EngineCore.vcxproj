@@ -141,7 +141,16 @@
   <ItemGroup>
     <ClCompile Include="EngineCore.cpp" />
     <ClCompile Include="GameCore.cpp" />
+    <ClCompile Include="Graphics\Buffer\BufferManager.cpp" />
+    <ClCompile Include="Graphics\Buffer\GPUBuffer.cpp" />
     <ClCompile Include="Graphics\GraphicsCore.cpp" />
+    <ClCompile Include="Graphics\RHI\CommandAllocatorPool.cpp" />
+    <ClCompile Include="Graphics\RHI\CommandContext.cpp" />
+    <ClCompile Include="Graphics\RHI\CommandListManager.cpp" />
+    <ClCompile Include="Graphics\RHI\CommandSignature.cpp" />
+    <ClCompile Include="Graphics\RHI\DescriptorHeap.cpp" />
+    <ClCompile Include="Graphics\RHI\RootSignature.cpp" />
+    <ClCompile Include="Misc\Camera.cpp" />
     <ClCompile Include="Misc\GameInput.cpp" />
     <ClCompile Include="Misc\GameTimer.cpp" />
     <ClCompile Include="Misc\Utility.cpp" />
@@ -150,10 +159,23 @@
   <ItemGroup>
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="GameCore.h" />
-    <ClInclude Include="Graphics\GPUBuffer.h" />
-    <ClInclude Include="Graphics\GPUResource.h" />
+    <ClInclude Include="Graphics\Buffer\BufferManager.h" />
+    <ClInclude Include="Graphics\Buffer\Color.h" />
+    <ClInclude Include="Graphics\Buffer\ColorBuffer.h" />
+    <ClInclude Include="Graphics\Buffer\DepthBuffer.h" />
+    <ClInclude Include="Graphics\Buffer\GPUBuffer.h" />
+    <ClInclude Include="Graphics\Buffer\GPUResource.h" />
+    <ClInclude Include="Graphics\Buffer\PixelBuffer.h" />
+    <ClInclude Include="Graphics\EsramAllocator.h" />
     <ClInclude Include="Graphics\GraphicsCore.h" />
+    <ClInclude Include="Graphics\RHI\CommandAllocatorPool.h" />
+    <ClInclude Include="Graphics\RHI\CommandContext.h" />
+    <ClInclude Include="Graphics\RHI\CommandListManager.h" />
+    <ClInclude Include="Graphics\RHI\CommandSignature.h" />
+    <ClInclude Include="Graphics\RHI\DescriptorHeap.h" />
+    <ClInclude Include="Graphics\RHI\RootSignature.h" />
     <ClInclude Include="Math\Common.h" />
+    <ClInclude Include="Misc\Camera.h" />
     <ClInclude Include="Misc\GameInput.h" />
     <ClInclude Include="Misc\GameTimer.h" />
     <ClInclude Include="Misc\Utility.h" />

@@ -31,6 +31,18 @@
     <Filter Include="源文件\Graphics">
       <UniqueIdentifier>{c07da6ea-4f79-4d1f-a0a4-06ecb5f32993}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Graphics\Buffer">
+      <UniqueIdentifier>{19fc5735-97cd-445a-8249-36c2ea56603d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Graphics\RHI">
+      <UniqueIdentifier>{15d09272-f4d0-4ac7-aee0-741f1585a765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Graphics\Buffer">
+      <UniqueIdentifier>{a9090ec1-1a96-44e8-8efa-97e2447797b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Graphics\RHI">
+      <UniqueIdentifier>{6b0988e3-c7f9-44a1-a31f-44cf5b8e4906}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineCore.cpp">
@@ -53,6 +65,33 @@
     </ClCompile>
     <ClCompile Include="Graphics\GraphicsCore.cpp">
       <Filter>源文件\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Buffer\GPUBuffer.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\RootSignature.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\CommandListManager.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\CommandAllocatorPool.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\CommandContext.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\DescriptorHeap.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Buffer\BufferManager.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\CommandSignature.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\Camera.cpp">
+      <Filter>源文件\Misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,11 +119,50 @@
     <ClInclude Include="Graphics\GraphicsCore.h">
       <Filter>头文件\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\GPUResource.h">
+    <ClInclude Include="Graphics\EsramAllocator.h">
       <Filter>头文件\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\GPUBuffer.h">
-      <Filter>头文件\Graphics</Filter>
+    <ClInclude Include="Graphics\Buffer\Color.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\ColorBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\DepthBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\GPUBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\GPUResource.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\PixelBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\RootSignature.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\CommandListManager.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\CommandAllocatorPool.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\CommandContext.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\DescriptorHeap.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\BufferManager.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\CommandSignature.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\Camera.h">
+      <Filter>头文件\Misc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@
 
 #include "GPUResource.h"
 
+class EsramAllocator;
+
 class GpuBuffer : public GPUResource
 {
 public:
@@ -12,7 +14,7 @@ public:
 	void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, EsrmAllocator& Allocator,
 		const void* initialData = nullptr);
 
-	void CreatePlaced(const std::wstring& name, DID3D12Heap* pBackingHeap, uint32_t HeapOffset, uint32_t NumElements,
+	void CreatePlaced(const std::wstring& name, ID3D12Heap* pBackingHeap, uint32_t HeapOffset, uint32_t NumElements,
 		uint32_t ElementSize, const void* initialData = nullptr);
 
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return m_UAV; }
@@ -87,15 +89,33 @@ class StructuredBuffer : public GpuBuffer
 public:
 	virtual void Destroy()override
 	{
-		m_CurrentBuffer.Destroy();
+		m_CounterBuffer.Destroy();
 		GpuBuffer::Destroy();
 	}
 
 	virtual void CreateDerivedViews(void)override;
 
+	ByteAddressBuffer& GetCounterBuffer(void) { return m_CounterBuffer; }
+
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetCounterUAV(CommandContext& Context);
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetCounterSRV(CommandContext& Context);
 
 private:
-	ByteAddressBuffer m_CurrentBuffer;
+	ByteAddressBuffer m_CounterBuffer;
 };
+
+class TypedBuffer : public GpuBuffer
+{
+public:
+	TypedBuffer(DXGI_FORMAT Format) : m_DataFormat(Format)
+	{
+
+	}
+
+
+	virtual void CreateDerivedViews(void)override;
+
+private:
+	DXGI_FORMAT m_DataFormat;
+};
+
