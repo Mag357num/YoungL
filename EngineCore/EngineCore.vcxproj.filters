@@ -93,6 +93,9 @@
     <ClCompile Include="Misc\Camera.cpp">
       <Filter>源文件\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\RHI\PipelineState.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="Misc\Camera.h">
       <Filter>头文件\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\PipelineState.h">
+      <Filter>头文件\Graphics\RHI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

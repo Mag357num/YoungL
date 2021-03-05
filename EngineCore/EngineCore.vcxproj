@@ -149,6 +149,7 @@
     <ClCompile Include="Graphics\RHI\CommandListManager.cpp" />
     <ClCompile Include="Graphics\RHI\CommandSignature.cpp" />
     <ClCompile Include="Graphics\RHI\DescriptorHeap.cpp" />
+    <ClCompile Include="Graphics\RHI\PipelineState.cpp" />
     <ClCompile Include="Graphics\RHI\RootSignature.cpp" />
     <ClCompile Include="Misc\Camera.cpp" />
     <ClCompile Include="Misc\GameInput.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="Graphics\RHI\CommandListManager.h" />
     <ClInclude Include="Graphics\RHI\CommandSignature.h" />
     <ClInclude Include="Graphics\RHI\DescriptorHeap.h" />
+    <ClInclude Include="Graphics\RHI\PipelineState.h" />
     <ClInclude Include="Graphics\RHI\RootSignature.h" />
     <ClInclude Include="Math\Common.h" />
     <ClInclude Include="Misc\Camera.h" />
