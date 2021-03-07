@@ -11,7 +11,7 @@ public:
 		m_CurrentHeap(nullptr),
 		m_DescriptorSize(0)
 	{
-		m_CurrentHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		m_Currenthandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 	}
 
 
