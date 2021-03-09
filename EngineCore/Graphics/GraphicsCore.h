@@ -28,7 +28,7 @@ namespace Graphics
 	extern ID3D12Device* g_Device;
 
 	//reserved for command manager
-	extern CommandListManager g_CommandManager;
+	extern CommandListmanager g_CommandManager;
 	//reservced for context manager
 	extern ContextManager g_ContextManager;
 

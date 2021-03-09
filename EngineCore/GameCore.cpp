@@ -1,6 +1,7 @@
 #include "GameCore.h"
 #include "Misc/GameInput.h"
 #include "Misc/GameTimer.h"
+#include "Buffer/ColorBuffer.h"
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma comment(lib, "runtimeobject.lib")

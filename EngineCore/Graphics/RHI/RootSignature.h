@@ -20,7 +20,7 @@ public:
 			delete[] m_RootParam.DescriptorTable.pDescriptorRanges;
 		}
 
-		m_RootParam.ParameterType = (D3D12_ROOT_PARAMETER_TYPE)0xFFFFFFFF
+		m_RootParam.ParameterType = (D3D12_ROOT_PARAMETER_TYPE)0xFFFFFFFF;
 	}
 
 	void InitAsConstants(UINT Register, UINT NumDwords, D3D12_SHADER_VISIBILITY Visibility= D3D12_SHADER_VISIBILITY_ALL, UINT Space = 0)

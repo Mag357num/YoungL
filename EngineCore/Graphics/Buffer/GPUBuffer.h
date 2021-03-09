@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GPUResource.h"
+#include "UploadBuffer.h"
 
 class EsramAllocator;
 
@@ -11,7 +12,9 @@ public:
 
 	void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, const void* initialData = nullptr);
 
-	void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, EsrmAllocator& Allocator,
+	void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, const UploadBuffer& SrcData, uint32_t SrcOffset = 0);
+
+	void Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, EsramAllocator& Allocator,
 		const void* initialData = nullptr);
 
 	void CreatePlaced(const std::wstring& name, ID3D12Heap* pBackingHeap, uint32_t HeapOffset, uint32_t NumElements,
@@ -67,6 +70,26 @@ protected:
 	D3D12_RESOURCE_FLAGS m_ResourceFlags;
 
 };
+
+inline D3D12_VERTEX_BUFFER_VIEW GpuBuffer::VertexBufferView(size_t Offset, uint32_t Size, uint32_t Stride) const
+{
+	D3D12_VERTEX_BUFFER_VIEW VBufferView;
+	VBufferView.BufferLocation = m_GpuVirtualAddress + Offset;
+	VBufferView.SizeInBytes = Size;
+	VBufferView.StrideInBytes = Stride;
+
+	return VBufferView;
+}
+
+inline D3D12_INDEX_BUFFER_VIEW GpuBuffer::IndexBufferView(size_t Offset, uint32_t Size, bool b32Bit /* = false */) const
+{
+	D3D12_INDEX_BUFFER_VIEW IBufferView;
+	IBufferView.BufferLocation = m_GpuVirtualAddress + Offset;
+	IBufferView.Format = b32Bit ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
+	IBufferView.SizeInBytes = Size;
+
+	return IBufferView;
+}
 
 
 class ByteAddressBuffer : public GpuBuffer

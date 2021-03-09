@@ -96,6 +96,9 @@
     <ClCompile Include="Graphics\RHI\PipelineState.cpp">
       <Filter>源文件\Graphics\RHI</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Buffer\UploadBuffer.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\RHI\PipelineState.h">
       <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\UploadBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

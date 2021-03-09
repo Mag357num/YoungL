@@ -143,6 +143,7 @@
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="Graphics\Buffer\BufferManager.cpp" />
     <ClCompile Include="Graphics\Buffer\GPUBuffer.cpp" />
+    <ClCompile Include="Graphics\Buffer\UploadBuffer.cpp" />
     <ClCompile Include="Graphics\GraphicsCore.cpp" />
     <ClCompile Include="Graphics\RHI\CommandAllocatorPool.cpp" />
     <ClCompile Include="Graphics\RHI\CommandContext.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Graphics\Buffer\GPUBuffer.h" />
     <ClInclude Include="Graphics\Buffer\GPUResource.h" />
     <ClInclude Include="Graphics\Buffer\PixelBuffer.h" />
+    <ClInclude Include="Graphics\Buffer\UploadBuffer.h" />
     <ClInclude Include="Graphics\EsramAllocator.h" />
     <ClInclude Include="Graphics\GraphicsCore.h" />
     <ClInclude Include="Graphics\RHI\CommandAllocatorPool.h" />
