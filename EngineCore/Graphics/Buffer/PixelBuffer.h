@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../../pch.h"
 #include "GPUResource.h"
 
 class EsramAllocator;
@@ -33,8 +33,8 @@ protected:
 	static DXGI_FORMAT GetUAVFormat(DXGI_FORMAT Format);
 	static DXGI_FORMAT GetDSVFormat(DXGI_FORMAT Format);
 	static DXGI_FORMAT GetDepthFormat(DXGI_FORMAT Format);
-	static DXGI_FORMAT GETStencilFormat(DXGI_FORMAT Format);
-	static BytesPerPixel(DXGI_FORMAT Format);
+	static DXGI_FORMAT GetStencilFormat(DXGI_FORMAT Format);
+	static size_t BytesPerPixel(DXGI_FORMAT Format);
 
 	uint32_t m_Width;
 	uint32_t m_Height;
