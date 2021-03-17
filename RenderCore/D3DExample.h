@@ -17,7 +17,7 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
-#define  AssetPath L"E:/mypros/TestUE4/Saved/Model/ModelSave.Bin"
+#define  AssetPath L"Models/ModelSave.Bin"
 #define  ShaderPath L"Shaders\\Test.hlsl"
 #define WindowClass L"MainWnd"
 #define  MenuName L"D3DEx"
