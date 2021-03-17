@@ -77,8 +77,8 @@ void DXExample::InitWindow()
 	WDClass.hCursor = LoadCursor(0, IDC_ARROW);
 	WDClass.hIcon = LoadIcon(0, IDI_APPLICATION);
 	WDClass.style = CS_HREDRAW | CS_VREDRAW;
-	WDClass.lpszClassName = L"MainWnd";
-	WDClass.lpszMenuName = L"D3DEx";
+	WDClass.lpszClassName = WindowClass;
+	WDClass.lpszMenuName = MenuName;
 
 	RegisterClass(&WDClass);
 	//adjust, create window
@@ -86,7 +86,7 @@ void DXExample::InitWindow()
 	AdjustWindowRect(&Rec, WS_OVERLAPPEDWINDOW, false);
 	int Width = Rec.right - Rec.left;
 	int Height = Rec.bottom - Rec.top;
-	Mainhandle = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, Width, Height, 0, 0, AppInstan, 0);
+	Mainhandle = CreateWindow(WindowClass, WindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, Width, Height, 0, 0, AppInstan, 0);
 
 	//show window
 	ShowWindow(Mainhandle, SW_SHOW);
@@ -270,7 +270,7 @@ void DXExample::LoadAsset()
 	
 	//load asset
 	std::vector<Vertex> Vertices;
-	std::ifstream Fin("E:/mypros/TestUE4/Saved/Model/ModelSave.Bin", std::ios::in | std::ios::binary);
+	std::ifstream Fin(AssetPath, std::ios::in | std::ios::binary);
 
 	int VertexNum;
 	Fin.read((char*)&VertexNum, sizeof(int));
@@ -281,7 +281,15 @@ void DXExample::LoadAsset()
 		Fin.read((char*)&NewVert.Position.y, sizeof(float));
 		Fin.read((char*)&NewVert.Position.z, sizeof(float));
 
-		NewVert.Color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+
+		Fin.read((char*)&NewVert.Normal.x, sizeof(float));
+		Fin.read((char*)&NewVert.Normal.y, sizeof(float));
+		Fin.read((char*)&NewVert.Normal.z, sizeof(float));
+
+		Fin.read((char*)&NewVert.Uv.x, sizeof(float));
+		Fin.read((char*)&NewVert.Uv.y, sizeof(float));
+
+		NewVert.Color = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
 		Vertices.push_back(NewVert);
 	}
 
@@ -305,21 +313,16 @@ void DXExample::LoadAsset()
 
 void DXExample::Update()
 {
-	XMFLOAT4X4 mWorld = XMFLOAT4X4(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	);
-	XMFLOAT4X4 mView = mWorld;
+	XMFLOAT4X4 mWorld = IdendityMatrix;
+	XMFLOAT4X4 mView = IdendityMatrix;
 
-	XMFLOAT4X4 mProj = mView;
+	XMFLOAT4X4 mProj = IdendityMatrix;
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1416, static_cast<float>(M_ClientWidth/ M_ClientHeight), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&mProj, P);
 
 	// Build the view matrix.
-	XMVECTOR pos = XMVectorSet(800, 0, 0, 1.0f);
+	XMVECTOR pos = XMVectorSet(0, 0, 800, 1.0f);
 	XMVECTOR target = XMVectorZero();
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -333,6 +336,7 @@ void DXExample::Update()
 	// Update the constant buffer with the latest worldViewProj matrix.
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+	XMStoreFloat3(&objConstants.CameraLocation, pos);
 	M_ConstantUploadBuffer->CopyData(0, objConstants);
 }
 
@@ -406,36 +410,6 @@ void DXExample::FlushCommandQueue()
 
 void DXExample::BuildRootSignature()
 {
-	//D3D12_ROOT_PARAMETER RootParameters[1];
-	//RootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	//RootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	//
-	//D3D12_ROOT_DESCRIPTOR_TABLE DesTable;
-	//DesTable.NumDescriptorRanges = 1;
-
-	//D3D12_DESCRIPTOR_RANGE DesRange;
-	//DesRange.BaseShaderRegister = 0;
-	//DesRange.NumDescriptors = 1;
-	//DesRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-	//DesRange.RegisterSpace = 0;
-	//DesTable.pDescriptorRanges = &DesRange;
-	//
-	//RootParameters[0].DescriptorTable = DesTable;
-
-	//D3D12_ROOT_SIGNATURE_DESC RootSigDesc;
-	//RootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	////1, RootParameters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT)
-	//RootSigDesc.NumParameters = 1;
-	//RootSigDesc.pParameters = RootParameters;
-	//RootSigDesc.NumStaticSamplers = 0;
-	//RootSigDesc.pStaticSamplers = nullptr;
-
-	//ComPtr<ID3DBlob> ResultOut;
-	//ComPtr<ID3DBlob> ErrorOut;
-
-	//D3D12SerializeRootSignature(&RootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, ResultOut.GetAddressOf(), ErrorOut.GetAddressOf());
-	//M_Device->CreateRootSignature(0, ResultOut->GetBufferPointer(), ResultOut->GetBufferSize(), IID_PPV_ARGS(&M_RootSignaure));
-
 	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
 
 	// Create a single descriptor table of CBVs.
@@ -479,16 +453,20 @@ void DXExample::BuildDescriptorHeap()
 void DXExample::BuildShadersInputLayout()
 {
 	UINT CompileFlags = 0;
+
+#if defined(DEBUG) || defined(_DEBUG)  
+	CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
 	ComPtr<ID3DBlob> CompileError;
-	std::wstring Path = L"Shaders\\Test.hlsl";
-	D3DCompileFromFile(Path.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
+	D3DCompileFromFile(ShaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
 
 	if (CompileError != nullptr)
 	{
 		OutputDebugStringA((char*)CompileError->GetBufferPointer());
 	}
 
-	D3DCompileFromFile(Path.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
+	D3DCompileFromFile(ShaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
 	if (CompileError != nullptr)
 	{
 		OutputDebugStringA((char*)CompileError->GetBufferPointer());
@@ -497,7 +475,9 @@ void DXExample::BuildShadersInputLayout()
 	M_ShadersInputDesc =
 	{
 		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 

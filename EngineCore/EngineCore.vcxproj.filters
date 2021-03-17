@@ -105,6 +105,12 @@
     <ClCompile Include="Graphics\Buffer\ColorBuffer.cpp">
       <Filter>源文件\Graphics\Buffer</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Buffer\Color.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\Buffer\DepthBuffer.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

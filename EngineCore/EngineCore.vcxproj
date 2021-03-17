@@ -142,7 +142,9 @@
     <ClCompile Include="EngineCore.cpp" />
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="Graphics\Buffer\BufferManager.cpp" />
+    <ClCompile Include="Graphics\Buffer\Color.cpp" />
     <ClCompile Include="Graphics\Buffer\ColorBuffer.cpp" />
+    <ClCompile Include="Graphics\Buffer\DepthBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\GPUBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\PixelBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\UploadBuffer.cpp" />

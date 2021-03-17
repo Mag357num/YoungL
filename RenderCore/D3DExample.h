@@ -17,9 +17,18 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
+#define  AssetPath L"E:/mypros/TestUE4/Saved/Model/ModelSave.Bin"
+#define  ShaderPath L"Shaders\\Test.hlsl"
+#define WindowClass L"MainWnd"
+#define  MenuName L"D3DEx"
+#define WindowTitle L"D3D12Example"
+
 struct Vertex
 {
 	 XMFLOAT3 Position;
+	 XMFLOAT3 Normal;
+	 XMFLOAT2 Uv;
+
 	 XMFLOAT4 Color;
 };
 
@@ -30,6 +39,8 @@ struct ObjectConstants
 		0.0f, 1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f);
+
+	XMFLOAT3 CameraLocation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 };
 
 class DrawGeometry
@@ -165,7 +176,6 @@ public:
 private:
 	HINSTANCE AppInstan = nullptr;
 	HWND Mainhandle;
-	std::wstring mMainWndCaption = L"d3d App";
 
 
 	//for graphics
@@ -217,4 +227,11 @@ private:
 
 	//pso
 	ComPtr<ID3D12PipelineState>	M_Pso;
+
+	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
 };
