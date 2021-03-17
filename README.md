@@ -2,8 +2,8 @@
 
 ## EngineCore: DX12 Course work
 - Has a class named D3DExample
-- version 0: basic process for draw objects
-- version 1: add initial blinn phone
+- version 0: basic process for drawing objects
+- version 1: initial blinn phone
 
 ## RenderCore:Expermental framework for rhi
 - version 0: application interface(WINAPI relative)
