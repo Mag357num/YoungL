@@ -48,7 +48,7 @@ public:
 	
 
 protected:
-	void CreateDerivedViewsd(ID3D12Device* Device, DXGI_FORMAT Format);
+	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format);
 
 	float m_ClearDepth;
 	uint8_t m_ClearStencil;

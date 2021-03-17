@@ -87,7 +87,7 @@ DescriptorHandle DescriptorHeap::Allocate(uint32_t Count /* = 1 */)
 	return Ret;
 }
 
-bool DescriptorHeap::ValidateHandle(const DescriptorHandle& Handle)
+bool DescriptorHeap::ValidateHandle(const DescriptorHandle& Handle)const
 {
 	if (Handle.GetCpuPtr() < m_FirstHandle.GetCpuPtr() ||
 		Handle.GetCpuPtr() >= m_FirstHandle.GetCpuPtr() + m_HeapDesc.NumDescriptors * m_DescriptorSize)

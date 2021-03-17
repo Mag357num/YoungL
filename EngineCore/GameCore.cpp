@@ -52,39 +52,6 @@ namespace GameCore
 		game.Update(DeltaTime);
 		game.RenderScene();
 
-		//PostEffects::Render();
-
-		//if (TestGenerateMips)
-		//{
-		//	GraphicsContext& MipsContext = GraphicsContext::Begin();
-
-		//	// Exclude from timings this copy necessary to setup the test
-		//	MipsContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
-		//	MipsContext.TransitionResource(g_GenMipsBuffer, D3D12_RESOURCE_STATE_COPY_DEST);
-		//	MipsContext.CopySubresource(g_GenMipsBuffer, 0, g_SceneColorBuffer, 0);
-
-		//	EngineProfiling::BeginBlock(L"GenerateMipMaps()", &MipsContext);
-		//	g_GenMipsBuffer.GenerateMipMaps(MipsContext);
-		//	EngineProfiling::EndBlock(&MipsContext);
-
-		//	MipsContext.Finish();
-		//}
-
-		//UI renderer
-		//{
-		//	GraphicsContext& UiContext = GraphicsContext::Begin(L"Render UI");
-		//	UiContext.TransitionResource(g_OverlayBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-		//	UiContext.ClearColor(g_OverlayBuffer);
-		//	UiContext.SetRenderTarget(g_OverlayBuffer.GetRTV());
-		//	UiContext.SetViewportAndScissor(0, 0, g_OverlayBuffer.GetWidth(), g_OverlayBuffer.GetHeight());
-		//	game.RenderUI(UiContext);
-		//	
-		//	EngineTuning::Display(UiContext, 10.0f, 40.0f, 1900.0f, 1040.0f);
-
-		//	UiContext.Finish();
-		//}
-
-
 		Graphics::Present();
 
 		return !game.IsDone();

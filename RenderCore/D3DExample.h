@@ -37,7 +37,7 @@ class DrawGeometry
 public:
 	DrawGeometry(ID3D12Device* Device, std::vector<Vertex>& Vertices, std::vector<uint32_t> Indices) 
 	{
-		VertexBufferSize = sizeof(Vertices);
+		VertexBufferSize = sizeof(Vertex) * Vertices.size();
 		VertexStrideSize = sizeof(Vertex);
 		Device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
@@ -51,7 +51,7 @@ public:
 
 
 		//create index buffer view
-		IndexBufferSize = sizeof(Indices);
+		IndexBufferSize = sizeof(uint32_t) * Indices.size();
 		Device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 			IID_PPV_ARGS(&M_IndexBuffer));
@@ -122,6 +122,8 @@ public:
 	//
 	void LoadPipline();
 	void OnResize();
+
+
 	void LoadAsset();
 
 	//for model rendering
@@ -143,20 +145,20 @@ public:
 
 	//for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
-		return m_BackBuffer[M_CurrentBackBuffer].Get();
+		return M_BackBuffer[M_CurrentBackBuffer].Get();
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()
 	{
 		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			RtvHeap->GetCPUDescriptorHandleForHeapStart(),
+			M_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
 			M_CurrentBackBuffer,
-			RtvDescriptorSize);
+			M_RtvDescriptorSize);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentDepthStencilView()
 	{
-		return DsvHeap->GetCPUDescriptorHandleForHeapStart();
+		return M_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
 
@@ -167,37 +169,37 @@ private:
 
 
 	//for graphics
-	int ClientWidth = 800;
-	int ClientHeight = 600;
+	int M_ClientWidth = 800;
+	int M_ClientHeight = 600;
 
-	ComPtr<IDXGIFactory4> m_Factory;
-	ComPtr<ID3D12Device> m_Device;
-	ComPtr<IDXGISwapChain> m_SwapChain;
+	ComPtr<IDXGIFactory4> M_Factory;
+	ComPtr<ID3D12Device> M_Device;
+	ComPtr<IDXGISwapChain> M_SwapChain;
 
-	ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
-	ComPtr<ID3D12CommandQueue> m_CommandQueue;
-	ComPtr<ID3D12GraphicsCommandList>	m_CommandList;
-	ComPtr<ID3D12Fence>	m_Fence;
-	UINT64 m_CurrentFenceValue;
+	ComPtr<ID3D12CommandAllocator> M_CommandAllocator;
+	ComPtr<ID3D12CommandQueue> M_CommandQueue;
+	ComPtr<ID3D12GraphicsCommandList>	M_CommandList;
+	ComPtr<ID3D12Fence>	M_Fence;
+	UINT64 M_CurrentFenceValue;
 
-	ComPtr<ID3D12DescriptorHeap>	RtvHeap;
-	ComPtr<ID3D12DescriptorHeap>	DsvHeap;
-	static const int m_SwapchainBackbufferCount = 2;
-	ComPtr<ID3D12Resource>	m_BackBuffer[m_SwapchainBackbufferCount];
-	ComPtr<ID3D12Resource> m_DepthStencilBuffer;
+	ComPtr<ID3D12DescriptorHeap>	M_RtvHeap;
+	ComPtr<ID3D12DescriptorHeap>	M_DsvHeap;
+	static const int M_SwapchainBackbufferCount = 2;
+	ComPtr<ID3D12Resource>	M_BackBuffer[M_SwapchainBackbufferCount];
+	ComPtr<ID3D12Resource> M_DepthStencilBuffer;
 	int M_CurrentBackBuffer = 0;
 	
-	UINT RtvDescriptorSize;
-	UINT DsvDescriptorSize;
-	UINT CbvSrvUavDescriptorSize;
+	UINT M_RtvDescriptorSize;
+	UINT M_DsvDescriptorSize;
+	UINT M_CbvSrvUavDescriptorSize;
 
-	DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT M_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_FORMAT M_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	D3D12_VIEWPORT M_ScreenViewport;
 	D3D12_RECT M_ScissorRect;
 
-	std::vector<std::unique_ptr<DrawGeometry>> Geometies;
+	std::vector<std::unique_ptr<DrawGeometry>> M_Geometies;
 
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;

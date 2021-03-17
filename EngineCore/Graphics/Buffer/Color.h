@@ -42,8 +42,8 @@ public:
 	uint32_t R8G8B8A8() const;
 
 	//pak an hdr color into 32-bits
-	uint32_t R11G11B10F(bool RoundToEven = false) const;
-	uint32_t R9G9B9E5() const;
+	//uint32_t R11G11B10F(bool RoundToEven = false) const;
+	//uint32_t R9G9B9E5() const;
 
 	operator XMVECTOR() const { return m_Value; }
 
