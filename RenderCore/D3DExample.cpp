@@ -84,9 +84,9 @@ void DXExample::InitWindow()
 	//adjust, create window
 	RECT Rec = {0, 0, M_ClientWidth, M_ClientHeight};
 	AdjustWindowRect(&Rec, WS_OVERLAPPEDWINDOW, false);
-	int Width = Rec.right - Rec.left;
-	int Height = Rec.bottom - Rec.top;
-	Mainhandle = CreateWindow(WindowClass, WindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, Width, Height, 0, 0, AppInstan, 0);
+	//int Width = Rec.right - Rec.left;
+	//int Height = Rec.bottom - Rec.top;
+	Mainhandle = CreateWindow(WindowClass, WindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, M_ClientWidth, M_ClientHeight, 0, 0, AppInstan, 0);
 
 	//show window
 	ShowWindow(Mainhandle, SW_SHOW);
@@ -119,7 +119,7 @@ void DXExample::LoadPipline()
 	}
 	
 	M_RtvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	M_DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	M_DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV); 
 	M_CbvSrvUavDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	//create commang objects
@@ -152,7 +152,7 @@ void DXExample::LoadPipline()
 	SwapChainDesc.BufferDesc.Format = M_BackBufferFormat;
 	SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	SwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	SwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
 	SwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 
 
@@ -289,7 +289,8 @@ void DXExample::LoadAsset()
 		Fin.read((char*)&NewVert.Uv.x, sizeof(float));
 		Fin.read((char*)&NewVert.Uv.y, sizeof(float));
 
-		NewVert.Color = XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
+		//pass normal to color
+		NewVert.Color = XMFLOAT4((NewVert.Normal.x + 1.0f) * 0.5f, (NewVert.Normal.y + 1.0f) * 0.5f, (NewVert.Normal.z + 1.0f) * 0.5f, 1.0f);
 		Vertices.push_back(NewVert);
 	}
 
@@ -318,13 +319,13 @@ void DXExample::Update()
 
 	XMFLOAT4X4 mProj = IdendityMatrix;
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1416, static_cast<float>(M_ClientWidth/ M_ClientHeight), 1.0f, 1000.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1416, (1.0f*M_ClientWidth/ M_ClientHeight), 1.0f, 1000.0f);
 	XMStoreFloat4x4(&mProj, P);
 
 	// Build the view matrix.
-	XMVECTOR pos = XMVectorSet(0, 0, 800, 1.0f);
-	XMVECTOR target = XMVectorZero();
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR pos = XMVectorSet(500, 500, 100, 1.0f);
+	XMVECTOR target = XMVectorSet(0, 0, 150, 0.0f);
+	XMVECTOR up = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
 	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
 	XMStoreFloat4x4(&mView, view);
@@ -489,8 +490,9 @@ void DXExample::BuildPsos()
 	Desc.pRootSignature = M_RootSignaure.Get();
 	Desc.InputLayout = { M_ShadersInputDesc.data(), (UINT)M_ShadersInputDesc.size()};
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);;
-	Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);;
+	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+	Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	Desc.VS = 
 	{
 		reinterpret_cast<BYTE*>(M_Vs->GetBufferPointer()),

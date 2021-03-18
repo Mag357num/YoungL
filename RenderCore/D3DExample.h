@@ -122,7 +122,10 @@ public:
 class DXExample
 {
 public:
-	DXExample(HINSTANCE Instance) :AppInstan(Instance){}
+	DXExample(HINSTANCE Instance) :AppInstan(Instance){
+		M_ClientWidth = 800;
+		M_ClientHeight = 600;
+	}
 	~DXExample() {}
 
 	bool Initialize();
