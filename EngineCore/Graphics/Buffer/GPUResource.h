@@ -38,6 +38,11 @@ public:
 	ID3D12Resource* GetResource() { return Y_Resource.Get(); }
 	const ID3D12Resource* GetResource() const { return Y_Resource.Get(); }
 
+	D3D12_RESOURCE_STATES GetResourceState() { return Y_UsageState; }
+	void SetResourceState(D3D12_RESOURCE_STATES InState) { Y_UsageState = InState; }
+	D3D12_RESOURCE_STATES GetResourceTransitionState() { return Y_TransitionState; }
+	void SetResourceTransitionState(D3D12_RESOURCE_STATES InState) { Y_TransitionState = InState; }
+
 	D3D12_GPU_VIRTUAL_ADDRESS GetGpuVirtualAddress() const { return Y_GpuVirtualAddress; }
 
 protected:

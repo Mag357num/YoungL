@@ -84,10 +84,10 @@ public:
 
 
 
-	void TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-	void BeginResourceTransition(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-	void InsertUAVBarrier();
-	void InsertAliasBarrier();
+	void TransitionResource(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+	void BeginResourceTransition(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+	void InsertUAVBarrier(GPUResource& InResource, bool FlushImmediate);
+	void InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate);
 	
 	inline void FlushResourceBarriers(void);
 

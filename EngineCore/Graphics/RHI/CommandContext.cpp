@@ -1,6 +1,7 @@
 #include "../../pch.h"
 #include "CommandContext.h"
 #include "../GraphicsCore.h"
+#include "../Buffer/GPUResource.h"
 
 using namespace Graphics;
 
@@ -150,6 +151,10 @@ uint64_t CommandContext::Finish(bool WaitForCompletion /* = false */)
 	return FenceValue;
 }
 
+void CommandContext::DestroyAllContexts()
+{
+	g_ContextManager.DestroyAllContexts();
+}
 
 void CommandContext::InitializeBuffer(GpuBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes /* = -1 */, size_t DestOffset /* = 0 */)
 {
@@ -161,9 +166,101 @@ void CommandContext::InitializeBuffer(GpuBuffer& Dest, const void* Data, size_t 
 
 }
 
-
-
-void CommandContext::TransitionResource(GPUResource& Resource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
+void CommandContext::TransitionResource(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
 {
+	D3D12_RESOURCE_STATES OldState = InResource->GetResourceState();
+	if (OldState != NewState)
+	{
+		ASSERT(Y_NumBarriesToFlush < 16, "Num Barriers to Flush exceed 16");
 
+		D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+		ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		
+		ResourceBarrier.Transition.pResource = InResource->GetResource();
+		ResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		ResourceBarrier.Transition.StateAfter = NewState;
+		ResourceBarrier.Transition.StateBefore = OldState;
+
+		if (NewState == InResource->GetResourceTransitionState())
+		{
+			ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
+			InResource->SetResourceTransitionState((D3D12_RESOURCE_STATES)-1);
+		}
+		else
+		{
+			ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE
+		}
+		
+		InResource->SetResourceState(NewState);
+
+	}
+	else if (NewState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+	{
+		InsertUAVBarrier();
+	}
+	
+
+	if (FlushImmediate || Y_NumBarriesToFlush == 16)
+	{
+		FlushResourceBarriers();
+	}
+}
+
+void CommandContext::BeginResourceTransition(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
+{
+	if (InResource->GetResourceTransitionState() !=(D3D12_RESOURCE_STATES)-1)
+	{
+		TransitionResource(InResource, InResource->GetResourceTransitionState());
+	}
+
+	D3D12_RESOURCE_STATES OldState = InResource->GetResourceState();
+	if (OldState != NewState)
+	{
+		ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+		D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+		ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		ResourceBarrier.Transition.pResource = InResource->GetResource();
+		ResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		ResourceBarrier.Transition.StateBefore = OldState;
+		ResourceBarrier.Transition.StateAfter = NewState;
+
+		ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
+		ResourceBarrier.SetResourceTransitionState(NewState);
+	}
+
+	if (FlushImmediate || Y_NumBarriesToFlush == 16)
+	{
+		FlushResourceBarriers();
+	}
+}
+
+void CommandContext::InsertUAVBarrier(GPUResource& InResource, bool FlushImmediate)
+{
+	ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+	D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+
+	ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	ResourceBarrier.UAV.pResource = InResource->GetResource();
+
+	if (FlushImmediate)
+	{
+		FlushResourceBarriers();
+	}
+}
+
+void CommandContext::InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate)
+{
+	ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+	D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+
+	ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+	ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	ResourceBarrier.Aliasing.pResourceBefore = Before->GetResource();
+	ResourceBarrier.Aliasing.pResourceAfter = Before->GetResource();
+
+	if (FlushImmediate)
+	{
+		FlushResourceBarriers();
+	}
 }
