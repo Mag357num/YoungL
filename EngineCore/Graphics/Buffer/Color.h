@@ -7,30 +7,30 @@ class Color
 {
 public: 
 	
-	Color():m_Value(g_XMOne){}
+	Color():Y_Value(g_XMOne){}
 	Color(FXMVECTOR Vec);
 	Color(const XMVECTORF32& Vec);
 	Color(float R, float G, float B, float A = 1.0f);
 	Color(uint16_t R, uint16_t G, uint16_t B, uint16_t A = 255, uint16_t BitDepth = 8);
 	explicit Color(uint32_t RGBALittleEndian);
 
-	float R() const { return XMVectorGetX(m_Value); }
-	float G() const { return XMVectorGetY(m_Value); }
-	float B() const { return XMVectorGetZ(m_Value); }
-	float A() const { return XMVectorGetW(m_Value); }
+	float R() const { return XMVectorGetX(Y_Value); }
+	float G() const { return XMVectorGetY(Y_Value); }
+	float B() const { return XMVectorGetZ(Y_Value); }
+	float A() const { return XMVectorGetW(Y_Value); }
 
-	bool operator==(const Color& Rhs) const { return XMVector4Equal(m_Value, Rhs.m_Value); }
-	bool operator!=(const Color& Rhs) const { return !XMVector4Equal(m_Value, Rhs.m_Value); }
+	bool operator==(const Color& Rhs) const { return XMVector4Equal(Y_Value, Rhs.Y_Value); }
+	bool operator!=(const Color& Rhs) const { return !XMVector4Equal(Y_Value, Rhs.Y_Value); }
 
-	void SetR(float R) { m_Value.f[0] = R; }
-	void SetG(float G) { m_Value.f[1] = G; }
-	void SetB(float B) { m_Value.f[2] = B; }
-	void SetA(float A) { m_Value.f[3] = A; }
+	void SetR(float R) { Y_Value.f[0] = R; }
+	void SetG(float G) { Y_Value.f[1] = G; }
+	void SetB(float B) { Y_Value.f[2] = B; }
+	void SetA(float A) { Y_Value.f[3] = A; }
 
 	float* GetPtr(void) { return reinterpret_cast<float*>(this); }
 	float& operator[](int Idx) { return GetPtr()[Idx]; }
 
-	void SetRGB(float R, float G, float B) { m_Value.v = XMVectorSelect(m_Value, XMVectorSet(R, G, B, B), g_XMMask3); }
+	void SetRGB(float R, float G, float B) { Y_Value.v = XMVectorSelect(Y_Value, XMVectorSet(R, G, B, B), g_XMMask3); }
 
 	Color ToSRGB() const;
 	Color FromSRGB() const;
@@ -45,10 +45,10 @@ public:
 	//uint32_t R11G11B10F(bool RoundToEven = false) const;
 	//uint32_t R9G9B9E5() const;
 
-	operator XMVECTOR() const { return m_Value; }
+	operator XMVECTOR() const { return Y_Value; }
 
 private:
-	XMVECTORF32 m_Value;
+	XMVECTORF32 Y_Value;
 };
 
 INLINE Color Max(Color A, Color B) { return Color(XMVectorMax(A, B)); }
@@ -57,22 +57,22 @@ INLINE Color Clamp(Color X, Color A, Color B) { return Color(XMVectorClamp(X, A,
 
 inline Color::Color(FXMVECTOR Vec)
 {
-	m_Value.v = Vec;
+	Y_Value.v = Vec;
 }
 
-inline Color::Color(const FXMVECTORF32& Vec)
+inline Color::Color(const XMVECTORF32& Vec)
 {
-	m_Value.v = Vec;
+	Y_Value.v = Vec;
 }
 
 inline Color::Color(float R, float G, float B, float A)
 {
-	m_Value.v = XMVectorSet(R, G, B, A);
+	Y_Value.v = XMVectorSet(R, G, B, A);
 }
 
 inline Color::Color(uint16_t R, uint16_t G, uint16_t B, uint16_t A, uint16_t BitDepth)
 {
-	m_Value.v = XMVectorScale(XMVectorSet(R, G, B, A), 1.0f / ((1<<BitDepth) - 1));
+	Y_Value.v = XMVectorScale(XMVectorSet(R, G, B, A), 1.0f / ((1<<BitDepth) - 1));
 }
 
 inline Color::Color(uint32_t u32)
@@ -81,14 +81,14 @@ inline Color::Color(uint32_t u32)
 	float G = (float)((u32 >> 8) & 0xFF);
 	float B = (float)((u32 >> 16) & 0xFF);
 	float A = (float)((u32 >> 24) & 0xFF);
-	m_Value.v = XMVectorScale(XMVectorSet(R, G, B, A), 1.0f / 255.0f);
+	Y_Value.v = XMVectorScale(XMVectorSet(R, G, B, A), 1.0f / 255.0f);
 }
 
 //linear color to srgb
 //s = 1.055 * Math.pow(l, 1.0/2.4) - 0.055
 inline Color Color::ToSRGB(void) const
 {
-	XMVECTOR T = XMVectorSaturate(m_Value);
+	XMVECTOR T = XMVectorSaturate(Y_Value);
 	XMVECTOR Result = XMVectorSubtract(XMVectorScale(XMVectorPow(T, XMVectorReplicate(1.0f / 2.4f)), 1.055f), XMVectorReplicate(0.055f));
 	Result = XMVectorSelect(Result, XMVectorScale(T, 12.92f), XMVectorLess(T, XMVectorReplicate(0.0031308f)));
 	return XMVectorSelect(T, Result, g_XMSelect1110);
@@ -96,7 +96,7 @@ inline Color Color::ToSRGB(void) const
 
 inline Color Color::FromSRGB(void) const
 {
-	XMVECTOR T XMVectorSaturate(m_Value);
+	XMVECTOR T XMVectorSaturate(Y_Value);
 	XMVECTOR Result = XMVectorPow(XMVectorScale(XMVectorAdd(T, T, XMVectorReplicate(0.055f)), 1.0f / 1.055f), XMVectorReplicate(2.4f));
 	Result = XMVectorSelect(Result, XMVectorScale(T, 1.0f / 12.92f), XMVectorLess(T, XMVectorReplicate(0.0031308f)));
 	return XMVectorSelect(T, Result, g_XMSelect1110);
@@ -104,7 +104,7 @@ inline Color Color::FromSRGB(void) const
 
 inline Color Color::ToRec709(void) const
 {
-	XMVECTOR T = XMVectorSaturate(m_Value);
+	XMVECTOR T = XMVectorSaturate(Y_Value);
 	XMVECTOR Result = XMVectorSubtract(XMVectorScale(XMVectorPow(T, XMVectorReplicate(0.45f)), 1.099f), XMVectorReplicate(0.099f));
 	Result = XMVectorSelect(Result, XMVectorScale(T, 4.5f), XMVectorLess(T, XMVectorReplicate(.00018f)));
 	return XMVectorSelect(T, Result, g_XMSelect1110);
@@ -112,7 +112,7 @@ inline Color Color::ToRec709(void) const
 
 inline Color Color::FromRec709(void) const
 {
-	XMVECTOR T = XMVectorSaturate(m_Value);
+	XMVECTOR T = XMVectorSaturate(Y_Value);
 	XMVECTOR Result = XMVectorPow(XMVectorScale(XMVectorAdd(T, XMVectorReplicate(0.099f)), 1.0f / 1.099f), XMVectorReplicate(1.0f / 0.45f));
 	Result = XMVectorSelect(Result, XMVectorScale(T, 1.0f / 4.5f), XMVectorLess(T, XMVectorReplicate(0.0081f)));
 	return XMVectorSelect(T, Result, g_XMSelect1110);
@@ -120,7 +120,7 @@ inline Color Color::FromRec709(void) const
 
 inline uint32_t Color::R10G10B10A2(void) const
 {
-	XMVECTOR Result = XMVectorRound(XMVectorMultiply(XMVectorSaturate(m_Value), XMVectorSet(1023.0f, 1023.0f, 1023.0f, 3.0f)));
+	XMVECTOR Result = XMVectorRound(XMVectorMultiply(XMVectorSaturate(Y_Value), XMVectorSet(1023.0f, 1023.0f, 1023.0f, 3.0f)));
 	Result = _mm_castsi128_ps(_mm_cvttps_epi32(Result));
 	uint32_t R = XMVectorGetIntX(Result);
 	uint32_t G = XMVectorGetIntY(Result);

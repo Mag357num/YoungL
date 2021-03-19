@@ -7,7 +7,7 @@ using namespace Graphics;
 void UploadBuffer::Create(const std::wstring& Name, size_t BufferSize)
 {
 	Destroy();
-	m_BufferSize = BufferSize;
+	Y_BufferSize = BufferSize;
 
 	D3D12_HEAP_PROPERTIES HeapPro;
 	HeapPro.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -31,14 +31,14 @@ void UploadBuffer::Create(const std::wstring& Name, size_t BufferSize)
 
 
 	ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapPro, D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr, MY_IID_PPV_ARGS(&m_Resource)));
+		nullptr, MY_IID_PPV_ARGS(&Y_Resource)));
 
-	m_GpuVirtualAddress = m_Resource->GetGPUVirtualAddress();
+	Y_GpuVirtualAddress = Y_Resource->GetGPUVirtualAddress();
 
 #ifdef RELEASE
 	(Name)
 #else
-	m_Resource->SetName(Name.c_str());
+	Y_Resource->SetName(Name.c_str());
 #endif // RELEASE
 
 }
@@ -46,12 +46,12 @@ void UploadBuffer::Create(const std::wstring& Name, size_t BufferSize)
 void* UploadBuffer::Map()
 {
 	void* Memory;
-	m_Resource->Map(0, &CD3DX12_RANGE(0, m_BufferSize), &Memory);
+	Y_Resource->Map(0, &CD3DX12_RANGE(0, Y_BufferSize), &Memory);
 
 	return Memory;
 }
 
 void UploadBuffer::Unmap(size_t Begin /* = 0 */, size_t End /* = -1 */)
 {
-	m_Resource->Unmap(0, CD3DX12_RANGE(Begin, std::min(End, m_BufferSize)));
+	Y_Resource->Unmap(0, CD3DX12_RANGE(Begin, std::min(End, Y_BufferSize)));
 }

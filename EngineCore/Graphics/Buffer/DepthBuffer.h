@@ -5,16 +5,16 @@ class DepthBuffer : public PixelBuffer
 {
 public:
 	DepthBuffer(float ClearDepth = 0.0f, uint8_t ClearStencil = 0)
-		:m_ClearDepth(ClearDepth),
-		m_ClearStencil(ClearStencil)
+		:Y_ClearDepth(ClearDepth),
+		Y_ClearStencil(ClearStencil)
 	{
-		m_Hdsv[0].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		m_Hdsv[1].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		m_Hdsv[2].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		m_Hdsv[3].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_Hdsv[0].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_Hdsv[1].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_Hdsv[2].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_Hdsv[3].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 
-		m_hDepthSrv.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		m_hStencilSrv.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_hDepthSrv.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_hStencilSrv.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 	}
 
 	// Create a depth buffer.  If an address is supplied, memory will not be allocated.
@@ -35,26 +35,26 @@ public:
 		EsramAllocator& Allocator);
 
 
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv() const { return m_Hdsv[0]; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_DepthReadOnly() const { return m_Hdsv[1]; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_StencilReadOnly() const { return m_Hdsv[2]; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_ReadOnly() const { return m_Hdsv[3]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv() const { return Y_Hdsv[0]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_DepthReadOnly() const { return Y_Hdsv[1]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_StencilReadOnly() const { return Y_Hdsv[2]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDsv_ReadOnly() const { return Y_Hdsv[3]; }
 
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDepthSrv() const { return m_hDepthSrv; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetStencilSrv() const { return m_hStencilSrv; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetDepthSrv() const { return Y_hDepthSrv; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetStencilSrv() const { return Y_hStencilSrv; }
 
-	float GetClearDepth(void) const { return m_ClearDepth; }
-	uint8_t GetClearStencil(void) const { return m_ClearStencil; }
+	float GetClearDepth(void) const { return Y_ClearDepth; }
+	uint8_t GetClearStencil(void) const { return Y_ClearStencil; }
 	
 
 protected:
 	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format);
 
-	float m_ClearDepth;
-	uint8_t m_ClearStencil;
+	float Y_ClearDepth;
+	uint8_t Y_ClearStencil;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE m_Hdsv[4];
-	D3D12_CPU_DESCRIPTOR_HANDLE m_hDepthSrv;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_hStencilSrv;
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_Hdsv[4];
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_hDepthSrv;
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_hStencilSrv;
 };
 

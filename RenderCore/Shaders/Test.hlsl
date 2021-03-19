@@ -32,7 +32,6 @@ VertexOut VS(VertexIn Vin)
 	
 	// Just pass vertex color into the pixel shader.
     vout.Color = Vin.Color;
-	
 	vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);
     vout.PosW=Vin.Pos;
@@ -47,18 +46,21 @@ float4 PS(VertexOut Pin) : SV_Target
 	//Mat.DiffuseAlbedo=float4(0.1f, 0.7f, 0.7f, 1.0f);
 	Mat.DiffuseAlbedo=Pin.Color;
 	Mat.Fresnel0=float3(0.04f,0.04f,0.04f);
-	Mat.Shiness=0.1f;
+	Mat.Shiness=0.7f;
 	Mat.AmbientLight=float3(0.1f,0.1f,0.1f);
 	
 	
 	DirectionLight Light;
 	Light.Position=float3(0.0f, 0.0f, 0.0f);
 	Light.Strength = float3(0.5f, 0.5f, 0.5f);
-	Light.Direction = float3(0.0f ,0.0f, -1.0f);
+	Light.Strength = normalize(Light.Strength);
+	Light.Direction = float3(-1.0f ,-1.0f, -1.0f);
+	Light.Direction = normalize(Light.Direction);
 	
 	float3 ViewDirection = CameraLocation - Pin.PosW;
 	ViewDirection = normalize(ViewDirection);
-
+	Pin.Normal = normalize(Pin.Normal);
+	
 	float3 OutColor = ComputeBlinnPhone_DirectionalLight(Light, Mat, Pin.Normal, ViewDirection);
 	return float4(OutColor, 1.0f);
 	

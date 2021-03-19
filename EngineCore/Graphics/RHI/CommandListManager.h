@@ -4,7 +4,7 @@
 
 class CommandQueue
 {
-
+	friend class CommandContext;
 	friend class CommandListmanager;
 public:
 	CommandQueue(D3D12_COMMAND_LIST_TYPE Type);
@@ -15,7 +15,7 @@ public:
 
 	inline bool IsReady()
 	{
-		return m_CommandQueue != nullptr;
+		return Y_CommandQueue != nullptr;
 	}
 
 	//for fence event
@@ -29,10 +29,10 @@ public:
 
 	ID3D12CommandQueue* GetCommandQueue()
 	{
-		return m_CommandQueue;
+		return Y_CommandQueue;
 	}
 
-	uint64_t GetNextFenceValue() { return m_NexFenceValue; }
+	uint64_t GetNextFenceValue() { return Y_NexFenceValue; }
 
 private:
 
@@ -40,18 +40,18 @@ private:
 	ID3D12CommandAllocator* RequestAllocator(void);
 	void DiscardAllocator(uint64_t FenceValueForReset, ID3D12CommandAllocator* Allocator);
 
-	CommandAllocatorPool m_AllocatorPool;
-	std::mutex m_FenceMutex;
-	std::mutex m_EventMutex;
+	CommandAllocatorPool Y_AllocatorPool;
+	std::mutex Y_FenceMutex;
+	std::mutex Y_EventMutex;
 
-	D3D12_COMMAND_LIST_TYPE m_CommandListType;
-	ID3D12CommandQueue* m_CommandQueue;
+	D3D12_COMMAND_LIST_TYPE Y_CommandListType;
+	ID3D12CommandQueue* Y_CommandQueue;
 
 	//life time of these objects is managed by the descriptor cache
-	ID3D12Fence* m_pFence;
-	uint64_t m_NexFenceValue;
-	uint64_t m_LastCompletedFenceValue;
-	HANDLE m_FenceEventHandle;
+	ID3D12Fence* Y_pFence;
+	uint64_t Y_NexFenceValue;
+	uint64_t Y_LastCompletedFenceValue;
+	HANDLE Y_FenceEventHandle;
 };
 
 
@@ -64,20 +64,20 @@ public:
 	void Create(ID3D12Device* Device);
 	void ShutDown();
 
-	CommandQueue& GetGraphicsQueue(void) { return m_GraphicsQueue; }
-	CommandQueue& GetComputeQueue(void) { return m_ComputeQueue; }
-	CommandQueue& GetCopyQueue(void) { return m_CopyQueue; }
+	CommandQueue& GetGraphicsQueue(void) { return Y_GraphicsQueue; }
+	CommandQueue& GetComputeQueue(void) { return Y_ComputeQueue; }
+	CommandQueue& GetCopyQueue(void) { return Y_CopyQueue; }
 
 	CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE Type)
 	{
 		switch (Type)
 		{
 		case D3D12_COMMAND_LIST_TYPE_DIRECT:
-			return m_GraphicsQueue;
+			return Y_GraphicsQueue;
 		//case D3D12_COMMAND_LIST_TYPE_BUNDLE:
 		//	break;
 		case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-			return m_ComputeQueue;
+			return Y_ComputeQueue;
 		//case D3D12_COMMAND_LIST_TYPE_COPY:
 		//	break;
 		//case D3D12_COMMAND_LIST_TYPE_VIDEO_DECODE:
@@ -87,13 +87,13 @@ public:
 		//case D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE:
 		//	break;
 		default:
-			return m_GraphicsQueue;
+			return Y_GraphicsQueue;
 		}
 	}
 
 	ID3D12CommandQueue* GetCommandQueue()
 	{
-		return m_GraphicsQueue.GetCommandQueue();
+		return Y_GraphicsQueue.GetCommandQueue();
 	}
 
 
@@ -108,15 +108,15 @@ public:
 
 	void IdleGPU(void)
 	{
-		m_GraphicsQueue.WaitForIdle();
-		m_ComputeQueue.WaitForIdle();
-		m_CopyQueue.WaitForIdle();
+		Y_GraphicsQueue.WaitForIdle();
+		Y_ComputeQueue.WaitForIdle();
+		Y_CopyQueue.WaitForIdle();
 	}
 
 private:
-	ID3D12Device* m_Device;
+	ID3D12Device* Y_Device;
 
-	CommandQueue m_GraphicsQueue;
-	CommandQueue m_ComputeQueue;
-	CommandQueue m_CopyQueue;
+	CommandQueue Y_GraphicsQueue;
+	CommandQueue Y_ComputeQueue;
+	CommandQueue Y_CopyQueue;
 };

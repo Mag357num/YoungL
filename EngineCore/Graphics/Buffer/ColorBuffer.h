@@ -11,17 +11,17 @@ class ColorBuffer : public PixelBuffer
 public:
 
 	ColorBuffer(Color ClearColor = Color(0.0f, 0.0f, 0.0f, 0.0f)) :
-		m_ClearColor(ClearColor),
-		m_NumMipMaps(0),
-		m_FragmentCount(1),
-		m_SampleCount(1)
+		Y_ClearColor(ClearColor),
+		Y_NumMipMaps(0),
+		Y_FragmentCount(1),
+		Y_SampleCount(1)
 	{
-		m_RtvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		m_SrvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_RtvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		Y_SrvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 
-		for (int i =0; i< _countof(m_UavHandle); ++i)
+		for (int i =0; i< _countof(Y_UavHandle); ++i)
 		{
-			m_UavHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+			Y_UavHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 		}
 	}
 
@@ -52,18 +52,18 @@ public:
 
 
 	//get pre created cpu visible descriptor handles
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetSrv(void) const { return m_SrvHandle; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRtv(void) const { return m_RtvHandle; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUav(void) const { return m_UavHandle[0]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetSrv(void) const { return Y_SrvHandle; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRtv(void) const { return Y_RtvHandle; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUav(void) const { return Y_UavHandle[0]; }
 
-	void SetClearColor(Color ClearColor) { m_ClearColor = ClearColor; }
-	Color GetClearColor(void) const { return m_ClearColor; }
+	void SetClearColor(Color ClearColor) { Y_ClearColor = ClearColor; }
+	Color GetClearColor(void) const { return Y_ClearColor; }
 	
 	void SetMsaaMode(uint32_t NumColorSamples, uint32_t NumCoverageSamples)
 	{
 		ASSERT(NumCoverageSamples >= NumColorSamples);
-		m_FragmentCount = NumColorSamples;
-		m_SampleCount = NumCoverageSamples;
+		Y_FragmentCount = NumColorSamples;
+		Y_SampleCount = NumCoverageSamples;
 	}
 
 	// This will work for all texture sizes, but it's recommended for speed and quality
@@ -76,7 +76,7 @@ protected:
 	D3D12_RESOURCE_FLAGS CombinResourceFlags(void) const
 	{
 		D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE;
-		if (Flags == D3D12_RESOURCE_FLAG_NONE && m_FragmentCount == 1)
+		if (Flags == D3D12_RESOURCE_FLAG_NONE && Y_FragmentCount == 1)
 		{
 			Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
@@ -97,13 +97,13 @@ protected:
 
 	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips = 1);
 
-	Color m_ClearColor;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_SrvHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_RtvHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_UavHandle[12];
-	uint32_t m_NumMipMaps;
-	uint32_t m_FragmentCount;
-	uint32_t m_SampleCount;
+	Color Y_ClearColor;
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_SrvHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_RtvHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE Y_UavHandle[12];
+	uint32_t Y_NumMipMaps;
+	uint32_t Y_FragmentCount;
+	uint32_t Y_SampleCount;
 
 
 };

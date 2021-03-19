@@ -1,8 +1,10 @@
 #include "DepthBuffer.h"
 
+#include "../GraphicsCore.h"
+
 void DepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)
 {
-	ID3D12Resource* Resource = m_Resource.Get();
+	ID3D12Resource* Resource = Y_Resource.Get();
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
 
@@ -18,37 +20,37 @@ void DepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)
 	}
 
 
-	if (m_Hdsv[0].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+	if (Y_Hdsv[0].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 	{
-		m_Hdsv[0].ptr = Graphics.AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		m_Hdsv[2].ptr = Graphics.AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		Y_Hdsv[0].ptr = Graphics.AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		Y_Hdsv[2].ptr = Graphics.AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	}
 
 	DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	Device->CreateDepthStencilView(Resource, &DsvDesc, m_Hdsv[0]);
+	Device->CreateDepthStencilView(Resource, &DsvDesc, Y_Hdsv[0]);
 
 	DsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH;
-	Device->CreateDepthStencilView(Resource, &DsvDesc, m_Hdsv[1]);
+	Device->CreateDepthStencilView(Resource, &DsvDesc, Y_Hdsv[1]);
 
 	DXGI_FORMAT StencilFormat = GetStencilFormat(Format);
 	if (StencilFormat != DXGI_FORMAT_UNKNOWN)
 	{
-		if (m_Hdsv[2] == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+		if (Y_Hdsv[2] == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 		{
-			m_Hdsv[2].ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-			m_Hdsv[3].ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+			Y_Hdsv[2].ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+			Y_Hdsv[3].ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		}
 
 		DsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_STENCIL;
-		Device->CreateDepthStencilView(Resource, &DsvDesc, m_Hdsv[2]);
+		Device->CreateDepthStencilView(Resource, &DsvDesc, Y_Hdsv[2]);
 
 		DsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH | D3D12_DSV_FLAG_READ_ONLY_STENCIL;
-		Device->CreateDepthStencilView(Resource, &DsvDesc, m_Hdsv[3]);
+		Device->CreateDepthStencilView(Resource, &DsvDesc, Y_Hdsv[3]);
 	}
 	else
 	{
-		m_Hdsv[2] = m_Hdsv[0];
-		m_Hdsv[3] = m_Hdsv[1];
+		Y_Hdsv[2] = Y_Hdsv[0];
+		Y_Hdsv[3] = Y_Hdsv[1];
 	}
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc;
@@ -63,17 +65,17 @@ void DepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)
 	}
 
 	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	Device->CreateShaderResourceView(Resource, &SrvDesc, m_hDepthSrv);
+	Device->CreateShaderResourceView(Resource, &SrvDesc, Y_hDepthSrv);
 
 	if (StencilFormat != DXGI_FORMAT_UNKNOWN)
 	{
-		if (m_hStencilSrv.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+		if (Y_hStencilSrv.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 		{
-			m_hStencilSrv.ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			Y_hStencilSrv.ptr = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		}
 
 		SrvDesc.Format = StencilFormat;
-		Device->CreateShaderResourceView(Resource, &SrvDesc, m_hStencilSrv);
+		Device->CreateShaderResourceView(Resource, &SrvDesc, Y_hStencilSrv);
 	}
 
 }

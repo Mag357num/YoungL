@@ -17,26 +17,26 @@ void PSO::DestroyAll()
 GraphicPSO::GraphicPSO(const wchar_t* Name /* = L"Unnamed Graphics PSO" */)
 	:PSO(Name)
 {
-	ZeroMemory(&m_PSODesc, sizeof(m_PSODesc));
-	m_PSODesc.NodeMask = 1;
-	m_PSODesc.SampleMask = 0xFFFFFFFFu;
-	m_PSODesc.SampleDesc.Count = 1;
-	m_PSODesc.InputLayout.NumElements = 0;
+	ZeroMemory(&Y_PSODesc, sizeof(Y_PSODesc));
+	Y_PSODesc.NodeMask = 1;
+	Y_PSODesc.SampleMask = 0xFFFFFFFFu;
+	Y_PSODesc.SampleDesc.Count = 1;
+	Y_PSODesc.InputLayout.NumElements = 0;
 }
 
 void GraphicPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
 {
-	m_PSODesc.BlendState = BlendDesc;
+	Y_PSODesc.BlendState = BlendDesc;
 }
 
 void GraphicPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
 {
-	m_PSODesc.DepthStencilState = DepthStencilDesc;
+	Y_PSODesc.DepthStencilState = DepthStencilDesc;
 }
 
 void GraphicPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
 {
-	m_PSODesc.RasterizerState = RasterizerDesc;
+	Y_PSODesc.RasterizerState = RasterizerDesc;
 }
 
 void GraphicPSO::SetDepthTargetFormat(DXGI_FORMAT DSVFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
@@ -55,65 +55,65 @@ void GraphicPSO::SetRenderTargetFormats(UINT NumRts, DXGI_FORMAT* RTVFormat, DXG
 	for (UINT i =0; i< NumRts; ++i)
 	{
 		ASSERT(RTVFormat[i] != DXGI_FORMAT_UNKNOWN);
-		m_PSODesc.RTVFormats[i] = RTVFormat[i];
+		Y_PSODesc.RTVFormats[i] = RTVFormat[i];
 	}
 
-	for (UINT i = NumRts; i < m_PSODesc.NumRenderTargets; ++i)
+	for (UINT i = NumRts; i < Y_PSODesc.NumRenderTargets; ++i)
 	{
-		m_PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+		Y_PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 	}
 
-	m_PSODesc.NumRenderTargets = NumRts;
-	m_PSODesc.DSVFormat = DSRFormat;
-	m_PSODesc.SampleDesc.Count = MsaaCount;
-	m_PSODesc.SampleDesc.Quality = MsaaQuality;
+	Y_PSODesc.NumRenderTargets = NumRts;
+	Y_PSODesc.DSVFormat = DSRFormat;
+	Y_PSODesc.SampleDesc.Count = MsaaCount;
+	Y_PSODesc.SampleDesc.Quality = MsaaQuality;
 }
 
 void GraphicPSO::SetSampleMask(UINT SampleMask)
 {
-	m_PSODesc.SampleMask = SampleMask;
+	Y_PSODesc.SampleMask = SampleMask;
 }
 
 
 void GraphicPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
 {
-	m_PSODesc.PrimitiveTopologyType = TopologyType;
+	Y_PSODesc.PrimitiveTopologyType = TopologyType;
 }
 
 void GraphicPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDesc)
 {
-	m_PSODesc.InputLayout.NumElements = NumElements;
+	Y_PSODesc.InputLayout.NumElements = NumElements;
 	if (NumElements > 0)
 	{
 		D3D12_INPUT_ELEMENT_DESC* NewElements = (D3D12_INPUT_ELEMENT_DESC*)malloc(sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
 		memcpy(NewElements, pInputElementDesc, sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
-		m_InputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
+		Y_InputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
 	}
 	else
 	{
-		m_InputLayouts = nullptr;
+		Y_InputLayouts = nullptr;
 	}
 }
 
 void GraphicPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
 {
-	m_PSODesc.IBStripCutValue = IBProps;
+	Y_PSODesc.IBStripCutValue = IBProps;
 }
 
 void GraphicPSO::Finalize()
 {
 	// set root signature
-	m_PSODesc.pRootSignature = m_RootSignature->GetSignature();
-	ASSERT(m_PSODesc.pRootSignature != nullptr);
+	Y_PSODesc.pRootSignature = Y_RootSignature->GetSignature();
+	ASSERT(Y_PSODesc.pRootSignature != nullptr);
 
 	//set input layout
-	m_PSODesc.InputLayout.pInputElementDescs = nullptr;
+	Y_PSODesc.InputLayout.pInputElementDescs = nullptr;
 
 	//get hash code
-	size_t HashCode = Utility::HashState(&m_PSODesc);
-	HashCode = Utility::HashState(m_InputLayouts.get(), m_PSODesc.InputLayout.NumElements, HashCode);
+	size_t HashCode = Utility::HashState(&Y_PSODesc);
+	HashCode = Utility::HashState(Y_InputLayouts.get(), Y_PSODesc.InputLayout.NumElements, HashCode);
 
-	m_PSODesc.InputLayout.pInputElementDescs - m_InputLayouts.get();
+	Y_PSODesc.InputLayout.pInputElementDescs - Y_InputLayouts.get();
 
 	//end for input layout
 
@@ -139,11 +139,11 @@ void GraphicPSO::Finalize()
 
 	if (FirstCompile)
 	{
-		ASSERT(m_PSODesc.DepthStencilState.DepthEnable != (m_PSODesc.DSVFormat == DXGI_FORMAT_UNKNOWN));
-		ASSERT_SUCCEEDED(g_Device->CreateGraphicsPipelineState(&m_PSODesc, MY_IID_PPV_ARGS(&m_PSO)));
+		ASSERT(Y_PSODesc.DepthStencilState.DepthEnable != (Y_PSODesc.DSVFormat == DXGI_FORMAT_UNKNOWN));
+		ASSERT_SUCCEEDED(g_Device->CreateGraphicsPipelineState(&Y_PSODesc, MY_IID_PPV_ARGS(&Y_PSO)));
 
-		s_GraphicsPSOHashMap[HashCode].Attach(m_PSO);
-		m_PSO->SetName(m_Name);
+		s_GraphicsPSOHashMap[HashCode].Attach(Y_PSO);
+		Y_PSO->SetName(Y_Name);
 	}
 	else
 	{
@@ -152,6 +152,6 @@ void GraphicPSO::Finalize()
 			this_thread::yield();
 		}
 
-		m_PSO = *PSORef;
+		Y_PSO = *PSORef;
 	}
 }

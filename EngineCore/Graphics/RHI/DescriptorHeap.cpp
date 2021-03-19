@@ -3,48 +3,48 @@
 
 using namespace Graphics;
 
-std::mutex DescriptorAllocator::sm_AllocationMutex;
-std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DescriptorAllocator::sm_DescriptorHeapPool;
+std::mutex DescriptorAllocator::Y_AllocationMutex;
+std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DescriptorAllocator::Y_DescriptorHeapPool;
 
 void DescriptorAllocator::DestroyAll()
 {
-	sm_DescriptorHeapPool.clear();
+	Y_DescriptorHeapPool.clear();
 }
 
 ID3D12DescriptorHeap* DescriptorAllocator::RequestNewHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type)
 {
-	std::lock_guard<std::mutex> LockGuard(sm_AllocationMutex);
+	std::lock_guard<std::mutex> LockGuard(Y_AllocationMutex);
 
 	D3D12_DESCRIPTOR_HEAP_DESC Desc;
 	Desc.Type = Type;
-	Desc.NumDescriptors = sm_NumDescriptorsPerHeap;
+	Desc.NumDescriptors = Y_NumDescriptorsPerHeap;
 	Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	Desc.NodeMask = 1;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> pHeap;
 	ASSERT_SUCCEEDED(Graphics::g_Device->CreateDescriptorHeap(&Desc, MY_IID_PPV_ARGS(&pHeap)));
 
-	sm_DescriptorHeapPool.emplace_back(pHeap);
+	Y_DescriptorHeapPool.emplace_back(pHeap);
 	return pHeap.Get();
 }
 
 void DescriptorAllocator::Allocate(uint32_t Count)
 {
-	if (m_CurrentHeap == nullptr| m_RemainingFreeHandles < Count)
+	if (Y_CurrentHeap == nullptr| Y_RemainingFreeHandles < Count)
 	{
-		m_CurrentHeap = RequestNewHeap(m_Type);
-		m_CurrentHandle = m_CurrentHeap->GetCPUDescriptorHandleForHeapStart();
-		m_RemainingFreeHandles = sm_NumDescriptorsPerHeap;
+		Y_CurrentHeap = RequestNewHeap(Y_Type);
+		Y_Currenthandle = Y_CurrentHeap->GetCPUDescriptorHandleForHeapStart();
+		Y_RemainingFreeHandles = Y_NumDescriptorsPerHeap;
 
-		if (m_DescriptorSize ==0)
+		if (Y_DescriptorSize ==0)
 		{
-			m_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(m_Type);
+			Y_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(Y_Type);
 		}
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE Ret = m_CurrentHandle;
-	m_CurrentHandle.ptr += Count * m_DescriptorSize;
-	m_RemainingFreeHandles -= Count;
+	D3D12_CPU_DESCRIPTOR_HANDLE Ret = Y_Currenthandle;
+	Y_Currenthandle.ptr += Count * Y_DescriptorSize;
+	Y_RemainingFreeHandles -= Count;
 
 	return Ret;
 
@@ -52,51 +52,51 @@ void DescriptorAllocator::Allocate(uint32_t Count)
 
 void DescriptorHeap::Create(const std::wstring& DebugHeapName, D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t MaxCount)
 {
-	m_HeapDesc.Type = Type;
-	m_HeapDesc.NumDescriptors = MaxCount;
-	m_HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	m_HeapDesc.NodeMask = 1;
+	Y_HeapDesc.Type = Type;
+	Y_HeapDesc.NumDescriptors = MaxCount;
+	Y_HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	Y_HeapDesc.NodeMask = 1;
 
-	ASSERT_SUCCEEDED(Graphics::g_Device->CreateDescriptorHeap(&m_HeapDesc, MY_IID_PPV_ARGS(&m_Heap));
+	ASSERT_SUCCEEDED(Graphics::g_Device->CreateDescriptorHeap(&Y_HeapDesc, MY_IID_PPV_ARGS(&Y_Heap));
 
 #ifdef RELEASE
 	(void)Name;
 
 #else
-	m_Heap->SetName(DebugHeapName);
+	Y_Heap->SetName(DebugHeapName);
 #endif
 
-	m_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(Type);
-	m_NumFreeDescriptors = m_HeapDesc.NumDescriptors;
-	m_FirstHandle = DescriptorHandle(
-	m_Heap->GetCPUDescriptorHandleForHeapStart(),
-		m_Heap->GetGPUDescriptorHandleForHeapStart()
+	Y_DescriptorSize = Graphics::g_Device->GetDescriptorHandleIncrementSize(Type);
+	Y_NumFreeDescriptors = Y_HeapDesc.NumDescriptors;
+	Y_FirstHandle = DescriptorHandle(
+		Y_Heap->GetCPUDescriptorHandleForHeapStart(),
+		Y_Heap->GetGPUDescriptorHandleForHeapStart()
 	);
 
-	m_NextFreeHandle = m_FirstHandle;
+	Y_NextFreeHandle = Y_FirstHandle;
 }
 
 
 DescriptorHandle DescriptorHeap::Allocate(uint32_t Count /* = 1 */)
 {
 	ASSERT(HasAvailableSpace(Count), "Descriptor heap out of space , increse heap size");
-	DescriptorHandle Ret = m_NextFreeHandle;
-	m_NextFreeHandle += Count * m_DescriptorSize;
-	m_NumFreeDescriptors -= Count;
+	DescriptorHandle Ret = Y_NextFreeHandle;
+	Y_NextFreeHandle += Count * Y_DescriptorSize;
+	Y_NumFreeDescriptors -= Count;
 
 	return Ret;
 }
 
 bool DescriptorHeap::ValidateHandle(const DescriptorHandle& Handle)const
 {
-	if (Handle.GetCpuPtr() < m_FirstHandle.GetCpuPtr() ||
-		Handle.GetCpuPtr() >= m_FirstHandle.GetCpuPtr() + m_HeapDesc.NumDescriptors * m_DescriptorSize)
+	if (Handle.GetCpuPtr() < Y_FirstHandle.GetCpuPtr() ||
+		Handle.GetCpuPtr() >= Y_FirstHandle.GetCpuPtr() + Y_HeapDesc.NumDescriptors * Y_DescriptorSize)
 	{
 		return false;
 	}
 
-	if (Handle.GetGpuPtr() - m_FirstHandle.GetGpuPtr() != 
-		Handle.GetCpuPtr() - m_FirstHandle.GetCpuPtr())
+	if (Handle.GetGpuPtr() - Y_FirstHandle.GetGpuPtr() !=
+		Handle.GetCpuPtr() - Y_FirstHandle.GetCpuPtr())
 	{
 		return false;
 	}
