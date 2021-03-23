@@ -3,6 +3,7 @@
 #include "../Buffer/UploadBuffer.h"
 #include "CommandListManager.h"
 #include "PipelineState.h"
+#include "../Buffer/LinearAllocator.h"
 
 struct FDWParam
 {
@@ -47,7 +48,7 @@ struct FNonCopyable
 };
 
 class FGpuBuffer;
-
+class FGraphicsContext;
 class FCommandContext : public FNonCopyable
 {
 	friend class FContextManager;
@@ -62,13 +63,13 @@ public:
 
 	static void DestroyAllContexts(void);
 
-	//static CommandContext& Begin(const std::wstring ID = L"");
+	static FCommandContext& Begin(const std::wstring ID = L"");
 
-	//FGraphicsContext& GetGraphicsContext()
-	//{
-	//	ASSERT(CommandType != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not cast compute command list to graph commandlist");
-	//	return reinterpret_cast<FGraphicsContext&>(*this);
-	//}
+	FGraphicsContext& GetGraphicsContext()
+	{
+		ASSERT(CommandType != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not cast compute command list to graph commandlist");
+		return reinterpret_cast<FGraphicsContext&>(*this);
+	}
 
 	void Initialize(void);
 
@@ -93,13 +94,18 @@ public:
 	
 	inline void FlushResourceBarriers(void);
 
-	static void InitializeTexture(FGPUResource& Desc, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[]);
+	FDynAlloc ReservedUploadMemory(size_t SizeInBytes)
+	{
+		return CpuLinearAllocator.Allocate(SizeInBytes);
+	}
+
+	static void InitializeTexture(FGPUResource& Dest, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[]);
 	static void InitializeBuffer(FGpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset = 0);
 	static void InitializeBuffer(FGpuBuffer& Dest, const FUploadBuffer& Src, size_t SrcOffset, size_t NumBytes = -1, size_t DestOffset = 0);
-	static void InitializeTextureArraySlice(FGPUResource& Desc, UINT SliceIndec, FGPUResource& Src);
+	static void InitializeTextureArraySlice(FGPUResource& Dest, UINT SliceIndex, FGPUResource& Src);
 
 	//void WriteBuffer(FGPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
-	//void FillBuffer(FGPUResource& Desc, size_t DestOffset, DWParam Value, size_t NumBytes);
+	//void FillBuffer(FGPUResource& Desc, size_t DestOffset, FDWParam Value, size_t NumBytes);
 
 	//void InsertTimeStamp(ID3D12QueryHeap* QueryHeap, uint32_t QueryIdx);
 	//void ResolveTimeStamps(ID3D12Resource* ReadbackHeap, ID3D12QueryHeap* QueryHeap, uint32_t NumQueris);
@@ -109,9 +115,9 @@ public:
 
 	//void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr);
 	//void SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[]);
-	//void SetPipelineState(const PSO& Pso);
+	//void SetPipelineState(const FPSO& Pso);
 
-	//void SetPrediction(ID3D12Resource* Buffer, uint64 BufferOffset, D3D12_PREDICATION_OP Op);
+	//void SetPrediction(ID3D12Resource* Buffer, uint64_t BufferOffset, D3D12_PREDICATION_OP Op);
 protected:
 
 	void BuildDescriptorHeaps();
@@ -130,6 +136,12 @@ protected:
 	UINT NumBarriesToFlush;
 
 	ID3D12DescriptorHeap* DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+	FLinearAllocator CpuLinearAllocator;
+	FLinearAllocator GpuLinearAllocator;
+
+	std::wstring ID;
+	void SetID(const std::wstring& InID) { ID = InID; }
 
 	D3D12_COMMAND_LIST_TYPE CommandType;
 

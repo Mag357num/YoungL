@@ -2,6 +2,7 @@
 #include "CommandContext.h"
 #include "../GraphicsCore.h"
 #include "../Buffer/GPUResource.h"
+#include "../../Math/Common.h"
 
 using namespace Graphics;
 
@@ -43,7 +44,9 @@ void FContextManager::DestroyAllContexts()
 }
 
 FCommandContext::FCommandContext(D3D12_COMMAND_LIST_TYPE Type)
-	:CommandType(Type)
+	:CommandType(Type),
+	CpuLinearAllocator(ECpuWriteable),
+	GpuLinearAllocator(EGpuExlusive)
 {
 	OwingCommandManager = nullptr;
 	CommandAllocator = nullptr;
@@ -62,6 +65,18 @@ FCommandContext::~FCommandContext(void)
 	{
 		CommandList->Release();
 	}
+}
+
+FCommandContext& FCommandContext::Begin(const std::wstring ID /* = L"" */)
+{
+	FCommandContext* NewContext = g_ContextManager.RequestContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	NewContext->SetID(ID);
+	//if (ID.length() > 0)
+	//{
+	//	EngineProfiling
+	//}
+
+	return *NewContext;
 }
 
 void FCommandContext::Initialize()
@@ -157,25 +172,87 @@ void FCommandContext::DestroyAllContexts()
 }
 
 
-void FCommandContext::InitializeTexture(FGPUResource& Desc, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[])
+void FCommandContext::InitializeTexture(FGPUResource& Dest, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[])
 {
+	UINT64 UploadBufferSize = GetRequiredIntermediateSize(Dest.GetResource(), 0, NumSubResource);
+	
+	FCommandContext& Context = FCommandContext::Begin();
+	FDynAlloc Mem = Context.ReservedUploadMemory(UploadBufferSize);
+	UpdateSubresources(Context.CommandList, Dest.GetResource(), Mem.Buffer.GetResource(), 0, 0, NumSubResource, SubData);
 
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ);
+
+	Context.Finish(true);
 }
 
-void FCommandContext::InitializeTextureArraySlice(FGPUResource& Desc, UINT SliceIndec, FGPUResource& Src)
+void FCommandContext::InitializeTextureArraySlice(FGPUResource& Dest, UINT SliceIndex, FGPUResource& Src)
 {
+	FCommandContext& Context = FCommandContext::Begin();
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST);
 
+	Context.FlushResourceBarriers();
+
+	const D3D12_RESOURCE_DESC& DestDesc = Dest.GetResource()->GetDesc();
+	const D3D12_RESOURCE_DESC& SrcDesc = Src.GetResource()->GetDesc();
+
+	ASSERT(SliceIndex < DestDesc.DepthOrArraySize &&
+			SrcDesc.DepthOrArraySize == 1&&
+		DestDesc.Width == SrcDesc.Width&&
+		DestDesc.Height == SrcDesc.Height &&
+		DestDesc.MipLevels <= SrcDesc.MipLevels
+
+	);
+
+	UINT SubResourceIndex = SliceIndex * DestDesc.MipLevels;
+	for (UINT i = 0; i < DestDesc.MipLevels; i++)
+	{
+		D3D12_TEXTURE_COPY_LOCATION DestCopyLoc =
+		{
+			Dest.GetResource(),
+			D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+			SubResourceIndex + i
+		};
+
+		D3D12_TEXTURE_COPY_LOCATION SrcCopyLoc =
+		{
+			Src.GetResource(),
+			D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX,
+			i
+		};
+		Context.CommandList->CopyTextureRegion(&DestCopyLoc, 0, 0, 0, &SrcCopyLoc, nullptr);
+
+	}
+
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ);
+	Context.Finish(true);
 }
 
 void FCommandContext::InitializeBuffer(FGpuBuffer& Dest, const FUploadBuffer& Src, size_t SrcOffset, size_t NumBytes /* = -1 */, size_t DestOffset /* = 0 */)
 {
-	//FCommandContext& Context = FCommandContext::Begin();
+	FCommandContext& Context = FCommandContext::Begin();
+	
+	size_t MaxBytes = std::min<size_t>(Dest.GetBufferSize() - DestOffset, Src.GetBufferSize() - SrcOffset);
+	NumBytes = std::min<size_t>(MaxBytes, NumBytes);
+
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
+	Context.CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, (ID3D12Resource*)Src.GetResource(), SrcOffset, NumBytes);
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
+
+	Context.Finish(true);
 
 }
 
 void FCommandContext::InitializeBuffer(FGpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset /* = 0 */)
 {
+	FCommandContext& Context = FCommandContext::Begin();
+	FDynAlloc Mem = Context.ReservedUploadMemory(NumBytes);
+	SIMDMemCopy(Mem.DataPtr, Data, Math::DivideByMultiple(NumBytes, 16));
 
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
+	Context.CommandList->CopyBufferRegion(Dest.GetResource(), DestOffset, Mem.Buffer.GetResource(), 0, NumBytes);
+	Context.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
+
+	Context.Finish(true);
 }
 
 void FCommandContext::TransitionResource(FGPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)

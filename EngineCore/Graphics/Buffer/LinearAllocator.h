@@ -11,13 +11,32 @@
 #pragma once
 
 #include "../../pch.h"
-
 #include "GPUResource.h"
 
-class FLinearAllocator : public FGPUResource
+#include <vector>
+#include <queue>
+
+#define DEFAULT_ALIGN 256
+
+struct FDynAlloc
+{
+	FDynAlloc(FGPUResource& BaseResource, size_t InOffset, size_t InSize)
+		:Buffer(BaseResource),
+		Offset(InOffset),
+		Size(InSize)
+	{}
+
+	FGPUResource& Buffer;
+	size_t Offset;
+	size_t Size;
+	void* DataPtr;
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress;
+};
+
+class FLinearAllocationPage : public FGPUResource
 {
 public:
-	FLinearAllocator(ID3D12Resource* PResource, D3D12_RESOURCE_STATES Usage) 
+	FLinearAllocationPage(ID3D12Resource* PResource, D3D12_RESOURCE_STATES Usage)
 		: FGPUResource()
 	{
 		Resource.Attach(PResource);
@@ -27,7 +46,7 @@ public:
 		Resource->Map(0, nullptr, &CpuVirtualAddress);
 	}
 
-	~FLinearAllocator()
+	~FLinearAllocationPage()
 	{
 		Unmap();
 	}
@@ -52,4 +71,80 @@ public:
 	void* CpuVirtualAddress;
 	D3D12_GPU_VIRTUAL_ADDRESS GpuVirtualAddress;
 
+};
+
+enum ELinearAllocatorType
+{
+	EInvalidAllocator = -1,
+	EGpuExlusive = 0,
+	ECpuWriteable = 1,
+	
+	ENumAllocatorTypes
+};
+
+enum 
+{
+	EGpuAllocatorPageSize = 0x10000,//64K
+	ECpuAllocaterPageSize = 0x200000 //2M
+};
+class FLinearAllocatorPagemanager
+{
+public:
+	FLinearAllocatorPagemanager();
+
+	FLinearAllocationPage* RequestPage(void);
+	FLinearAllocationPage* CreateNewPage(size_t PageSize= 0);
+
+	void DiscardPages(uint64_t FenceID, const std::vector<FLinearAllocationPage*>& Pages);
+	void FreeLargePools(uint64_t FenceID, const std::vector<FLinearAllocationPage*>& Pages);
+
+	void Destroy(void){
+		PagePool.clear();
+	}
+private:
+	static ELinearAllocatorType AutoType;
+
+	ELinearAllocatorType AllocationType;
+	std::vector<std::unique_ptr<FLinearAllocationPage>> PagePool;
+	std::queue<std::pair<uint64_t, FLinearAllocationPage*>> RetiredPages;
+	std::queue<std::pair<uint64_t, FLinearAllocationPage*>> DeletionQueue;
+	std::queue<FLinearAllocationPage*> AvailablePages;
+	std::mutex AllocateMutex;
+
+};
+
+class FLinearAllocator
+{
+public:
+	FLinearAllocator(ELinearAllocatorType Type)
+		:AllocationType(Type),
+		PageSize(0),
+		CurOffset(~(size_t)0),
+		CurPage(nullptr)
+	{
+		ASSERT(Type > EInvalidAllocator && Type < ENumAllocatorTypes);
+		PageSize = (Type == EGpuExlusive ? EGpuAllocatorPageSize : ECpuAllocaterPageSize);
+	}
+
+	FDynAlloc Allocate(size_t SizeInBytes, size_t Alignment = DEFAULT_ALIGN);
+
+	void ClearUpUsedPages(uint64_t FenceID);
+
+	static void DestroALl(void)
+	{
+		PageManager[0].Destroy();
+		PageManager[1].Destroy();
+	}
+	
+private:
+	FDynAlloc AllocateLargePage(size_t SizeInBytes);
+
+	static FLinearAllocatorPagemanager PageManager[2];
+
+	ELinearAllocatorType AllocationType;
+	size_t PageSize;
+	size_t CurOffset;
+	FLinearAllocationPage* CurPage;
+	std::vector<FLinearAllocationPage*> RetiredPages;
+	std::vector<FLinearAllocationPage*> LargePageList;
 };
