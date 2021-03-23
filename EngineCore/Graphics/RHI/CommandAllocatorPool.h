@@ -4,12 +4,13 @@
 #include <mutex>
 #include <queue>
 
+#include "../../pch.h"
 
-class CommandAllocatorPool
+class FCommandAllocatorPool
 {
 public:
-	CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type);
-	~CommandAllocatorPool();
+	FCommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type);
+	~FCommandAllocatorPool();
 
 	void Create(ID3D12Device* pDevice);
 	void ShutDown();
@@ -17,14 +18,14 @@ public:
 	ID3D12CommandAllocator* RequestAllocator(uint64_t CompletedFenceEvent);
 	void DiscardAllocator(uint64_t FenceValue, ID3D12CommandAllocator* Allocator);
 
-	inline size_t Size() { return m_AllocatorPool.size(); }
+	inline size_t Size() { return AllocatorPool.size(); }
 
 private:
-	const D3D12_COMMAND_LIST_TYPE m_CommandListType;
+	const D3D12_COMMAND_LIST_TYPE CommandListType;
 
-	ID3D12Device* m_Device;
-	std::vector<ID3D12CommandAllocator*> m_AllocatorPool;
+	ID3D12Device* Device;
+	std::vector<ID3D12CommandAllocator*> AllocatorPool;
 
-	std::queue<std::pair<uint64_t, ID3D12CommandAllocator*>> m_ReadyAllocator;
-	std::mutex m_AllocatorMutex;
+	std::queue<std::pair<uint64_t, ID3D12CommandAllocator*>> ReadyAllocator;
+	std::mutex AllocatorMutex;
 };

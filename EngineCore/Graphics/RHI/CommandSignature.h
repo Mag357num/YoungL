@@ -2,78 +2,80 @@
 
 #include "../../pch.h"
 
-class RootSignature;
+class FRootSignature;
 
-class IndirectParam
+class FIndirectParam
 {
 public:
-	IndirectParam() { Y_IndirectParam.Type = (D3D12_INDIRECT_ARGUMENT_DESC)0xFFFFFFFF; }
+	FIndirectParam() { 
+		IndirectParam.Type = (D3D12_INDIRECT_ARGUMENT_TYPE)0xFFFFFFFF; 
+	}
 
 	void Draw(void)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
 	}
 
 	void DrawIndex(void)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
 	}
 
 	void Dispatch(void)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
 	}
 
 	void VertexBufferView(UINT Slot)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
-		Y_IndirectParam.VertexBuffer.Slot = Slot;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
+		IndirectParam.VertexBuffer.Slot = Slot;
 	}
 
 	void IndexBuferView(UINT Slot)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
 		
 	}
 
 	void Constant(UINT RootParamterIndex, UINT DestOffsetIn32BitValues, UINT Num32BitValuesToSet)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
-		Y_IndirectParam.Constant.RootParameterIndex = RootParamterIndex;
-		Y_IndirectParam.Constant.DestOffsetIn32BitValues = DestOffsetIn32BitValues;
-		Y_IndirectParam.Constant.Num32BitValuesToSet = Num32BitValuesToSet;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
+		IndirectParam.Constant.RootParameterIndex = RootParamterIndex;
+		IndirectParam.Constant.DestOffsetIn32BitValues = DestOffsetIn32BitValues;
+		IndirectParam.Constant.Num32BitValuesToSet = Num32BitValuesToSet;
 	}
 
 	void ConstantBufferView(UINT RootParameterIndex)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
-		Y_IndirectParam.ConstantBufferView.RootParameterIndex = RootParameterIndex;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+		IndirectParam.ConstantBufferView.RootParameterIndex = RootParameterIndex;
 	}
 
 	void ShaderResourceView(UINT RootParameterIndex)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
-		Y_IndirectParam.ShaderResourceView.RootParameterIndex = RootParameterIndex;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
+		IndirectParam.ShaderResourceView.RootParameterIndex = RootParameterIndex;
 	}
 
 	void UnOrderedAccessView(UINT RootParameterIndex)
 	{
-		Y_IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_UNORDERED_ACCESS_VIEW;
-		Y_IndirectParam.UnorderedAccessView.RootParameterIndex = RootParameterIndex;
+		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_UNORDERED_ACCESS_VIEW;
+		IndirectParam.UnorderedAccessView.RootParameterIndex = RootParameterIndex;
 	}
 
-	D3D12_INDIRECT_ARGUMENT_DESC& GetDesc(void) { return Y_IndirectParam; }
+	D3D12_INDIRECT_ARGUMENT_DESC& GetDesc(void) { return IndirectParam; }
 
 protected:
-	D3D12_INDIRECT_ARGUMENT_DESC Y_IndirectParam;
+	D3D12_INDIRECT_ARGUMENT_DESC IndirectParam;
 };
 
-class CommandSignature
+class FCommandSignature
 {
 public:
-	CommandSignature(UINT NumParams = 0)
-		:Y_Finalized(FALSE),
-		Y_NumParamters(NumParams)
+	FCommandSignature(UINT NumParams = 0)
+		:Finalized(FALSE),
+		NumParamters(NumParams)
 	{
 		Reset(NumParams);
 	}
@@ -82,41 +84,41 @@ public:
 	{
 		if (NumParams > 0)
 		{
-			Y_ParamArray.reset(new IndirectParam[NumParams]);
+			ParamArray.reset(new FIndirectParam[NumParams]);
 		}
 		else
-			Y_ParamArray = nullptr;
+			ParamArray = nullptr;
 
-		Y_NumParamters = NumParams;
+		NumParamters = NumParams;
 	}
 
 	void Destroy(void)
 	{
-		Y_Signature = nullptr;
-		Y_ParamArray = nullptr;
+		Signature = nullptr;
+		ParamArray = nullptr;
 	}
 
-	IndirectParam& operator[] (size_t EntryIndex)
+	FIndirectParam& operator[] (size_t EntryIndex)
 	{
-		ASSERT(EntryIndex < Y_NumParamters);
-		return Y_ParamArray.get()[EntryIndex];
+		ASSERT(EntryIndex < NumParamters);
+		return ParamArray.get()[EntryIndex];
 
 	}
 
-	const IndirectParam& operator[] (size_t EntryIndex) const
+	const FIndirectParam& operator[] (size_t EntryIndex) const
 	{
-		ASSERT(EntryIndex < Y_NumParamters);
-		return Y_ParamArray.get()[EntryIndex];
+		ASSERT(EntryIndex < NumParamters);
+		return ParamArray.get()[EntryIndex];
 	}
 
-	void Finalize(const RootSignature* RootSignature = nullptr);
+	void Finalize(const FRootSignature* RootSignature = nullptr);
 
-	ID3D12CommandSignature* GetSignature() { return Y_Signature.Get(); }
+	ID3D12CommandSignature* GetSignature() { return Signature.Get(); }
 
 protected:
-	BOOL Y_Finalized;
-	UINT Y_NumParamters;
-	std::unique_ptr<IndirectParam[]> Y_ParamArray;
-	Microsoft::WRL::ComPtr<ID3D12CommandSignature> Y_Signature;
+	BOOL Finalized;
+	UINT NumParamters;
+	std::unique_ptr<FIndirectParam[]> ParamArray;
+	Microsoft::WRL::ComPtr<ID3D12CommandSignature> Signature;
 
 };

@@ -4,14 +4,15 @@
 #include "CommandListManager.h"
 #include "PipelineState.h"
 
-struct DWParam
+struct FDWParam
 {
-	DWParam(FLOAT f):Float(f){}
+	FDWParam(FLOAT f):Float(f){}
 	void operator= (FLOAT f) { Float = f; }
 
-	DWParam(UINT u) :Uint(u) {}
-	void operator= (INT u) { Uint = u; }
-	DWParam(INT i) :Int(i) {}
+	FDWParam(UINT u) :Uint(u) {}
+	void operator= (UINT u) { Uint = u; }
+
+	FDWParam(INT i) :Int(i) {}
 	void operator= (INT i) { Int = i; }
 
 	union
@@ -22,51 +23,52 @@ struct DWParam
 	};
 };
 
-class ContextManager
+class FContextManager
 {
 public:
-	ContextManager(void) {}
+	FContextManager(void) {}
 
-	CommandContext* RequestContext(D3D12_COMMAND_LIST_TYPE Type);
-	void ReleaseContext(CommandContext*);
+	FCommandContext* RequestContext(D3D12_COMMAND_LIST_TYPE Type);
+	void ReleaseContext(FCommandContext*);
 
 	void DestroyAllContexts();
 
 private:
-	std::vector<std::unique_ptr<CommandContext>> Y_ContextPool[4];
-	std::queue<std::unique_ptr<CommandContext>> Y_AvailableContextPool[4];
-	std::mutex Y_ContextAvalibleMutex;
+	std::vector<std::unique_ptr<FCommandContext>> ContextPool[4];
+	std::queue<FCommandContext*> AvailableContextPool[4];
+	std::mutex ContextAvalibleMutex;
 };
 
-
-struct NonCopyable
+struct FNonCopyable
 {
-	NonCopyable() = default;
-	NonCopyable(const NonCopyable&) = delete;
-	NonCopyable& operator=(const NonCopyable&) = delete;
+	FNonCopyable() = default;
+	FNonCopyable(const FNonCopyable&) = delete;
+	FNonCopyable& operator=(const FNonCopyable&) = delete;
 };
 
-class CommandContext : public NonCopyable
+class FGpuBuffer;
+
+class FCommandContext : public FNonCopyable
 {
-	friend ContextManager;
+	friend class FContextManager;
 private:
 
-	CommandContext(D3D12_COMMAND_LIST_TYPE Type);
+	FCommandContext(D3D12_COMMAND_LIST_TYPE Type);
 
 	void Reset(void);
 
 public:
-	~CommandContext(void);
+	~FCommandContext(void);
 
 	static void DestroyAllContexts(void);
 
-	static CommandContext& Begin(const std::wstring ID = L"");
+	//static CommandContext& Begin(const std::wstring ID = L"");
 
-	GraphicsContext& GetGraphicsContext()
-	{
-		ASSERT(CommandType != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not cast compute command list to graph commandlist");
-		return reinterpret_cast<GraphicsContext&>(*this);
-	}
+	//FGraphicsContext& GetGraphicsContext()
+	//{
+	//	ASSERT(CommandType != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Can not cast compute command list to graph commandlist");
+	//	return reinterpret_cast<FGraphicsContext&>(*this);
+	//}
 
 	void Initialize(void);
 
@@ -75,81 +77,85 @@ public:
 	//flush the exit commands to gpu ; and release the current context
 	uint64_t Finish(bool WaitForCompletion = false);
 
-	void CopyBuffer(GPUResource& Desc, GPUResource& Src);
-	void CopyBufferRegion(GPUResource& Desc, size_t DestOffset, GPUResource& Src, size_t SrcOffst, size_t NumBytes);
-	void CopySubResource(GPUResource& Desc, UINT DestSubIndex, GPUResource& Src, UINT SrcSubIndex);
-	void CopyCounter(GPUResource& Desc, size_t DestOffset, StructuredBuffer& Src);
-	void CopyTextureRegion(GPUResource& Desc, UINT X, UINT Y, UINT Z, GPUResource& Source, RECT& Rect);
-	void ResetCounter(StructuredBuffer& Buf, uint32_t Value = 0);
+	//void CopyBuffer(FGPUResource& Desc, FGPUResource& Src);
+	//void CopyBufferRegion(FGPUResource& Desc, size_t DestOffset, FGPUResource& Src, size_t SrcOffst, size_t NumBytes);
+	//void CopySubResource(FGPUResource& Desc, UINT DestSubIndex, FGPUResource& Src, UINT SrcSubIndex);
+	//void CopyCounter(FGPUResource& Desc, size_t DestOffset, FStructuredBuffer& Src);
+	//void CopyTextureRegion(FGPUResource& Desc, UINT X, UINT Y, UINT Z, FGPUResource& Source, RECT& Rect);
+	//void ResetCounter(FStructuredBuffer& Buf, uint32_t Value = 0);
 
 
 
-	void TransitionResource(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-	void BeginResourceTransition(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
-	void InsertUAVBarrier(GPUResource& InResource, bool FlushImmediate);
-	void InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate);
+	void TransitionResource(FGPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+	void BeginResourceTransition(FGPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate = false);
+	void InsertUAVBarrier(FGPUResource& InResource, bool FlushImmediate);
+	void InsertAliasBarrier(FGPUResource& Before, FGPUResource& After, bool FlushImmediate);
 	
 	inline void FlushResourceBarriers(void);
 
-	static void InitializeTexture(GPUResource& Desc, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[]);
-	static void InitializeBuffer(GpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset = 0);
-	static void InitializeBuffer(GpuBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes = -1, size_t DestOffset = 0);
-	static void InitializeTextureArraySlice(GPUResource& Desc, UINT SliceIndec, GPUResource& Src);
+	static void InitializeTexture(FGPUResource& Desc, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[]);
+	static void InitializeBuffer(FGpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset = 0);
+	static void InitializeBuffer(FGpuBuffer& Dest, const FUploadBuffer& Src, size_t SrcOffset, size_t NumBytes = -1, size_t DestOffset = 0);
+	static void InitializeTextureArraySlice(FGPUResource& Desc, UINT SliceIndec, FGPUResource& Src);
 
-	void WriteBuffer(GPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
-	void FillBuffer(GPUResource& Desc, size_t DestOffset, DWParam Value, size_t NumBytes);
+	//void WriteBuffer(FGPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes);
+	//void FillBuffer(FGPUResource& Desc, size_t DestOffset, DWParam Value, size_t NumBytes);
 
-	void InsertTimeStamp(ID3D12QueryHeap* QueryHeap, uint32_t QueryIdx);
-	void ResolveTimeStamps(ID3D12Resource* ReadbackHeap, ID3D12QueryHeap* QueryHeap, uint32_t NumQueris);
-	void PIXBeginEvent(const wchar_t* Label);
-	void PIXEndEvent(void);
-	void PIXSetMarker(const wchar_t* Label);
+	//void InsertTimeStamp(ID3D12QueryHeap* QueryHeap, uint32_t QueryIdx);
+	//void ResolveTimeStamps(ID3D12Resource* ReadbackHeap, ID3D12QueryHeap* QueryHeap, uint32_t NumQueris);
+	//void PIXBeginEvent(const wchar_t* Label);
+	//void PIXEndEvent(void);
+	//void PIXSetMarker(const wchar_t* Label);
 
-	void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr);
-	void SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[]);
-	void SetPipelineState(const PSO& Pso);
+	//void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE Type, ID3D12DescriptorHeap* HeapPtr);
+	//void SetDescriptorHeaps(UINT HeapCount, D3D12_DESCRIPTOR_HEAP_TYPE Type[], ID3D12DescriptorHeap* HeapPtrs[]);
+	//void SetPipelineState(const PSO& Pso);
 
-	void SetPrediction(ID3D12Resource* Buffer, uint64 BufferOffset, D3D12_PREDICATION_OP Op);
+	//void SetPrediction(ID3D12Resource* Buffer, uint64 BufferOffset, D3D12_PREDICATION_OP Op);
 protected:
 
 	void BuildDescriptorHeaps();
 
-	CommandListmanager* Y_OwingCommandManager;
-	ID3D12GraphicsCommandList* Y_CommandList;
-	ID3D12CommandAllocator* Y_CommandAllocator;
+	FCommandListmanager* OwingCommandManager;
+	ID3D12GraphicsCommandList* CommandList;
+	ID3D12CommandAllocator* CommandAllocator;
 
-	ID3D12RootSignature* Y_GraphicsRootSignature;
-	ID3D12RootSignature* Y_ComputeRootSignature;
-	ID3D12PipelineState* Y_PipelineState;
+	ID3D12RootSignature* GraphicsRootSignature;
+	ID3D12RootSignature* ComputeRootSignature;
+	ID3D12PipelineState* PipelineState;
 
 	//dynamic descriptor heaps
 
-	D3D12_RESOURCE_BARRIER Y_ResourceBarrierBuffer[16];
-	UINT Y_NumBarriesToFlush;
+	D3D12_RESOURCE_BARRIER ResourceBarrierBuffer[16];
+	UINT NumBarriesToFlush;
 
-	ID3D12DescriptorHeap* Y_DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+	ID3D12DescriptorHeap* DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-	D3D12_COMMAND_LIST_TYPE Y_CommandType;
+	D3D12_COMMAND_LIST_TYPE CommandType;
+
+	//for buffer initialize
+
 
 };
 
-inline void CommandContext::FlushResourceBarriers()
+
+inline void FCommandContext::FlushResourceBarriers()
 {
-	if (Y_NumBarriesToFlush >0)
+	if (NumBarriesToFlush >0)
 	{
-		Y_CommandList->ResourceBarrier(Y_NumBarriesToFlush, Y_ResourceBarrierBuffer);
-		Y_NumBarriesToFlush = 0;
+		CommandList->ResourceBarrier(NumBarriesToFlush, ResourceBarrierBuffer);
+		NumBarriesToFlush = 0;
 	}
 }
 
 
-class GraphicsContext : public CommandContext
+class FGraphicsContext : public FCommandContext
 {
 public:
-	static GraphicsContext& Begin(const std::wstring ID = L"")
-	{
-		return CommandContext::Begin(ID).GetGraphicsContext();
-	}
+	//static GraphicsContext& Begin(const std::wstring ID = L"")
+	//{
+	//	return CommandContext::Begin(ID).GetGraphicsContext();
+	//}
 
 
 

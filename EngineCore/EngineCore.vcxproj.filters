@@ -111,6 +111,9 @@
     <ClCompile Include="Graphics\Buffer\DepthBuffer.cpp">
       <Filter>源文件\Graphics\Buffer</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Buffer\LinearAllocator.cpp">
+      <Filter>源文件\Graphics\Buffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -186,6 +189,9 @@
       <Filter>头文件\Graphics\RHI</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Buffer\UploadBuffer.h">
+      <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffer\LinearAllocator.h">
       <Filter>头文件\Graphics\Buffer</Filter>
     </ClInclude>
   </ItemGroup>

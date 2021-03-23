@@ -1,7 +1,8 @@
 #include "GameCore.h"
 #include "Misc/GameInput.h"
 #include "Misc/GameTimer.h"
-#include "Buffer/ColorBuffer.h"
+#include "Graphics/Buffer/ColorBuffer.h"
+#include "Graphics/GraphicsCore.h"
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma comment(lib, "runtimeobject.lib")
@@ -18,7 +19,7 @@
 
 namespace Graphics
 {
-	extern ColorBuffer g_GenMipsBuffer;
+	extern FColorBuffer g_GenMipsBuffer;
 }
 
 namespace GameCore
@@ -71,13 +72,13 @@ namespace GameCore
 	void InitWindow(const wchar_t* className);
 	LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-	void RunApplication(IGameApp& app, const wchar_t* className)
+	void RunApplication(IGameApp& app, const wchar_t* className, HINSTANCE hInst, int nCmdShow)
 	{
 		//ASSERT_SUCCEEDED(CoInitializeEx(nullptr, COINITBASE_MULTITHREADED));
 		Microsoft::WRL::Wrappers::RoInitializeWrapper InitializeWinRT(RO_INIT_MULTITHREADED);
 		ASSERT_SUCCEEDED(InitializeWinRT);
 
-		HINSTANCE hInst = GetModuleHandle(0);
+		//HINSTANCE hInst = GetModuleHandle(0);
 
 		// Register class
 		WNDCLASSEX wcex;
@@ -96,7 +97,7 @@ namespace GameCore
 		ASSERT(0 != RegisterClassEx(&wcex), "Unable to register a window");
 
 		// Create window
-		RECT rc = { 0, 0, (LONG)g_DisplayWidth, (LONG)g_DisplayHeight };
+		RECT rc = { 0, 0, (LONG)Graphics::g_DisplayWidth, (LONG)Graphics::g_DisplayHeight };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
 		g_hWnd = CreateWindow(className, className, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,

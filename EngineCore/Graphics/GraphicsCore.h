@@ -1,4 +1,7 @@
 #pragma once
+#include "RHI/CommandListManager.h"
+#include "RHI/CommandContext.h"
+#include "RHI/DescriptorHeap.h"
 
 namespace Graphics
 {
@@ -28,30 +31,30 @@ namespace Graphics
 	extern ID3D12Device* g_Device;
 
 	//reserved for command manager
-	extern CommandListmanager g_CommandManager;
+	extern FCommandListmanager g_CommandManager;
 	//reservced for context manager
-	extern ContextManager g_ContextManager;
+	extern FContextManager g_ContextManager;
 
 	extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;
 	extern bool g_bTypedUAVLoadSupport_R11G11B11_FlOAT;
 	extern bool g_bEnableHDROutput;
 
 	//reserved for DescriptorAllocator
-	extern DescriptorAllocator g_DescriptorAllocator[];
+	extern FDescriptorAllocator g_DescriptorAllocator[];
 	inline D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, UINT Count = 1)
 	{
 		return g_DescriptorAllocator[Type].Allocate(Count);
 	}
 
 	//for root signature
-	extern RootSignature g_GeneratedMipsRS;
-	extern ComputePSO g_GeneratedMipsLinearPSO[4];
-	extern ComputePSO g_GeneratedMipsGammaPSO[4];
+	extern FRootSignature g_GeneratedMipsRS;
+	//extern FComputePSO g_GeneratedMipsLinearPSO[4];
+	//extern FComputePSO g_GeneratedMipsGammaPSO[4];
 
 	enum eResolution { K720p, K900p, K1080p, K1440p, K1800p, K2160p };
 
-	extern BoolVar s_EnableVSync;
-	extern EnumVar TargetResolution;
+	//extern BoolVar s_EnableVSync;
+	//extern EnumVar TargetResolution;
 	extern uint32_t g_DisplayWidth;
 	extern uint32_t g_DisplayHeight;
 }

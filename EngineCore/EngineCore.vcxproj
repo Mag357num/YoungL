@@ -146,6 +146,7 @@
     <ClCompile Include="Graphics\Buffer\ColorBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\DepthBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\GPUBuffer.cpp" />
+    <ClCompile Include="Graphics\Buffer\LinearAllocator.cpp" />
     <ClCompile Include="Graphics\Buffer\PixelBuffer.cpp" />
     <ClCompile Include="Graphics\Buffer\UploadBuffer.cpp" />
     <ClCompile Include="Graphics\GraphicsCore.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Graphics\Buffer\DepthBuffer.h" />
     <ClInclude Include="Graphics\Buffer\GPUBuffer.h" />
     <ClInclude Include="Graphics\Buffer\GPUResource.h" />
+    <ClInclude Include="Graphics\Buffer\LinearAllocator.h" />
     <ClInclude Include="Graphics\Buffer\PixelBuffer.h" />
     <ClInclude Include="Graphics\Buffer\UploadBuffer.h" />
     <ClInclude Include="Graphics\EsramAllocator.h" />

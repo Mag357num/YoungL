@@ -28,8 +28,6 @@ struct Vertex
 	 XMFLOAT3 Position;
 	 XMFLOAT3 Normal;
 	 XMFLOAT2 Uv;
-
-	 XMFLOAT4 Color;
 };
 
 struct ObjectConstants
@@ -43,10 +41,10 @@ struct ObjectConstants
 	XMFLOAT3 CameraLocation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 };
 
-class DrawGeometry
+class Geometry
 {
 public:
-	DrawGeometry(ID3D12Device* Device, std::vector<Vertex>& Vertices, std::vector<uint32_t> Indices) 
+	Geometry(ID3D12Device* Device, std::vector<Vertex>& Vertices, std::vector<uint32_t> Indices)
 	{
 		VertexBufferSize = sizeof(Vertex) * Vertices.size();
 		VertexStrideSize = sizeof(Vertex);
@@ -76,10 +74,10 @@ public:
 		IndexCount = Indices.size();
 	}
 
-	DrawGeometry(const DrawGeometry& rhs) = delete;
-	DrawGeometry& operator=(const DrawGeometry& rhs) = delete;
+	Geometry(const Geometry& rhs) = delete;
+	Geometry& operator=(const Geometry& rhs) = delete;
 	
-	~DrawGeometry()
+	~Geometry()
 	{
 	}
 
@@ -134,7 +132,7 @@ public:
 	//for windo
 	void InitWindow();
 	//
-	void LoadPipline();
+	void InitializeDX();
 	void OnResize();
 
 
@@ -212,7 +210,7 @@ private:
 	D3D12_VIEWPORT M_ScreenViewport;
 	D3D12_RECT M_ScissorRect;
 
-	std::vector<std::unique_ptr<DrawGeometry>> M_Geometies;
+	std::vector<std::unique_ptr<Geometry>> M_Geometies;
 
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;

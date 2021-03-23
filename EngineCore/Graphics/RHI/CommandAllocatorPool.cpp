@@ -1,64 +1,64 @@
 #include "../../pch.h"
 #include "CommandAllocatorPool.h"
 
-CommandAllocatorPool::CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type)
-	:m_CommandListType(Type),
-	m_Device(nullptr)
+FCommandAllocatorPool::FCommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type)
+	:CommandListType(Type),
+	Device(nullptr)
 {
 
 }
 
-CommandAllocatorPool::~CommandAllocatorPool()
+FCommandAllocatorPool::~FCommandAllocatorPool()
 {
 	ShutDown();
 }
 
-void CommandAllocatorPool::Create(ID3D12Device* pDevice)
+void FCommandAllocatorPool::Create(ID3D12Device* pDevice)
 {
-	m_Device = pDevice;
+	Device = pDevice;
 }
 
-void CommandAllocatorPool::ShutDown()
+void FCommandAllocatorPool::ShutDown()
 {
-	for (size_t i = 0; i < m_AllocatorPool.size(); ++i)
+	for (size_t i = 0; i < AllocatorPool.size(); ++i)
 	{
-		m_AllocatorPool[i]->Release();
+		AllocatorPool[i]->Release();
 	}
 
-	m_AllocatorPool.clear();
+	AllocatorPool.clear();
 }
 
-ID3D12CommandAllocator* CommandAllocatorPool::RequestAllocator(uint64_t CompletedFenceEvent)
+ID3D12CommandAllocator* FCommandAllocatorPool::RequestAllocator(uint64_t CompletedFenceEvent)
 {
-	std::lock_guard<std::mutex> LockGuard(m_AllocatorMutex);
+	std::lock_guard<std::mutex> LockGuard(AllocatorMutex);
 	ID3D12CommandAllocator* pAllocator = nullptr;
 
-	if (!m_ReadyAllocator.empty())
+	if (!ReadyAllocator.empty())
 	{
-		std::pair<uint64_t, ID3D12CommandAllocator*>& AllocatorPair = m_ReadyAllocator.front();
+		std::pair<uint64_t, ID3D12CommandAllocator*>& AllocatorPair = ReadyAllocator.front();
 		if (AllocatorPair.first <= CompletedFenceEvent)
 		{
 			pAllocator = AllocatorPair.second;
 			ASSERT_SUCCEEDED(pAllocator->Reset());
-			m_ReadyAllocator.pop();
+			ReadyAllocator.pop();
 		}
 	}
 
 	if (pAllocator == nullptr)
 	{
-		ASSERT_SUCCEEDED(m_Device->CreateCommandAllocator(m_CommandListType, MY_IID_PPV_ARGS(&pAllocator)));
+		ASSERT_SUCCEEDED(Device->CreateCommandAllocator(CommandListType, MY_IID_PPV_ARGS(&pAllocator)));
 
 		wchar_t AllocatorName[32];
-		swprintf(AllocatorName, 32, L"CommandAllocator %zu", m_AllocatorPool.size());
+		swprintf(AllocatorName, 32, L"CommandAllocator %zu", AllocatorPool.size());
 		pAllocator->SetName(AllocatorName);
-		m_AllocatorPool.push_back(pAllocator);
+		AllocatorPool.push_back(pAllocator);
 	}
 
 	return pAllocator;
 }
 
-void CommandAllocatorPool::DiscardAllocator(uint64_t FenceValue, ID3D12CommandAllocator* Allocator)
+void FCommandAllocatorPool::DiscardAllocator(uint64_t FenceValue, ID3D12CommandAllocator* Allocator)
 {
-	std::lock_guard<std::mutex> LockGuard(m_AllocatorMutex);
-	m_ReadyAllocator.push(std::make_pair(FenceValue, Allocator));
+	std::lock_guard<std::mutex> LockGuard(AllocatorMutex);
+	ReadyAllocator.push(std::make_pair(FenceValue, Allocator));
 }

@@ -1,119 +1,121 @@
 #include "../../pch.h"
 #include "PipelineState.h"
 #include "../GraphicsCore.h"
-#include "../Misc/Utility.h"
+#include "../../Misc/Utility.h"
+#include <map>
 
 using namespace Graphics;
+using namespace std;
 
-static map<size_t, ComPtr<ID3D12PipelineState>> s_GraphicsPSOHashMap;
-static map<size_t, ComPtr<ID3D12PipelineState>> s_ComputePSOHashMap;
+static map<size_t, ComPtr<ID3D12PipelineState>> GraphicsPSOHashMap;
+static map<size_t, ComPtr<ID3D12PipelineState>> ComputePSOHashMap;
 
-void PSO::DestroyAll()
+void FPSO::DestroyAll()
 {
-	s_ComputePSOHashMap.clear();
-	s_GraphicsPSOHashMap.clear();
+	ComputePSOHashMap.clear();
+	GraphicsPSOHashMap.clear();
 }
 
-GraphicPSO::GraphicPSO(const wchar_t* Name /* = L"Unnamed Graphics PSO" */)
-	:PSO(Name)
+FGraphicPSO::FGraphicPSO(const wchar_t* Name /* = L"Unnamed Graphics PSO" */)
+	:FPSO(Name)
 {
-	ZeroMemory(&Y_PSODesc, sizeof(Y_PSODesc));
-	Y_PSODesc.NodeMask = 1;
-	Y_PSODesc.SampleMask = 0xFFFFFFFFu;
-	Y_PSODesc.SampleDesc.Count = 1;
-	Y_PSODesc.InputLayout.NumElements = 0;
+	ZeroMemory(&PSODesc, sizeof(PSODesc));
+	PSODesc.NodeMask = 1;
+	PSODesc.SampleMask = 0xFFFFFFFFu;
+	PSODesc.SampleDesc.Count = 1;
+	PSODesc.InputLayout.NumElements = 0;
 }
 
-void GraphicPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
+void FGraphicPSO::SetBlendState(const D3D12_BLEND_DESC& BlendDesc)
 {
-	Y_PSODesc.BlendState = BlendDesc;
+	PSODesc.BlendState = BlendDesc;
 }
 
-void GraphicPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
+void FGraphicPSO::SetDepthStencilState(const D3D12_DEPTH_STENCIL_DESC& DepthStencilDesc)
 {
-	Y_PSODesc.DepthStencilState = DepthStencilDesc;
+	PSODesc.DepthStencilState = DepthStencilDesc;
 }
 
-void GraphicPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
+void FGraphicPSO::SetRasterizerState(const D3D12_RASTERIZER_DESC& RasterizerDesc)
 {
-	Y_PSODesc.RasterizerState = RasterizerDesc;
+	PSODesc.RasterizerState = RasterizerDesc;
 }
 
-void GraphicPSO::SetDepthTargetFormat(DXGI_FORMAT DSVFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
+void FGraphicPSO::SetDepthTargetFormat(DXGI_FORMAT DSVFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
 {
 	SetRenderTargetFormats(0, nullptr, DSVFormat, MsaaCount, MsaaQuality);
 }
 
-void GraphicPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
+void FGraphicPSO::SetRenderTargetFormat(DXGI_FORMAT RTVFormat, DXGI_FORMAT DSVFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
 {
 	SetRenderTargetFormats(1, &RTVFormat, DSVFormat, MsaaCount, MsaaQuality);
 }
 
-void GraphicPSO::SetRenderTargetFormats(UINT NumRts, DXGI_FORMAT* RTVFormat, DXGI_FORMAT DSRFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
+void FGraphicPSO::SetRenderTargetFormats(UINT NumRts, DXGI_FORMAT* RTVFormat, DXGI_FORMAT DSRFormat, UINT MsaaCount /* = 1 */, UINT MsaaQuality /* = 0 */)
 {
 	ASSERT(NumRts == 0 || RTVFormat != nullptr, "Numm format array confilicts with non-zero length");
 	for (UINT i =0; i< NumRts; ++i)
 	{
 		ASSERT(RTVFormat[i] != DXGI_FORMAT_UNKNOWN);
-		Y_PSODesc.RTVFormats[i] = RTVFormat[i];
+		PSODesc.RTVFormats[i] = RTVFormat[i];
 	}
 
-	for (UINT i = NumRts; i < Y_PSODesc.NumRenderTargets; ++i)
+	for (UINT i = NumRts; i < PSODesc.NumRenderTargets; ++i)
 	{
-		Y_PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
+		PSODesc.RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
 	}
 
-	Y_PSODesc.NumRenderTargets = NumRts;
-	Y_PSODesc.DSVFormat = DSRFormat;
-	Y_PSODesc.SampleDesc.Count = MsaaCount;
-	Y_PSODesc.SampleDesc.Quality = MsaaQuality;
+	PSODesc.NumRenderTargets = NumRts;
+	PSODesc.DSVFormat = DSRFormat;
+	PSODesc.SampleDesc.Count = MsaaCount;
+	PSODesc.SampleDesc.Quality = MsaaQuality;
 }
 
-void GraphicPSO::SetSampleMask(UINT SampleMask)
+void FGraphicPSO::SetSampleMask(UINT SampleMask)
 {
-	Y_PSODesc.SampleMask = SampleMask;
+	PSODesc.SampleMask = SampleMask;
 }
 
 
-void GraphicPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
+void FGraphicPSO::SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE TopologyType)
 {
-	Y_PSODesc.PrimitiveTopologyType = TopologyType;
+	PSODesc.PrimitiveTopologyType = TopologyType;
 }
 
-void GraphicPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDesc)
+void FGraphicPSO::SetInputLayout(UINT NumElements, const D3D12_INPUT_ELEMENT_DESC* pInputElementDesc)
 {
-	Y_PSODesc.InputLayout.NumElements = NumElements;
+	PSODesc.InputLayout.NumElements = NumElements;
 	if (NumElements > 0)
 	{
 		D3D12_INPUT_ELEMENT_DESC* NewElements = (D3D12_INPUT_ELEMENT_DESC*)malloc(sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
 		memcpy(NewElements, pInputElementDesc, sizeof(D3D12_INPUT_ELEMENT_DESC) * NumElements);
-		Y_InputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
+		InputLayouts.reset((const D3D12_INPUT_ELEMENT_DESC*)NewElements);
 	}
 	else
 	{
-		Y_InputLayouts = nullptr;
+		InputLayouts = nullptr;
 	}
 }
 
-void GraphicPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
+void FGraphicPSO::SetPrimitiveRestart(D3D12_INDEX_BUFFER_STRIP_CUT_VALUE IBProps)
 {
-	Y_PSODesc.IBStripCutValue = IBProps;
+	PSODesc.IBStripCutValue = IBProps;
 }
 
-void GraphicPSO::Finalize()
+void FGraphicPSO::Finalize()
 {
 	// set root signature
-	Y_PSODesc.pRootSignature = Y_RootSignature->GetSignature();
-	ASSERT(Y_PSODesc.pRootSignature != nullptr);
+	PSODesc.pRootSignature = RootSignature->GetSignature();
+	ASSERT(PSODesc.pRootSignature != nullptr);
 
 	//set input layout
-	Y_PSODesc.InputLayout.pInputElementDescs = nullptr;
+	PSODesc.InputLayout.pInputElementDescs = nullptr;
 
 	//get hash code
-	size_t HashCode = Utility::HashState(&Y_PSODesc);
-	HashCode = Utility::HashState(Y_InputLayouts.get(), Y_PSODesc.InputLayout.NumElements, HashCode);
+	size_t HashCode = Utility::HashState(&PSODesc);
+	HashCode = Utility::HashState(InputLayouts.get(), PSODesc.InputLayout.NumElements, HashCode);
 
-	Y_PSODesc.InputLayout.pInputElementDescs - Y_InputLayouts.get();
+	PSODesc.InputLayout.pInputElementDescs - InputLayouts.get();
 
 	//end for input layout
 
@@ -121,15 +123,15 @@ void GraphicPSO::Finalize()
 	bool FirstCompile = false;
 
 	{
-		static mutex s_HashMapMutex;
-		lock_guard<mutex> LockGuard(s_HashMapMutex);
-		auto Iter = s_GraphicsPSOHashMap.find(HashCode);
+		static std::mutex s_HashMapMutex;
+		std::lock_guard<std::mutex> LockGuard(s_HashMapMutex);
+		auto Iter = GraphicsPSOHashMap.find(HashCode);
 
 		//if
-		if (Iter == s_GraphicsPSOHashMap.end())
+		if (Iter == GraphicsPSOHashMap.end())
 		{
 			FirstCompile = true;
-			PSORef = s_GraphicsPSOHashMap[HashCode].GetAddressOf();
+			PSORef = GraphicsPSOHashMap[HashCode].GetAddressOf();
 		}
 		else
 		{
@@ -139,11 +141,11 @@ void GraphicPSO::Finalize()
 
 	if (FirstCompile)
 	{
-		ASSERT(Y_PSODesc.DepthStencilState.DepthEnable != (Y_PSODesc.DSVFormat == DXGI_FORMAT_UNKNOWN));
-		ASSERT_SUCCEEDED(g_Device->CreateGraphicsPipelineState(&Y_PSODesc, MY_IID_PPV_ARGS(&Y_PSO)));
+		ASSERT(PSODesc.DepthStencilState.DepthEnable != (PSODesc.DSVFormat == DXGI_FORMAT_UNKNOWN));
+		ASSERT_SUCCEEDED(g_Device->CreateGraphicsPipelineState(&PSODesc, IID_PPV_ARGS(&PSO)));
 
-		s_GraphicsPSOHashMap[HashCode].Attach(Y_PSO);
-		Y_PSO->SetName(Y_Name);
+		GraphicsPSOHashMap[HashCode].Attach(PSO);
+		PSO->SetName(Name);
 	}
 	else
 	{
@@ -152,6 +154,6 @@ void GraphicPSO::Finalize()
 			this_thread::yield();
 		}
 
-		Y_PSO = *PSORef;
+		PSO = *PSORef;
 	}
 }

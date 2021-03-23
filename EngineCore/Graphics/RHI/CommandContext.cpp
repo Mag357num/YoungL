@@ -5,16 +5,16 @@
 
 using namespace Graphics;
 
-CommandContext* ContextManager::RequestContext(D3D12_COMMAND_LIST_TYPE Type)
+FCommandContext* FContextManager::RequestContext(D3D12_COMMAND_LIST_TYPE Type)
 {
-	std::lock_guard<std::mutex> LockGuard(Y_ContextAvalibleMutex);
-	CommandContext* Ret = nullptr;
+	std::lock_guard<std::mutex> LockGuard(ContextAvalibleMutex);
+	FCommandContext* Ret = nullptr;
 
-	auto& AvailableComamndContext = Y_AvailableContextPool[Type];
+	auto& AvailableComamndContext = AvailableContextPool[Type];
 	if (AvailableComamndContext.empty())
 	{
-		Ret = new CommandContext(Type);
-		Y_ContextPool[Type].emplace_back(Ret);
+		Ret = new FCommandContext(Type);
+		ContextPool[Type].emplace_back(Ret);
 		Ret->Initialize();
 	}
 	else
@@ -27,104 +27,104 @@ CommandContext* ContextManager::RequestContext(D3D12_COMMAND_LIST_TYPE Type)
 	return Ret;
 }
 
-void ContextManager::ReleaseContext(CommandContext* UsedContext)
+void FContextManager::ReleaseContext(FCommandContext* UsedContext)
 {
 	ASSERT(UsedContext != nullptr);
-	std::lock_guard<std::mutex> LockGuard(Y_ContextAvalibleMutex);
-	Y_AvailableContextPool[UsedContext->Y_CommandType].push(UsedContext);
+	std::lock_guard<std::mutex> LockGuard(ContextAvalibleMutex);
+	AvailableContextPool[UsedContext->CommandType].push(UsedContext);
 }
 
-void ContextManager::DestroyAllContexts()
+void FContextManager::DestroyAllContexts()
 {
 	for (uint32_t i=0; i< 4; i++)
 	{
-		Y_ContextPool[i].clear();
+		ContextPool[i].clear();
 	}
 }
 
-CommandContext::CommandContext(D3D12_COMMAND_LIST_TYPE Type)
-	:Y_CommandType(Type)
+FCommandContext::FCommandContext(D3D12_COMMAND_LIST_TYPE Type)
+	:CommandType(Type)
 {
-	Y_OwingCommandManager = nullptr;
-	Y_CommandAllocator = nullptr;
-	Y_CommandList = nullptr;
-	ZeroMemory(Y_DescriptorHeaps, sizeof(Y_DescriptorHeaps));
+	OwingCommandManager = nullptr;
+	CommandAllocator = nullptr;
+	CommandList = nullptr;
+	ZeroMemory(DescriptorHeaps, sizeof(DescriptorHeaps));
 
-	Y_GraphicsRootSignature = nullptr;
-	Y_ComputeRootSignature = nullptr;
-	Y_PipelineState = nullptr;
-	Y_NumBarriesToFlush = 0;
+	GraphicsRootSignature = nullptr;
+	ComputeRootSignature = nullptr;
+	PipelineState = nullptr;
+	NumBarriesToFlush = 0;
 }
 
-CommandContext::~CommandContext(void)
+FCommandContext::~FCommandContext(void)
 {
-	if (Y_CommandList != nullptr)
+	if (CommandList != nullptr)
 	{
-		Y_CommandList->Release();
+		CommandList->Release();
 	}
 }
 
-void CommandContext::Initialize()
+void FCommandContext::Initialize()
 {
-	g_CommandManager.CreateNewCommandList(Y_CommandType, &Y_CommandList, &Y_CommandAllocator);
+	g_CommandManager.CreateNewCommandList(CommandType, &CommandList, &CommandAllocator);
 }
 
-void CommandContext::Reset()
+void FCommandContext::Reset()
 {
-	ASSERT(Y_CommandList != nullptr && Y_CommandAllocator == nullptr);
-	Y_CommandAllocator = g_CommandManager.GetQueue(Y_CommandType).RequestAllocator();
-	Y_CommandList->Reset(Y_CommandAllocator, nullptr);
+	ASSERT(CommandList != nullptr && CommandAllocator == nullptr);
+	CommandAllocator = g_CommandManager.GetQueue(CommandType).RequestAllocator();
+	CommandList->Reset(CommandAllocator, nullptr);
 
-	Y_GraphicsRootSignature = nullptr;
-	Y_ComputeRootSignature = nullptr;
-	Y_PipelineState = nullptr;
-	Y_NumBarriesToFlush = 0;
+	GraphicsRootSignature = nullptr;
+	ComputeRootSignature = nullptr;
+	PipelineState = nullptr;
+	NumBarriesToFlush = 0;
 
 	BuildDescriptorHeaps();
 }
 
 
-void CommandContext::BuildDescriptorHeaps()
+void FCommandContext::BuildDescriptorHeaps()
 {
 	UINT NonHeaps = 0;
 	ID3D12DescriptorHeap* HeapToBind[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 	for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i++)
 	{
-		ID3D12DescriptorHeap* Heap = Y_DescriptorHeaps[i];
+		ID3D12DescriptorHeap* Heap = DescriptorHeaps[i];
 		if (Heap != nullptr)
 		{
 			HeapToBind[NonHeaps++] = Heap;
 		}
 	}
 
-	Y_CommandList->SetDescriptorHeaps(NonHeaps, HeapToBind);
+	CommandList->SetDescriptorHeaps(NonHeaps, HeapToBind);
 }
 
-uint64_t CommandContext::Flush(bool WaitForCompletion /* = false */)
+uint64_t FCommandContext::Flush(bool WaitForCompletion /* = false */)
 {
 	FlushResourceBarriers();
-	ASSERT(Y_CommandAllocator != nullptr);
+	ASSERT(CommandAllocator != nullptr);
 
-	uint64_t FenceValue = g_CommandManager.GetQueue(Y_CommandType).ExcuteCommandList(Y_CommandList);
+	uint64_t FenceValue = g_CommandManager.GetQueue(CommandType).ExcuteCommandList(CommandList);
 	if (WaitForCompletion)
 	{
 		g_CommandManager.WaitForFence(FenceValue);
 	}
 
-	Y_CommandList->Reset(Y_CommandAllocator, nullptr);
-	if (Y_GraphicsRootSignature)
+	CommandList->Reset(CommandAllocator, nullptr);
+	if (GraphicsRootSignature)
 	{
-		Y_CommandList->SetGraphicsRootSignature(Y_GraphicsRootSignature);
+		CommandList->SetGraphicsRootSignature(GraphicsRootSignature);
 	}
 
-	if (Y_ComputeRootSignature)
+	if (ComputeRootSignature)
 	{
-		Y_CommandList->SetComputeRootSignature(Y_ComputeRootSignature);
+		CommandList->SetComputeRootSignature(ComputeRootSignature);
 	}
 
-	if (Y_PipelineState)
+	if (PipelineState)
 	{
-		Y_CommandList->SetPipelineState(Y_PipelineState);
+		CommandList->SetPipelineState(PipelineState);
 	}
 
 	BuildDescriptorHeaps();
@@ -132,15 +132,15 @@ uint64_t CommandContext::Flush(bool WaitForCompletion /* = false */)
 
 }
 
-uint64_t CommandContext::Finish(bool WaitForCompletion /* = false */)
+uint64_t FCommandContext::Finish(bool WaitForCompletion /* = false */)
 {
-	ASSERT(Y_CommandType == D3D12_COMMAND_LIST_TYPE_DIRECT | D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	ASSERT(CommandType == D3D12_COMMAND_LIST_TYPE_DIRECT | D3D12_COMMAND_LIST_TYPE_COMPUTE);
 	FlushResourceBarriers();
 
-	CommandQueue& CmdQueue = g_CommandManager.GetQueue(Y_CommandType);
-	uint64_t FenceValue = CmdQueue.ExcuteCommandList(Y_CommandList);
-	CmdQueue.DiscardAllocator(FenceValue, Y_CommandAllocator);
-	Y_CommandAllocator = nullptr;
+	FCommandQueue& CmdQueue = g_CommandManager.GetQueue(CommandType);
+	uint64_t FenceValue = CmdQueue.ExcuteCommandList(CommandList);
+	CmdQueue.DiscardAllocator(FenceValue, CommandAllocator);
+	CommandAllocator = nullptr;
 
 	if (WaitForCompletion)
 	{
@@ -151,97 +151,109 @@ uint64_t CommandContext::Finish(bool WaitForCompletion /* = false */)
 	return FenceValue;
 }
 
-void CommandContext::DestroyAllContexts()
+void FCommandContext::DestroyAllContexts()
 {
 	g_ContextManager.DestroyAllContexts();
 }
 
-void CommandContext::InitializeBuffer(GpuBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes /* = -1 */, size_t DestOffset /* = 0 */)
+
+void FCommandContext::InitializeTexture(FGPUResource& Desc, UINT NumSubResource, D3D12_SUBRESOURCE_DATA SubData[])
 {
 
 }
 
-void CommandContext::InitializeBuffer(GpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset /* = 0 */)
+void FCommandContext::InitializeTextureArraySlice(FGPUResource& Desc, UINT SliceIndec, FGPUResource& Src)
 {
 
 }
 
-void CommandContext::TransitionResource(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
+void FCommandContext::InitializeBuffer(FGpuBuffer& Dest, const FUploadBuffer& Src, size_t SrcOffset, size_t NumBytes /* = -1 */, size_t DestOffset /* = 0 */)
 {
-	D3D12_RESOURCE_STATES OldState = InResource->GetResourceState();
+	//FCommandContext& Context = FCommandContext::Begin();
+
+}
+
+void FCommandContext::InitializeBuffer(FGpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset /* = 0 */)
+{
+
+}
+
+void FCommandContext::TransitionResource(FGPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
+{
+	D3D12_RESOURCE_STATES OldState = InResource.GetResourceState();
 	if (OldState != NewState)
 	{
-		ASSERT(Y_NumBarriesToFlush < 16, "Num Barriers to Flush exceed 16");
+		ASSERT(NumBarriesToFlush < 16, "Num Barriers to Flush exceed 16");
 
-		D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+		D3D12_RESOURCE_BARRIER& ResourceBarrier = ResourceBarrierBuffer[NumBarriesToFlush++];
 		ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		
-		ResourceBarrier.Transition.pResource = InResource->GetResource();
+		ResourceBarrier.Transition.pResource = InResource.GetResource();
 		ResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		ResourceBarrier.Transition.StateAfter = NewState;
 		ResourceBarrier.Transition.StateBefore = OldState;
 
-		if (NewState == InResource->GetResourceTransitionState())
+		if (NewState == InResource.GetResourceTransitionState())
 		{
 			ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
-			InResource->SetResourceTransitionState((D3D12_RESOURCE_STATES)-1);
+			InResource.SetResourceTransitionState((D3D12_RESOURCE_STATES)-1);
 		}
 		else
 		{
-			ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE
+			ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 		}
 		
-		InResource->SetResourceState(NewState);
+		InResource.SetResourceState(NewState);
 
 	}
 	else if (NewState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 	{
-		InsertUAVBarrier();
+		InsertUAVBarrier(InResource, FlushImmediate);
 	}
 	
 
-	if (FlushImmediate || Y_NumBarriesToFlush == 16)
+	if (FlushImmediate || NumBarriesToFlush == 16)
 	{
 		FlushResourceBarriers();
 	}
 }
 
-void CommandContext::BeginResourceTransition(GPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
+void FCommandContext::BeginResourceTransition(FGPUResource& InResource, D3D12_RESOURCE_STATES NewState, bool FlushImmediate /* = false */)
 {
-	if (InResource->GetResourceTransitionState() !=(D3D12_RESOURCE_STATES)-1)
+	if (InResource.GetResourceTransitionState() !=(D3D12_RESOURCE_STATES)-1)
 	{
-		TransitionResource(InResource, InResource->GetResourceTransitionState());
+		TransitionResource(InResource, InResource.GetResourceTransitionState());
 	}
 
-	D3D12_RESOURCE_STATES OldState = InResource->GetResourceState();
+	D3D12_RESOURCE_STATES OldState = InResource.GetResourceState();
 	if (OldState != NewState)
 	{
-		ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
-		D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+		ASSERT(NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+		D3D12_RESOURCE_BARRIER& ResourceBarrier = ResourceBarrierBuffer[NumBarriesToFlush++];
 		ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		ResourceBarrier.Transition.pResource = InResource->GetResource();
+		ResourceBarrier.Transition.pResource = InResource.GetResource();
 		ResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		ResourceBarrier.Transition.StateBefore = OldState;
 		ResourceBarrier.Transition.StateAfter = NewState;
 
 		ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
-		ResourceBarrier.SetResourceTransitionState(NewState);
+		InResource.SetResourceTransitionState(NewState);
 	}
 
-	if (FlushImmediate || Y_NumBarriesToFlush == 16)
+	if (FlushImmediate || NumBarriesToFlush == 16)
 	{
 		FlushResourceBarriers();
 	}
 }
 
-void CommandContext::InsertUAVBarrier(GPUResource& InResource, bool FlushImmediate)
+void FCommandContext::InsertUAVBarrier(FGPUResource& InResource, bool FlushImmediate)
 {
-	ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
-	D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+	ASSERT(NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+	D3D12_RESOURCE_BARRIER& ResourceBarrier = ResourceBarrierBuffer[NumBarriesToFlush++];
 
 	ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
 	ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	ResourceBarrier.UAV.pResource = InResource->GetResource();
+	ResourceBarrier.UAV.pResource = InResource.GetResource();
 
 	if (FlushImmediate)
 	{
@@ -249,15 +261,15 @@ void CommandContext::InsertUAVBarrier(GPUResource& InResource, bool FlushImmedia
 	}
 }
 
-void CommandContext::InsertAliasBarrier(GPUResource& Before, GPUResource& After, bool FlushImmediate)
+void FCommandContext::InsertAliasBarrier(FGPUResource& Before, FGPUResource& After, bool FlushImmediate)
 {
-	ASSERT(Y_NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
-	D3D12_RESOURCE_BARRIER& ResourceBarrier = Y_ResourceBarrierBuffer[Y_NumBarriesToFlush++];
+	ASSERT(NumBarriesToFlush < 16, "exceed arbitrary limit on buffered barries");
+	D3D12_RESOURCE_BARRIER& ResourceBarrier = ResourceBarrierBuffer[NumBarriesToFlush++];
 
 	ResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
 	ResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	ResourceBarrier.Aliasing.pResourceBefore = Before->GetResource();
-	ResourceBarrier.Aliasing.pResourceAfter = Before->GetResource();
+	ResourceBarrier.Aliasing.pResourceBefore = Before.GetResource();
+	ResourceBarrier.Aliasing.pResourceAfter = After.GetResource();
 
 	if (FlushImmediate)
 	{

@@ -11,7 +11,6 @@ struct VertexIn
 	float3 Pos : POSITION;
 	float3 Normal : NORMAL;
 	float2 Uv : TEXCOORD;
-	float4 Color : COLOR;
 };
 
 struct VertexOut
@@ -31,9 +30,9 @@ VertexOut VS(VertexIn Vin)
 	vout.PosH = mul(float4(Vin.Pos, 1.0f), gWorldViewProj);
 	
 	// Just pass vertex color into the pixel shader.
-    vout.Color = Vin.Color;
 	vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);
+	vout.Color = float4(vout.Normal* 0.5f +0.5f, 1.0f);
     vout.PosW=Vin.Pos;
 	
     return vout;
@@ -62,7 +61,7 @@ float4 PS(VertexOut Pin) : SV_Target
 	Pin.Normal = normalize(Pin.Normal);
 	
 	float3 OutColor = ComputeBlinnPhone_DirectionalLight(Light, Mat, Pin.Normal, ViewDirection);
-	return float4(OutColor, 1.0f);
+	//return float4(OutColor, 1.0f);
 	
-	//return Pin.Color;
+	return Pin.Color;
 }

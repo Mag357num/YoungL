@@ -28,20 +28,17 @@ namespace GameCore
 		virtual void RenderUI(class GraphicsContext&) {};
 	};
 
-	void RunApplication(IGameApp& app, const wchar_t* className);
+	void RunApplication(IGameApp& app, const wchar_t* className, HINSTANCE hInst, int nCmdShow);
 }
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#define MAIN_FUNCTION()  int wmain(/*int argc, wchar_t** argv*/)
-#else
-#define MAIN_FUNCTION()  [Platform::MTAThread] int main(Platform::Array<Platform::String^>^)
-#endif
+//#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+//#define MAIN_FUNCTION()  int wWinMain(/*int argc, wchar_t** argv*/)
+//#else
+//#define MAIN_FUNCTION()  [Platform::MTAThread] int main(Platform::Array<Platform::String^>^)
+//#endif
 
-#define CREATE_APPLICATION( app_class ) \
-    MAIN_FUNCTION() \
-    { \
-        IGameApp* app = new app_class(); \
-        GameCore::RunApplication( *app, L#app_class ); \
-        delete app; \
-        return 0; \
-    }
+//#define CREATE_APPLICATION( app_class ) \
+//    int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int nCmdShow) \
+//    { \
+//        return GameCore::RunApplication( app_class(), L#app_class, hInstance, nCmdShow ); \
+//    }

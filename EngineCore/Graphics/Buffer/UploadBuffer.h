@@ -1,19 +1,19 @@
 #pragma once
-
+#include "../../pch.h"
 #include "GPUResource.h"
 
-class UploadBuffer : public GPUResource
+class FUploadBuffer : public FGPUResource
 {
 public:
 
-	virtual ~UploadBuffer() { Destroy(); }
+	virtual ~FUploadBuffer() { Destroy(); }
 
 	void Create(const std::wstring& Name, size_t BufferSize);
 
 	void* Map(void);
 	void Unmap(size_t Begin = 0, size_t End = -1);
 
-	size_t GetBufferSize() const { return Y_BufferSize; }
+	size_t GetBufferSize() const { return BufferSize; }
 private:
-	size_t Y_BufferSize;
+	size_t BufferSize;
 };

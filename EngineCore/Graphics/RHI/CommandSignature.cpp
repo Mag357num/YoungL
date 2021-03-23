@@ -6,9 +6,9 @@
 
 using namespace Graphics;
 
-void CommandSignature::Finalize(const RootSignature* RootSignature /* = nullptr */)
+void FCommandSignature::Finalize(const FRootSignature* RootSignature /* = nullptr */)
 {
-	if (Y_Finalized)
+	if (Finalized)
 	{
 		return;
 	}
@@ -16,9 +16,9 @@ void CommandSignature::Finalize(const RootSignature* RootSignature /* = nullptr 
 	UINT ByteStride = 0;
 	bool RequiredRootSignature = false;
 
-	for (UINT i = 0; i < Y_NumParamters; i++)
+	for (UINT i = 0; i < NumParamters; i++)
 	{
-		switch (Y_ParamArray[i].GetDesc().Type)
+		switch (ParamArray[i].GetDesc().Type)
 		{
 		case D3D12_INDIRECT_ARGUMENT_TYPE::D3D12_INDIRECT_ARGUMENT_TYPE_DRAW:
 			ByteStride += sizeof(D3D12_DRAW_ARGUMENTS);
@@ -33,7 +33,7 @@ void CommandSignature::Finalize(const RootSignature* RootSignature /* = nullptr 
 			break;
 
 		case D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT:
-			ByteStride += Y_ParamArray[i].GetDesc().Constant.Num32BitValuesToSet * 4;
+			ByteStride += ParamArray[i].GetDesc().Constant.Num32BitValuesToSet * 4;
 			break;
 
 		case D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW:
@@ -56,8 +56,8 @@ void CommandSignature::Finalize(const RootSignature* RootSignature /* = nullptr 
 
 	D3D12_COMMAND_SIGNATURE_DESC CommandSignatureDesc;
 	CommandSignatureDesc.ByteStride = ByteStride;
-	CommandSignatureDesc.NumArgumentDescs = Y_NumParamters;
-	CommandSignatureDesc.pArgumentDescs = (const D3D12_INDIRECT_ARGUMENT_DESC *)Y_ParamArray.get();
+	CommandSignatureDesc.NumArgumentDescs = NumParamters;
+	CommandSignatureDesc.pArgumentDescs = (const D3D12_INDIRECT_ARGUMENT_DESC *)ParamArray.get();
 	CommandSignatureDesc.NodeMask = 1;
 
 	Microsoft::WRL::ComPtr<ID3DBlob> pOutBlob, pErrorBlob;
@@ -71,8 +71,8 @@ void CommandSignature::Finalize(const RootSignature* RootSignature /* = nullptr 
 		pRootSig = nullptr;
 	}
 
-	ASSERT_SUCCEEDED(g_Device->CreateCommandSignature(&CommandSignatureDesc, pRootSig, MY_IID_PPV_ARGS(&Y_Signature)));
-	Y_Signature->SetName(L"CommandSignature");
-	Y_Finalized = TRUE;
+	ASSERT_SUCCEEDED(g_Device->CreateCommandSignature(&CommandSignatureDesc, pRootSig, MY_IID_PPV_ARGS(&Signature)));
+	Signature->SetName(L"CommandSignature");
+	Finalized = TRUE;
 
 }

@@ -3,25 +3,27 @@
 #include "PixelBuffer.h"
 #include "Color.h"
 #include "GPUBuffer.h"
+#include "../RHI/CommandContext.h"
+#include "GPUResource.h"
 
 class EsramAllocator;
 
-class ColorBuffer : public PixelBuffer
+class FColorBuffer : public FPixelBuffer
 {
 public:
 
-	ColorBuffer(Color ClearColor = Color(0.0f, 0.0f, 0.0f, 0.0f)) :
-		Y_ClearColor(ClearColor),
-		Y_NumMipMaps(0),
-		Y_FragmentCount(1),
-		Y_SampleCount(1)
+	FColorBuffer(FColor InClearColor = FColor(0.0f, 0.0f, 0.0f, 0.0f)) :
+		ClearColor(InClearColor),
+		NumMipMaps(0),
+		FragmentCount(1),
+		SampleCount(1)
 	{
-		Y_RtvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-		Y_SrvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		RtvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		SrvHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 
-		for (int i =0; i< _countof(Y_UavHandle); ++i)
+		for (int i =0; i< _countof(UavHandle); ++i)
 		{
-			Y_UavHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+			UavHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 		}
 	}
 
@@ -52,31 +54,31 @@ public:
 
 
 	//get pre created cpu visible descriptor handles
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetSrv(void) const { return Y_SrvHandle; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRtv(void) const { return Y_RtvHandle; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUav(void) const { return Y_UavHandle[0]; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetSrv(void) const { return SrvHandle; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRtv(void) const { return RtvHandle; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUav(void) const { return UavHandle[0]; }
 
-	void SetClearColor(Color ClearColor) { Y_ClearColor = ClearColor; }
-	Color GetClearColor(void) const { return Y_ClearColor; }
+	void SetClearColor(FColor ClearColor) { ClearColor = ClearColor; }
+	FColor GetClearColor(void) const { return ClearColor; }
 	
 	void SetMsaaMode(uint32_t NumColorSamples, uint32_t NumCoverageSamples)
 	{
 		ASSERT(NumCoverageSamples >= NumColorSamples);
-		Y_FragmentCount = NumColorSamples;
-		Y_SampleCount = NumCoverageSamples;
+		FragmentCount = NumColorSamples;
+		SampleCount = NumCoverageSamples;
 	}
 
 	// This will work for all texture sizes, but it's recommended for speed and quality
 	// that you use dimensions with powers of two (but not necessarily square.)  Pass
 	// 0 for ArrayCount to reserve space for mips at creation time.
-	void GenerateMipMaps(CommandContext& Context);
+	void GenerateMipMaps(FCommandContext& Context);
 
 protected:
 
 	D3D12_RESOURCE_FLAGS CombinResourceFlags(void) const
 	{
 		D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE;
-		if (Flags == D3D12_RESOURCE_FLAG_NONE && Y_FragmentCount == 1)
+		if (Flags == D3D12_RESOURCE_FLAG_NONE && FragmentCount == 1)
 		{
 			Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		}
@@ -97,13 +99,13 @@ protected:
 
 	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips = 1);
 
-	Color Y_ClearColor;
-	D3D12_CPU_DESCRIPTOR_HANDLE Y_SrvHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE Y_RtvHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE Y_UavHandle[12];
-	uint32_t Y_NumMipMaps;
-	uint32_t Y_FragmentCount;
-	uint32_t Y_SampleCount;
+	FColor ClearColor;
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE RtvHandle;
+	D3D12_CPU_DESCRIPTOR_HANDLE UavHandle[12];
+	uint32_t NumMipMaps;
+	uint32_t FragmentCount;
+	uint32_t SampleCount;
 
 
 };

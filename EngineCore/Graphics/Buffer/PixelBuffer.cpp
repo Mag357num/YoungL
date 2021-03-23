@@ -4,7 +4,7 @@
 
 using namespace Graphics;
 
-DXGI_FORMAT PixelBuffer::GetBaseFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetBaseFormat(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -51,7 +51,7 @@ DXGI_FORMAT PixelBuffer::GetBaseFormat(DXGI_FORMAT Format)
 	}
 }
 
-DXGI_FORMAT PixelBuffer::GetUAVFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetUAVFormat(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -91,7 +91,7 @@ DXGI_FORMAT PixelBuffer::GetUAVFormat(DXGI_FORMAT Format)
 	}
 }
 
-DXGI_FORMAT PixelBuffer::GetDSVFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetDSVFormat(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -122,7 +122,7 @@ DXGI_FORMAT PixelBuffer::GetDSVFormat(DXGI_FORMAT Format)
 
 }
 
-DXGI_FORMAT PixelBuffer::GetDepthFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetDepthFormat(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -157,7 +157,7 @@ DXGI_FORMAT PixelBuffer::GetDepthFormat(DXGI_FORMAT Format)
 	}
 }
 
-DXGI_FORMAT PixelBuffer::GetStencilFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetStencilFormat(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -180,7 +180,7 @@ DXGI_FORMAT PixelBuffer::GetStencilFormat(DXGI_FORMAT Format)
 	}
 }
 
-size_t PixelBuffer::BytesPerPixel(DXGI_FORMAT Format)
+size_t FPixelBuffer::BytesPerPixel(DXGI_FORMAT Format)
 {
 	switch (Format)
 	{
@@ -281,34 +281,34 @@ size_t PixelBuffer::BytesPerPixel(DXGI_FORMAT Format)
 	}
 }
 
-void PixelBuffer::AssociateWithResource(ID3D12Device* Device, const std::wstring& Name, ID3D12Resource* Resource, D3D12_RESOURCE_STATES CurrentState)
+void FPixelBuffer::AssociateWithResource(ID3D12Device* Device, const std::wstring& Name, ID3D12Resource* InResource, D3D12_RESOURCE_STATES CurrentState)
 {
 	(Device);
 
-	ASSERT(Resource != nullptr);
-	D3D12_RESOURCE_DESC ResourceDesc = Resource->GetDesc();
-	m_Resource.Attach(Resource);
-	m_UsageState = CurrentState;
+	ASSERT(InResource != nullptr);
+	D3D12_RESOURCE_DESC ResourceDesc = InResource->GetDesc();
+	Resource.Attach(InResource);
+	UsageState = CurrentState;
 
-	m_Width = ResourceDesc.Width;
-	m_Height = ResourceDesc.Height;
-	m_ArraySize = ResourceDesc.DepthOrArraySize;
-	m_Format = ResourceDesc.Format;
+	Width = ResourceDesc.Width;
+	Height = ResourceDesc.Height;
+	ArraySize = ResourceDesc.DepthOrArraySize;
+	Format = ResourceDesc.Format;
 
 #ifndef RELEASE
-	m_Resource->SetName(Name.c_str());
+	Resource->SetName(Name.c_str());
 #else
 	(Name);
 #endif
 }
 
 
-D3D12_RESOURCE_DESC PixelBuffer::DescribleTexture2D(uint32_t Width, uint32_t Height, uint32_t DepthOrArraySize, uint32_t NumMips, DXGI_FORMAT ForMat, UINT Flags)
+D3D12_RESOURCE_DESC FPixelBuffer::DescribleTexture2D(uint32_t Width, uint32_t Height, uint32_t DepthOrArraySize, uint32_t NumMips, DXGI_FORMAT ForMat, UINT Flags)
 {
-	m_Width = Width;
-	m_Height = Height;
-	m_ArraySize = DepthOrArraySize;
-	m_Format = ForMat;
+	Width = Width;
+	Height = Height;
+	ArraySize = DepthOrArraySize;
+	Format = ForMat;
 
 	D3D12_RESOURCE_DESC Desc = {};
 	Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -327,28 +327,28 @@ D3D12_RESOURCE_DESC PixelBuffer::DescribleTexture2D(uint32_t Width, uint32_t Hei
 }
 
 
-void PixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc, D3D12_CLEAR_VALUE ClearValue, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
+void FPixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc, D3D12_CLEAR_VALUE ClearValue, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
 {
 	Destroy();
 	(void)VidMemPtr;
 	{
 		CD3DX12_HEAP_PROPERTIES HeapPro(D3D12_HEAP_TYPE_DEFAULT);
 		ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapPro, D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COMMON,
-			&ClearValue, MY_IID_PPV_ARGS(&m_Resource)));
+			&ClearValue, MY_IID_PPV_ARGS(&Resource)));
 
 	}
 
-	m_UsageState = D3D12_RESOURCE_STATE_COMMON;
-	m_GpuVirtualAddress = m_Resource->GetGPUVirtualAddress();
+	UsageState = D3D12_RESOURCE_STATE_COMMON;
+	GpuVirtualAddress = Resource->GetGPUVirtualAddress();
 
 #ifndef RELEASE
-	m_Resource->SetName(Name.c_str());
+	Resource->SetName(Name.c_str());
 #else
 	(Name);
 #endif
 }
 
-void PixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc, D3D12_CLEAR_VALUE ClearValue, EsramAllocator& Allocator)
+void FPixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc, D3D12_CLEAR_VALUE ClearValue, EsramAllocator& Allocator)
 {
 	(Allocator);
 
@@ -359,7 +359,7 @@ void PixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstring
 }
 
 
-void PixelBuffer::ExportToFile(const std::wstring& FilePath)
+void FPixelBuffer::ExportToFile(const std::wstring& FilePath)
 {
 	//std::ofstream Fout(FilePath, std::ios::out | std::ios::binary);
 

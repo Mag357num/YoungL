@@ -9,7 +9,7 @@ bool DXExample::Initialize()
 {
 	InitWindow();
 
-	LoadPipline();
+	InitializeDX();
 
 	OnResize();
 
@@ -94,7 +94,7 @@ void DXExample::InitWindow()
 
 }
 
-void DXExample::LoadPipline()
+void DXExample::InitializeDX()
 {
 	//debug controller
 #if defined(DBUG) || defined(_DEBUG)
@@ -274,41 +274,20 @@ void DXExample::LoadAsset()
 
 	int VertexNum;
 	Fin.read((char*)&VertexNum, sizeof(int));
-	for (int i = 0; i < VertexNum; ++i)
-	{
-		Vertex NewVert;
-		Fin.read((char*)&NewVert.Position.x, sizeof(float));
-		Fin.read((char*)&NewVert.Position.y, sizeof(float));
-		Fin.read((char*)&NewVert.Position.z, sizeof(float));
-
-
-		Fin.read((char*)&NewVert.Normal.x, sizeof(float));
-		Fin.read((char*)&NewVert.Normal.y, sizeof(float));
-		Fin.read((char*)&NewVert.Normal.z, sizeof(float));
-
-		Fin.read((char*)&NewVert.Uv.x, sizeof(float));
-		Fin.read((char*)&NewVert.Uv.y, sizeof(float));
-
-		//pass normal to color
-		NewVert.Color = XMFLOAT4((NewVert.Normal.x + 1.0f) * 0.5f, (NewVert.Normal.y + 1.0f) * 0.5f, (NewVert.Normal.z + 1.0f) * 0.5f, 1.0f);
-		Vertices.push_back(NewVert);
-	}
+	Vertices.resize(VertexNum);
+	Fin.read((char*)Vertices.data(), sizeof(Vertex) * VertexNum);
 
 	std::vector<uint32_t> Indices;
 	int IndexNum;
 	Fin.read((char*)&IndexNum, sizeof(int));
-	for (int i = 0; i < IndexNum; i++)
-	{
-		uint32_t VertIndex;
-		Fin.read((char*)&VertIndex, sizeof(int));
-		Indices.push_back(VertIndex);
-	}
+	Indices.resize(IndexNum);
+	Fin.read((char*)Indices.data(), sizeof(int) * IndexNum);
 
 	Fin.close();
 
 	//create resource
-	std::unique_ptr<DrawGeometry> Geometry = std::make_unique<DrawGeometry>(M_Device.Get(), Vertices, Indices);
-	M_Geometies.push_back(std::move(Geometry));
+	std::unique_ptr<Geometry> Geo = std::make_unique<Geometry>(M_Device.Get(), Vertices, Indices);
+	M_Geometies.push_back(std::move(Geo));
 
 }
 
@@ -362,7 +341,7 @@ void DXExample::PopulateCommands()
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	//clear target view
-	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::Black, 0, nullptr);
 	M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	M_CommandList->OMSetRenderTargets(1, &GetCurrentBackBufferView(), true, &GetCurrentDepthStencilView());
@@ -477,8 +456,7 @@ void DXExample::BuildShadersInputLayout()
 	{
 		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
