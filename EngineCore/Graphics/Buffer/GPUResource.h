@@ -40,7 +40,7 @@ public:
 	ID3D12Resource* GetResource() { return Resource.Get(); }
 	const ID3D12Resource* GetResource() const { return Resource.Get(); }
 
-	D3D12_RESOURCE_STATES GetResourceState() { return UsageState; }
+	D3D12_RESOURCE_STATES GetResourceState(void) { return UsageState; }
 	void SetResourceState(D3D12_RESOURCE_STATES InState) { UsageState = InState; }
 	D3D12_RESOURCE_STATES GetResourceTransitionState() { return TransitionState; }
 	void SetResourceTransitionState(D3D12_RESOURCE_STATES InState) { TransitionState = InState; }

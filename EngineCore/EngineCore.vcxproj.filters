@@ -114,6 +114,9 @@
     <ClCompile Include="Graphics\Buffer\LinearAllocator.cpp">
       <Filter>源文件\Graphics\Buffer</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\RHI\DynamicDescriptorHeap.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -193,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\Buffer\LinearAllocator.h">
       <Filter>头文件\Graphics\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\RHI\DynamicDescriptorHeap.h">
+      <Filter>头文件\Graphics\RHI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

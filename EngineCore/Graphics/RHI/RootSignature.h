@@ -90,6 +90,8 @@ protected:
 
 class FRootSignature
 {
+	friend class FDynamicDescriptorHeap;
+
 public:
 	FRootSignature(UINT NumrootParams = 0, UINT NumStaticSamplers = 0)
 	{

@@ -1,5 +1,8 @@
 #include "GraphicsCore.h"
 #include "RHI/CommandListManager.h"
+
+#include "RHI/CommandSignature.h"
+
 namespace Graphics
 {
 	//class FCommandListmanager;
@@ -7,6 +10,7 @@ namespace Graphics
 	ID3D12Device* g_Device = nullptr;
 	FCommandListmanager g_CommandManager;
 	FContextManager g_ContextManager;
+	FCommandSignature DrawIndirectCommandSignature;
 
 	uint32_t g_DisplayWidth;
 	uint32_t g_DisplayHeight;

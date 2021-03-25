@@ -38,6 +38,7 @@ namespace Graphics
 	extern D3D_FEATURE_LEVEL g_D3DFeatureLevel;
 	extern bool g_bTypedUAVLoadSupport_R11G11B11_FlOAT;
 	extern bool g_bEnableHDROutput;
+	extern FCommandSignature DrawIndirectCommandSignature;
 
 	//reserved for DescriptorAllocator
 	extern FDescriptorAllocator g_DescriptorAllocator[];
