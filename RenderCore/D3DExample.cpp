@@ -2,6 +2,9 @@
 #include <fstream>
 #include <DirectXColors.h>
 
+#include "CompiledShaders/TestVS.h"
+#include "CompiledShaders/TestPS.h"
+
 #include <D3Dcompiler.h>
 #pragma comment(lib, "D3DCompiler.lib")
 
@@ -458,6 +461,7 @@ void DXExample::BuildShadersInputLayout()
 		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
+
 }
 
 void DXExample::BuildPsos()
@@ -471,16 +475,28 @@ void DXExample::BuildPsos()
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 	Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	Desc.VS = 
+	//Desc.VS =
+	//{
+	//	reinterpret_cast<BYTE*>(M_Vs->GetBufferPointer()),
+	//	M_Vs->GetBufferSize()
+	//};
+	//Desc.PS =
+	//{
+	//	reinterpret_cast<BYTE*>(M_Ps->GetBufferPointer()),
+	//	M_Ps->GetBufferSize()
+	//};
+
+	Desc.VS =
 	{
-		reinterpret_cast<BYTE*>(M_Vs->GetBufferPointer()),
-		M_Vs->GetBufferSize()
+		g_TestVS,
+		sizeof(g_TestVS)
 	};
-	Desc.PS = 
+	Desc.PS =
 	{
-		reinterpret_cast<BYTE*>(M_Ps->GetBufferPointer()),
-		M_Ps->GetBufferSize()
+		g_TestPS,
+		sizeof(g_TestPS)
 	};
+
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;
 	Desc.RTVFormats[0] = M_BackBufferFormat;
