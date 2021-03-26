@@ -12,21 +12,8 @@ namespace Graphics
 	using namespace Microsoft::WRL;
 
 	void Initialize(void);
-	void Resize(uint32_t width, uint32_t height);
 	void Terminate(void);
 	void Shutdown(void);
-	void Present(void);
-
-	extern uint32_t g_DisplayWidth;
-	extern uint32_t g_DisplayHeight;
-
-	//return the number of elapsed frames since app start
-	uint64_t GetFrameCount(void);
-
-	float GetFrameTime(void);
-
-	float GetFrameRate(void);
-
 
 	extern ID3D12Device* g_Device;
 
@@ -47,15 +34,4 @@ namespace Graphics
 		return g_DescriptorAllocator[Type].Allocate(Count);
 	}
 
-	//for root signature
-	extern FRootSignature g_GeneratedMipsRS;
-	//extern FComputePSO g_GeneratedMipsLinearPSO[4];
-	//extern FComputePSO g_GeneratedMipsGammaPSO[4];
-
-	enum eResolution { K720p, K900p, K1080p, K1440p, K1800p, K2160p };
-
-	//extern BoolVar s_EnableVSync;
-	//extern EnumVar TargetResolution;
-	extern uint32_t g_DisplayWidth;
-	extern uint32_t g_DisplayHeight;
 }

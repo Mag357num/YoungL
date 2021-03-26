@@ -43,6 +43,9 @@
     <Filter Include="源文件\Graphics\RHI">
       <UniqueIdentifier>{6b0988e3-c7f9-44a1-a31f-44cf5b8e4906}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{e41925ad-7e00-425f-b0c7-e0eeac080856}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EngineCore.cpp">
@@ -115,6 +118,9 @@
       <Filter>源文件\Graphics\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\RHI\DynamicDescriptorHeap.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\RHI\Display.cpp">
       <Filter>源文件\Graphics\RHI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,5 +206,13 @@
     <ClInclude Include="Graphics\RHI\DynamicDescriptorHeap.h">
       <Filter>头文件\Graphics\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\RHI\Display.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ScreenQuadVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

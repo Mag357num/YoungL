@@ -3,6 +3,7 @@
 #include "Misc/GameTimer.h"
 #include "Graphics/Buffer/ColorBuffer.h"
 #include "Graphics/GraphicsCore.h"
+#include "Graphics/RHI/Display.h"
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma comment(lib, "runtimeobject.lib")
@@ -36,6 +37,7 @@ namespace GameCore
 
 	void TerminateApplication(IGameApp& game)
 	{
+		Graphics::g_CommandManager.IdleGPU();
 		game.Cleanup();
 
 		GameInput::ShutDown();
@@ -53,7 +55,7 @@ namespace GameCore
 		game.Update(DeltaTime);
 		game.RenderScene();
 
-		Graphics::Present();
+		Display::Present();
 
 		return !game.IsDone();
 	}
@@ -121,7 +123,6 @@ namespace GameCore
 				break;
 		} while (UpdateApplication(app));    // Returns false to quit loop
 
-		Graphics::Terminate();
 		TerminateApplication(app);
 		Graphics::Shutdown();
 	}
@@ -134,7 +135,7 @@ namespace GameCore
 		switch (message)
 		{
 		case WM_SIZE:
-			Graphics::Resize((UINT)(UINT64)lParam & 0xFFFF, (UINT)(UINT64)lParam >> 16);
+			Display::Resize((UINT)(UINT64)lParam & 0xFFFF, (UINT)(UINT64)lParam >> 16);
 			break;
 
 		case WM_DESTROY:
