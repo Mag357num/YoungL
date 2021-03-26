@@ -439,14 +439,14 @@ void DXExample::BuildShadersInputLayout()
 #endif
 
 	ComPtr<ID3DBlob> CompileError;
-	D3DCompileFromFile(ShaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
+	D3DCompileFromFile(ShaderPathVS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
 
 	if (CompileError != nullptr)
 	{
 		OutputDebugStringA((char*)CompileError->GetBufferPointer());
 	}
 
-	D3DCompileFromFile(ShaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
+	D3DCompileFromFile(ShaderPathPS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
 	if (CompileError != nullptr)
 	{
 		OutputDebugStringA((char*)CompileError->GetBufferPointer());
