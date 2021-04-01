@@ -52,7 +52,7 @@ void FRenderTest::Update(float deltaT)
 
 void FRenderTest::RenderScene()
 {
-
+	//use FGraphicContext;
 }
 
 //bool FRenderTest::IsDone()

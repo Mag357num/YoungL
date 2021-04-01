@@ -228,5 +228,8 @@
     <None Include="Shaders\ShaderUtility.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\PresentRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

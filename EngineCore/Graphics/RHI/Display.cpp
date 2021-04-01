@@ -327,7 +327,7 @@ void Display::Resize(uint32_t Width, uint32_t Height)
 	{
 		ComPtr<ID3D12Resource> TempResource;
 		s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&TempResource));
-		g_DisplayPlane->CreateFromSwapChain(L"Primary SwapChain Buffer", TempResource.Detach());
+		g_DisplayPlane[i].CreateFromSwapChain(L"Primary SwapChain Buffer", TempResource.Detach());
 	}
 
 	g_CurrentBuffer = 0;
@@ -371,21 +371,21 @@ void Graphics::CompositeOverlays()
 void Graphics::PreparePresentSDR()
 {
 	FGraphicsContext& PresentContext = FGraphicsContext::Begin(L"Present");
-	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
 
 	PresentContext.SetRootSignature(s_PresentRS);
 	PresentContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	PresentContext.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSrv());
 	
-	FColorBuffer& Dest = g_DisplayPlane[g_CurrentBuffer];
+	//FColorBuffer& Dest = g_DisplayPlane[g_CurrentBuffer];
 	PresentContext.SetPipelineState(PresentSDRPSO);
-	PresentContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	PresentContext.SetRenderTargets(Dest.GetRtv());
+	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	PresentContext.SetRenderTargets(g_DisplayPlane[g_CurrentBuffer].GetRtv());
 	PresentContext.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
 	PresentContext.Draw(3);
 
-	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
+	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT, true);
 
 	PresentContext.Finish();
 }

@@ -1,3 +1,6 @@
+#include "PresentRS.hlsli"
+
+[RootSignature(Present_RootSig)]
 void main(
 	in uint VertId : SV_VertexID,
 	out float4 Pos : SV_Position,
