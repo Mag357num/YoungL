@@ -1,4 +1,4 @@
-#include "../../pch.h"
+#include "pch.h"
 #include "RootSignature.h"
 #include <map>
 #include "../GraphicsCore.h"
@@ -88,7 +88,9 @@ void FRootSignature::Finalize(const std::wstring& Name, D3D12_ROOT_SIGNATURE_FLA
 	D3D12_ROOT_SIGNATURE_DESC RootDesc;
 	RootDesc.Flags = Flags;
 	RootDesc.NumParameters = NumParameter;
+	RootDesc.pParameters = (const D3D12_ROOT_PARAMETER*)ParamArray.get();
 	RootDesc.NumStaticSamplers = NumSamplers;
+	RootDesc.pStaticSamplers = (const D3D12_STATIC_SAMPLER_DESC*)SamplerArray.get();
 
 	DescriptorTableBitMap = 0;
 	SamplerTableBitMap = 0;

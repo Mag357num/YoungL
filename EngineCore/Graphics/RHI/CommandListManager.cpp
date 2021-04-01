@@ -1,4 +1,4 @@
-#include "../../pch.h"
+#include "pch.h"
 #include "CommandListManager.h"
 
 FCommandQueue::FCommandQueue(D3D12_COMMAND_LIST_TYPE Type)
@@ -37,7 +37,7 @@ void FCommandQueue::ShutDown()
 void FCommandQueue::Create(ID3D12Device* Device)
 {
 	ASSERT(Device != nullptr);
-	ASSERT(IsReady());
+	ASSERT(!IsReady());
 	ASSERT(AllocatorPool.Size() == 0);
 
 	D3D12_COMMAND_QUEUE_DESC QueuDesc = {};
@@ -151,11 +151,11 @@ FCommandListmanager::~FCommandListmanager()
 }
 
 
-void FCommandListmanager::Create(ID3D12Device* Device)
+void FCommandListmanager::Create(ID3D12Device* InDevice)
 {
-	ASSERT(Device != nullptr);
+	ASSERT(InDevice != nullptr);
 
-	Device = Device;
+	Device = InDevice;
 
 	GraphicsQueue.Create(Device);
 	ComputeQueue.Create(Device);

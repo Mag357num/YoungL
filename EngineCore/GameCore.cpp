@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GameCore.h"
 #include "Misc/GameInput.h"
 #include "Misc/GameTimer.h"
@@ -28,8 +29,8 @@ namespace GameCore
 	void InitializeApplication(IGameApp& game)
 	{
 		Graphics::Initialize();
-		SystemTime::Initialize();
-		GameInput::Initialize();
+		//SystemTime::Initialize();
+		//GameInput::Initialize();
 		//EngineTuning::Initialize();
 
 		game.Startup();
@@ -40,7 +41,7 @@ namespace GameCore
 		Graphics::g_CommandManager.IdleGPU();
 		game.Cleanup();
 
-		GameInput::ShutDown();
+		//GameInput::ShutDown();
 	}
 
 	bool UpdateApplication(IGameApp& game)
@@ -49,7 +50,7 @@ namespace GameCore
 
 		float DeltaTime = Graphics::GetFrameTime();
 
-		GameInput::Update(DeltaTime);
+		//GameInput::Update(DeltaTime);
 		//EngineTuning::Update(DeltaTime);
 
 		game.Update(DeltaTime);
@@ -63,7 +64,8 @@ namespace GameCore
 	// Default implementation to be overridden by the application
 	bool IGameApp::IsDone(void)
 	{
-		return GameInput::IsFirstPressed(GameInput::kKey_escape);
+		//return GameInput::IsFirstPressed(GameInput::kKey_escape);
+		return false;
 	}
 
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -71,7 +73,7 @@ namespace GameCore
 #else // Win32
 	HWND g_hWnd = nullptr;
 
-	void InitWindow(const wchar_t* className);
+	//void InitWindow(const wchar_t* className);
 	LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 	void RunApplication(IGameApp& app, const wchar_t* className, HINSTANCE hInst, int nCmdShow)

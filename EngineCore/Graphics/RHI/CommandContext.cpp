@@ -1,4 +1,4 @@
-#include "../../pch.h"
+#include "pch.h"
 #include "CommandContext.h"
 #include "../GraphicsCore.h"
 #include "../Buffer/GPUResource.h"
@@ -618,6 +618,19 @@ void FGraphicsContext::ResolveQueryData(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_
 	CommandList->ResolveQueryData(QueryHeap, InType, StartIndex, NumQueries, DestinationBuffer, DesctinationBufferOffset);
 }
 
+void FGraphicsContext::SetRootSignature(const FRootSignature& RootSig)
+{
+	if (RootSig.GetSignature() == GraphicsRootSignature)
+	{
+		return;
+	}
+
+	CommandList->SetGraphicsRootSignature(GraphicsRootSignature = RootSig.GetSignature());
+
+	DynamicViewDescriptorHeap.ParseGraphicsRootSignature(RootSig);
+	DynamicSamplerDescriptorHeap.ParseGraphicsRootSignature(RootSig);
+}
+
 void FGraphicsContext::SetRenderTargets(UINT NumRtvs, const D3D12_CPU_DESCRIPTOR_HANDLE Rtvs[])
 {
 	CommandList->OMSetRenderTargets(NumRtvs, Rtvs, FALSE, nullptr);
@@ -648,7 +661,7 @@ void FGraphicsContext::SetViewport(FLOAT X, FLOAT Y, FLOAT W, FLOAT H, FLOAT Min
 
 void FGraphicsContext::SetScissor(const D3D12_RECT& Rect)
 {
-	ASSERT(Rect.left < Rect.right&& Rect.top > Rect.bottom);
+	ASSERT(Rect.left < Rect.right&& Rect.top < Rect.bottom);
 	CommandList->RSSetScissorRects(1, &Rect);
 }
 

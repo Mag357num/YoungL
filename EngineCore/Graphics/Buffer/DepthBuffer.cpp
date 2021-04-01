@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "DepthBuffer.h"
-
 #include "../GraphicsCore.h"
 
 void FDepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)

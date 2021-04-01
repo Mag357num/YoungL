@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ColorBuffer.h"
 #include "../RHI/CommandContext.h"
 #include "../../Graphics/GraphicsCore.h"
@@ -28,6 +29,7 @@ void FColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Hei
 	ClearValue.Color[1] = ClearColor.G();
 	ClearValue.Color[2] = ClearColor.B();
 	ClearValue.Color[3] = ClearColor.A();
+	ClearValue.Format = Format;
 
 	CreateTextureResource(Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
 	CreateDerivedViews(Graphics::g_Device, Format, 1, NumMips);
@@ -108,7 +110,7 @@ void FColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, 
 	if (SrvHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 	{
 		RtvHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		SrvHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+		SrvHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	ID3D12Resource* TempResource = Resource.Get();

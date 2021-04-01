@@ -2,7 +2,6 @@
 
 #include "pch.h"
 
-
 namespace GameCore
 {
 	class IGameApp
@@ -40,5 +39,8 @@ namespace GameCore
 #define CREATE_APPLICATION( app_class ) \
     int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int nCmdShow) \
     { \
-        return GameCore::RunApplication( app_class(), L#app_class, hInstance, nCmdShow ); \
+		IGameApp* App = new app_class(); \
+        GameCore::RunApplication( *App, L#app_class, hInstance, nCmdShow ); \
+		delete App; \
+		return 0; \
     }

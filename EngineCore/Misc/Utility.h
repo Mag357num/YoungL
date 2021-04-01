@@ -1,6 +1,6 @@
 #pragma once
+#include "../Math/Common.h"
 
-#include "../pch.h"
 
 #ifdef _M_X64
 #define ENABLE_SSE_CRC32 1
@@ -81,9 +81,9 @@ namespace Utility
 		}
 
 		//if there is a 32-bit remander, accumulate 
-		if (Iter64 < End)
+		if ((uint32_t*)Iter64 < End)
 		{
-			Hash = _mm_crc32_u32((uint32_t)Hash, (uint32_t*)Iter64);
+			Hash = _mm_crc32_u32((uint32_t)Hash, *(uint32_t*)Iter64);
 		}
 
 #else
@@ -97,6 +97,7 @@ namespace Utility
 
 	template<typename T> inline size_t HashState(const T* StateDesc, size_t Count = 1, size_t Hash = 2166136261U)
 	{
+		static_assert((sizeof(T) & 3) == 0 && alignof(T) >= 4, "state Object is not word-aligned");
 		return HashRange((uint32_t*)StateDesc, (uint32_t*)(StateDesc + Count), Hash);
 	}
 	

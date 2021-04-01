@@ -61,7 +61,7 @@ public:
 	FCommandListmanager();
 	~FCommandListmanager();
 
-	void Create(ID3D12Device* Device);
+	void Create(ID3D12Device* InDevice);
 	void ShutDown();
 
 	FCommandQueue& GetGraphicsQueue(void) { return GraphicsQueue; }

@@ -49,8 +49,10 @@ public:
 	{
 		VertexBufferSize = sizeof(Vertex) * Vertices.size();
 		VertexStrideSize = sizeof(Vertex);
-		Device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+		CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC VtResDesc = CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize);
+		Device->CreateCommittedResource(&HeapProperties,
+			D3D12_HEAP_FLAG_NONE, &VtResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 			IID_PPV_ARGS(&M_VertexBuffer));
 
 		UINT8* VertexBegin;
@@ -62,8 +64,9 @@ public:
 
 		//create index buffer view
 		IndexBufferSize = sizeof(uint32_t) * Indices.size();
-		Device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+		CD3DX12_RESOURCE_DESC IxResDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
+		Device->CreateCommittedResource(&HeapProperties,
+			D3D12_HEAP_FLAG_NONE, &IxResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 			IID_PPV_ARGS(&M_IndexBuffer));
 
 		UINT8* IndexBegin;

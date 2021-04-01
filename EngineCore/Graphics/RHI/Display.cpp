@@ -1,13 +1,17 @@
+#include "pch.h"
 #include "Display.h"
 #include "../Buffer/ColorBuffer.h"
 #include "RootSignature.h"
 #include "PipelineState.h"
-#include "../../pch.h"
 #include "../../Misc/Utility.h"
 #include "../GraphicsCore.h"
+#include "SamplerDesc.h"
 
 #include <dxgi1_4.h>
 
+
+#include "CompiledShaders/ScreenQuadVS.h"
+#include "CompiledShaders/PresentSDRPS.h"
 
 #define  SWAP_CHAIN_BUFFER_COUNT 2
 DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -55,8 +59,8 @@ namespace Graphics
 	bool g_EnableHDROutput = false;
 	uint32_t g_NativeWidth = 0;
 	uint32_t g_NativeHeight = 0;
-	uint32_t g_DisplayWidth = 1920;
-	uint32_t g_DisplayHeight = 1080;
+	uint32_t g_DisplayWidth = 1280;
+	uint32_t g_DisplayHeight = 720;
 	FColorBuffer g_PreDisplayBuffer;
 	FColorBuffer g_DisplayPlane[SWAP_CHAIN_BUFFER_COUNT];
 	UINT g_CurrentBuffer = 0;
@@ -138,8 +142,83 @@ namespace Graphics
 	}
 
 	//sampler 
-	D3D12_SAMPLER_DESC SamplerLinearClampDesc;
-	D3D12_SAMPLER_DESC SamplerPointClampDesc;
+	FSamplerDesc SamplerLinearClampDesc;
+	FSamplerDesc SamplerPointClampDesc;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearClamp;
+	D3D12_CPU_DESCRIPTOR_HANDLE SamplerPointClamp;
+
+	D3D12_RASTERIZER_DESC RasterizerTwoSided;
+	D3D12_RASTERIZER_DESC RasterizerDefault;
+
+	D3D12_BLEND_DESC BlendPreMultiplied;
+
+	D3D12_DEPTH_STENCIL_DESC DepthStateDisabled;
+
+	void InitCommonState()
+	{
+		//initialize sampler
+		SamplerLinearClampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		SamplerLinearClampDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
+		SamplerLinearClamp = SamplerLinearClampDesc.CreateDescriptor();
+
+		SamplerPointClampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+		SamplerPointClampDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
+		SamplerPointClamp = SamplerPointClampDesc.CreateDescriptor();
+
+		//rasterize 
+		// Default rasterizer states
+		RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
+		RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
+		RasterizerDefault.FrontCounterClockwise = TRUE;
+		RasterizerDefault.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+		RasterizerDefault.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+		RasterizerDefault.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+		RasterizerDefault.DepthClipEnable = TRUE;
+		RasterizerDefault.MultisampleEnable = FALSE;
+		RasterizerDefault.AntialiasedLineEnable = FALSE;
+		RasterizerDefault.ForcedSampleCount = 0;
+		RasterizerDefault.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+		RasterizerTwoSided = RasterizerDefault;
+		RasterizerTwoSided.CullMode = D3D12_CULL_MODE_NONE;
+
+		//blend
+		D3D12_BLEND_DESC alphaBlend = {};
+		alphaBlend.IndependentBlendEnable = FALSE;
+		alphaBlend.RenderTarget[0].BlendEnable = FALSE;
+		alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		alphaBlend.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		alphaBlend.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		alphaBlend.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		alphaBlend.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+		alphaBlend.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		alphaBlend.RenderTarget[0].RenderTargetWriteMask = 0;
+
+		alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+		BlendPreMultiplied = alphaBlend;
+
+		//depth stencil
+		DepthStateDisabled.DepthEnable = FALSE;
+		DepthStateDisabled.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+		DepthStateDisabled.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		DepthStateDisabled.StencilEnable = FALSE;
+		DepthStateDisabled.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+		DepthStateDisabled.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+		DepthStateDisabled.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+		DepthStateDisabled.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+		DepthStateDisabled.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+		DepthStateDisabled.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+		DepthStateDisabled.BackFace = DepthStateDisabled.FrontFace;
+	}
+
+
+	//scene color
+	extern FColorBuffer g_SceneColorBuffer;
+	//scene depth
+	extern FDepthBuffer g_SceneDepthBuffer;
+
+	extern Microsoft::WRL::ComPtr<IDXGIFactory4> g_DxgiFactory;;
 
 }
 
@@ -147,31 +226,30 @@ using namespace Graphics;
 
 void Display::Initialize()
 {
-	ASSERT(Graphics::s_SwapChain1 == nullptr, "Swap chain has already by initialied");
+	ASSERT(Graphics::s_SwapChain1 == nullptr, "Swap chain has already be initialied");
 
-	Microsoft::WRL::ComPtr<IDXGIFactory4> DXGIFactor;
-	ASSERT_SUCCEEDED(CreateDXGIFactory2(0, IID_PPV_ARGS(&DXGIFactor)));
+	//g_DisplayWidth = 1280;
+	//g_DisplayHeight = 720;
 
 	DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = {};
 	SwapChainDesc.Width = g_DisplayWidth;
 	SwapChainDesc.Height = g_DisplayHeight;
-	SwapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
-	SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	SwapChainDesc.Format = SwapChainFormat;
+	SwapChainDesc.BufferCount = SWAP_CHAIN_BUFFER_COUNT;
 	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	SwapChainDesc.SampleDesc.Count = 1;
 	SwapChainDesc.SampleDesc.Quality = 0;
-	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 	SwapChainDesc.Scaling = DXGI_SCALING_NONE;
-	SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC SwapChainFDesc;
-	SwapChainFDesc.Windowed = TRUE;
+	//DXGI_SWAP_CHAIN_FULLSCREEN_DESC SwapChainFDesc;
+	//SwapChainFDesc.Windowed = TRUE;
 	
-	DXGIFactor->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(),
+	g_DxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(),
 		GameCore::g_hWnd,
-		&SwapChainDesc, &SwapChainFDesc, nullptr, &s_SwapChain1);
+		&SwapChainDesc, nullptr, nullptr, &s_SwapChain1);
 
 
 	//get swapchain buffer
@@ -179,40 +257,39 @@ void Display::Initialize()
 	{
 		ComPtr<ID3D12Resource> TempDisplay;
 		s_SwapChain1->GetBuffer(i, IID_PPV_ARGS(&TempDisplay));
-
 		g_DisplayPlane[i].CreateFromSwapChain(L"Primary swap chain buffer", TempDisplay.Detach());
 	}
 
-	//initialize sampler
-	SamplerLinearClampDesc = D3D12_SAMPLER_DESC();
-	SamplerLinearClampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	SamplerLinearClampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	SamplerLinearClampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	SamplerLinearClampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	SamplerLinearClampDesc.BorderColor[0] = 1.0f;
-	SamplerLinearClampDesc.BorderColor[1] = 1.0f;
-	SamplerLinearClampDesc.BorderColor[2] = 1.0f;
-	SamplerLinearClampDesc.BorderColor[3] = 1.0f;
-	SamplerLinearClampDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	SamplerLinearClampDesc.MinLOD = 0.0f;
-	SamplerLinearClampDesc.MaxLOD = D3D12_FLOAT32_MAX;
-	SamplerLinearClampDesc.MaxAnisotropy = 16;
-	SamplerLinearClampDesc.MipLODBias = 0.0f;
-
-	SamplerPointClampDesc.Filter = D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+	Graphics::InitCommonState();
 
 	//initialize root signature
 	s_PresentRS.Reset(4, 2);
 	s_PresentRS[0].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
 	s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
 	s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
-	s_PresentRS[3].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
+	s_PresentRS[3].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
 	s_PresentRS.InitStaticSampler(0, SamplerLinearClampDesc);
 	s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
 	s_PresentRS.Finalize(L"Present");
 
 	//initialize pso
 	PresentSDRPSO.SetRootSignature(s_PresentRS);
+	PresentSDRPSO.SetBlendState(Graphics::BlendPreMultiplied);
+	PresentSDRPSO.SetRasterizerState(Graphics::RasterizerTwoSided);
+	PresentSDRPSO.SetDepthStencilState(Graphics::DepthStateDisabled);
+	PresentSDRPSO.SetSampleMask(0xFFFFFFFF);
+	PresentSDRPSO.SetInputLayout(0, nullptr);
+	PresentSDRPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	PresentSDRPSO.SetVertexShader(g_ScreenQuadVS, sizeof(g_ScreenQuadVS));
+	PresentSDRPSO.SetPixelShader(g_PresentSDRPS, sizeof(g_PresentSDRPS));
+	PresentSDRPSO.SetRenderTargetFormat(SwapChainFormat, DXGI_FORMAT_UNKNOWN);
+	PresentSDRPSO.Finalize();
+
+	SetNativeResolution();
+
+	//initialize scene color && scene depth
+	Graphics::g_SceneColorBuffer.Create(L"Main Scene Color", g_DisplayWidth, g_DisplayHeight, 1, SwapChainFormat);
+	g_PreDisplayBuffer.Create(L"PreDisplay Buffer", g_DisplayWidth, g_DisplayHeight, 1, SwapChainFormat);
 
 }
 
@@ -225,6 +302,8 @@ void Display::ShutDown()
 		g_DisplayPlane[i].Destroy();
 	}
 
+	g_SceneColorBuffer.Destroy();
+
 }
 
 void Display::Resize(uint32_t Width, uint32_t Height)
@@ -233,6 +312,8 @@ void Display::Resize(uint32_t Width, uint32_t Height)
 
 	g_DisplayWidth = Width;
 	g_DisplayHeight = Height;
+
+	g_PreDisplayBuffer.Create(L"PreDisplay Buffer", Width, Height, 1, SwapChainFormat);
 
 	for (uint32_t i =0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
 	{
@@ -255,7 +336,15 @@ void Display::Resize(uint32_t Width, uint32_t Height)
 
 void Display::Present()
 {
-	
+	PreparePresentSDR();
+
+	g_CurrentBuffer = (g_CurrentBuffer + 1) % 2;
+
+	UINT PresentInterval = 0;// if open vsync, vsync 
+	s_SwapChain1->Present(PresentInterval, 0);
+
+	SetNativeResolution();
+	SetDisplayResolution();
 }
 
 uint64_t Graphics::GetFrameCount()
@@ -281,5 +370,22 @@ void Graphics::CompositeOverlays()
 
 void Graphics::PreparePresentSDR()
 {
+	FGraphicsContext& PresentContext = FGraphicsContext::Begin(L"Present");
+	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
+	PresentContext.SetRootSignature(s_PresentRS);
+	PresentContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	PresentContext.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSrv());
+	
+	FColorBuffer& Dest = g_DisplayPlane[g_CurrentBuffer];
+	PresentContext.SetPipelineState(PresentSDRPSO);
+	PresentContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	PresentContext.SetRenderTargets(Dest.GetRtv());
+	PresentContext.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+	PresentContext.Draw(3);
+
+	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
+
+	PresentContext.Finish();
 }

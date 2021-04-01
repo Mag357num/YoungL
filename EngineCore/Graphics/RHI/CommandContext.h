@@ -200,6 +200,8 @@ public:
 	void ResolveQueryData(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE InType, UINT StartIndex, UINT NumQueries,
 		ID3D12Resource* DestinationBuffer, UINT64 DesctinationBufferOffset);
 
+	void SetRootSignature(const FRootSignature& RootSig);
+
 	void SetRenderTargets(UINT NumRtvs, const D3D12_CPU_DESCRIPTOR_HANDLE Rtvs[]);
 	void SetRenderTargets(UINT NumRtvs, const D3D12_CPU_DESCRIPTOR_HANDLE Rtvs[], D3D12_CPU_DESCRIPTOR_HANDLE Dsv);
 	void SetRenderTargets(D3D12_CPU_DESCRIPTOR_HANDLE Rtv) { SetRenderTargets(1, &Rtv); }

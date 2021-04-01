@@ -233,8 +233,8 @@ void DXExample::OnResize()
 	ClearValue.Format = M_DepthStencilFormat;
 	ClearValue.DepthStencil.Depth = 1.0f;
 	ClearValue.DepthStencil.Stencil = 0;
-
-	M_Device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &DRDesc, D3D12_RESOURCE_STATE_COMMON,
+	CD3DX12_HEAP_PROPERTIES HeapProperty(D3D12_HEAP_TYPE_DEFAULT);
+	M_Device->CreateCommittedResource(&HeapProperty, D3D12_HEAP_FLAG_NONE, &DRDesc, D3D12_RESOURCE_STATE_COMMON,
 		&ClearValue, IID_PPV_ARGS(&M_DepthStencilBuffer));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE DsvHandle(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
@@ -246,8 +246,9 @@ void DXExample::OnResize()
 	M_Device->CreateDepthStencilView(M_DepthStencilBuffer.Get(), &DsvDesc, DsvHandle);
 
 	//transilate dsv stato to depth
-	M_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(M_DepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(M_DepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	M_CommandList->ResourceBarrier(1, &Barrier);
 
 	//excute command list
 	M_CommandList->Close();
@@ -340,22 +341,28 @@ void DXExample::PopulateCommands()
 	M_CommandList->RSSetScissorRects(1, &M_ScissorRect);
 
 	//change targe state
-	M_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	D3D12_RESOURCE_BARRIER BarrierRT = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	M_CommandList->ResourceBarrier(1, &BarrierRT);
 
 	//clear target view
 	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::Black, 0, nullptr);
 	M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	M_CommandList->OMSetRenderTargets(1, &GetCurrentBackBufferView(), true, &GetCurrentDepthStencilView());
+	D3D12_CPU_DESCRIPTOR_HANDLE BackBufferHandle = GetCurrentBackBufferView();
+	D3D12_CPU_DESCRIPTOR_HANDLE DsvrHandle = GetCurrentDepthStencilView();
+	M_CommandList->OMSetRenderTargets(1, &BackBufferHandle, true, &DsvrHandle);
 
 	//
 	ID3D12DescriptorHeap* DescriporHeaps[] = {M_CbvSrvUavHeap.Get()};
 	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
 	M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
 	
-	M_CommandList->IASetVertexBuffers(0, 1, &M_Geometies[0]->GetVertexBufferView());
-	M_CommandList->IASetIndexBuffer(&M_Geometies[0]->GetIndexBufferView());
+
+	D3D12_VERTEX_BUFFER_VIEW VtView = M_Geometies[0]->GetVertexBufferView();
+	M_CommandList->IASetVertexBuffers(0, 1, &VtView);
+	D3D12_INDEX_BUFFER_VIEW IxView = M_Geometies[0]->GetIndexBufferView();
+	M_CommandList->IASetIndexBuffer(&IxView);
 	M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	M_CommandList->SetGraphicsRootDescriptorTable(0, M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
@@ -363,8 +370,9 @@ void DXExample::PopulateCommands()
 	M_CommandList->DrawIndexedInstanced(M_Geometies[0]->IndexCount, 1, 0, 0, 0);
 
 	//change targe state
-	M_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	D3D12_RESOURCE_BARRIER BarrierPresent = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	M_CommandList->ResourceBarrier(1, &BarrierPresent);
 
 	M_CommandList->Close();
 	ID3D12CommandList* CmdLists[] = { M_CommandList.Get()};

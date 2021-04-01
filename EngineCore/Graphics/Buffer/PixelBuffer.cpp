@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PixelBuffer.h"
 #include "../GraphicsCore.h"
 #include <iostream>
@@ -339,7 +340,7 @@ void FPixelBuffer::CreateTextureResource(ID3D12Device* Device, const std::wstrin
 	}
 
 	UsageState = D3D12_RESOURCE_STATE_COMMON;
-	GpuVirtualAddress = Resource->GetGPUVirtualAddress();
+	GpuVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 
 #ifndef RELEASE
 	Resource->SetName(Name.c_str());

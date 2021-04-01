@@ -123,6 +123,9 @@
     <ClCompile Include="Graphics\RHI\Display.cpp">
       <Filter>源文件\Graphics\RHI</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\RHI\SamplerDesc.cpp">
+      <Filter>源文件\Graphics\RHI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -209,10 +212,21 @@
     <ClInclude Include="Graphics\RHI\Display.h">
       <Filter>头文件\Graphics\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\RHI\SamplerDesc.h">
+      <Filter>头文件\Graphics\RHI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\ScreenQuadVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\PresentSDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\ShaderUtility.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

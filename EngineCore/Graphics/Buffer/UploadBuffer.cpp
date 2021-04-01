@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "UploadBuffer.h"
 #include "../GraphicsCore.h"
 
@@ -45,12 +46,14 @@ void FUploadBuffer::Create(const std::wstring& Name, size_t BufferSize)
 void* FUploadBuffer::Map()
 {
 	void* Memory;
-	Resource->Map(0, &CD3DX12_RANGE(0, BufferSize), &Memory);
+	CD3DX12_RANGE range(0, BufferSize);
+	Resource->Map(0, &range, &Memory);
 
 	return Memory;
 }
 
 void FUploadBuffer::Unmap(size_t Begin /* = 0 */, size_t End /* = -1 */)
 {
-	Resource->Unmap(0, &CD3DX12_RANGE(Begin, std::min(End, BufferSize)));
+	CD3DX12_RANGE Range(Begin, std::min(End, BufferSize));
+	Resource->Unmap(0, &Range);
 }

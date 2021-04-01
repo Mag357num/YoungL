@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "LinearAllocator.h"
 #include "../GraphicsCore.h"
 #include "../../Math/Common.h"
@@ -11,7 +12,7 @@ FLinearAllocatorPagemanager::FLinearAllocatorPagemanager()
 {
 	AllocationType = AutoType;
 	AutoType = (ELinearAllocatorType)(AutoType + 1);
-	ASSERT(AutoType < ENumAllocatorTypes);
+	ASSERT(AutoType <= ENumAllocatorTypes);
 }
 
 FLinearAllocatorPagemanager FLinearAllocator::PageManager[2];

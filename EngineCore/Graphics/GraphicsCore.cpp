@@ -1,17 +1,29 @@
+#include "pch.h"
 #include "GraphicsCore.h"
 #include "RHI/CommandListManager.h"
 #include "RHI/CommandSignature.h"
 #include "RHI/Display.h"
 #include <dxgi1_6.h>
 
+
+#include "Buffer/ColorBuffer.h"
+#include "Buffer/DepthBuffer.h"
+
 namespace Graphics
 {
 	//class FCommandListmanager;
 
 	ID3D12Device* g_Device = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory4> g_DxgiFactory;
+
 	FCommandListmanager g_CommandManager;
 	FContextManager g_ContextManager;
 	FCommandSignature DrawIndirectCommandSignature;
+
+	//scene color
+	FColorBuffer g_SceneColorBuffer;
+	//scene depth
+	FDepthBuffer g_SceneDepthBuffer;
 
 	FDescriptorAllocator g_DescriptorAllocator[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] =
 	{
@@ -43,13 +55,12 @@ void Graphics::Initialize(void)
 	
 	//create factory
 	UINT CreateDxgiFactorFlag = 0;
-	Microsoft::WRL::ComPtr<IDXGIFactory6> DxgiFactory;
-	ASSERT_SUCCEEDED(CreateDXGIFactory2(CreateDxgiFactorFlag, IID_PPV_ARGS(&DxgiFactory)));
+	ASSERT_SUCCEEDED(CreateDXGIFactory2(CreateDxgiFactorFlag, IID_PPV_ARGS(&g_DxgiFactory)));
 
 	//create device
 	Microsoft::WRL::ComPtr<IDXGIAdapter1> AdapterPtr;
 	SIZE_T MaxVedioSize = 0;
-	for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != DxgiFactory->EnumAdapters1(Idx, &AdapterPtr); ++Idx)
+	for (uint32_t Idx = 0; DXGI_ERROR_NOT_FOUND != g_DxgiFactory->EnumAdapters1(Idx, &AdapterPtr); ++Idx)
 	{
 		DXGI_ADAPTER_DESC1 AdapterDesc;
 		AdapterPtr->GetDesc1(&AdapterDesc);
@@ -82,6 +93,7 @@ void Graphics::Initialize(void)
 	
 
 	g_CommandManager.Create(g_Device);
+
 	Display::Initialize();
 }
 

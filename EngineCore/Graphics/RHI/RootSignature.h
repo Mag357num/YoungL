@@ -115,6 +115,7 @@ public:
 		{
 			ParamArray = nullptr;
 		}
+		NumParameter = NumRootParams;
 
 		if (NumStaticSamplers > 0)
 		{

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DynamicDescriptorHeap.h"
 #include "../GraphicsCore.h"
 
@@ -53,7 +54,7 @@ void FDynamicDescriptorHeap::FDescriptorHandleCache::CopyAndBindStaleTables(D3D1
 		StaleParams ^= (1 << RootIndex);
 
 		uint32_t MaxSethandle = 0;
-		ASSERT(TRUE == _BitScanReverse((unsigned long*)MaxSethandle, RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
+		ASSERT(TRUE == _BitScanReverse((unsigned long*)&MaxSethandle, RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
 			"Root entry marked as stale but has no stale descriptors");
 
 		NeedSpace += MaxSethandle + 1;
