@@ -20,7 +20,7 @@ public:
 	void ExportToFile(const std::wstring& FilePath);
 protected:
 
-	D3D12_RESOURCE_DESC DescribleTexture2D(uint32_t Width, uint32_t Height, uint32_t DepthOrArraySize, uint32_t NumMips, DXGI_FORMAT ForMat, UINT Flags);
+	D3D12_RESOURCE_DESC DescribleTexture2D(uint32_t InWidth, uint32_t InHeight, uint32_t DepthOrArraySize, uint32_t InNumMips, DXGI_FORMAT InForMat, UINT Flags);
 	void AssociateWithResource(ID3D12Device* Device, const std::wstring& Name, ID3D12Resource* InResource, D3D12_RESOURCE_STATES CurrentState);
 
 	void CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc, 

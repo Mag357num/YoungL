@@ -11,7 +11,7 @@
 #pragma warning(push)
 #pragma warning(disable:4100)
 #include <pix.h>
-#pragma wanrning(pop);
+#pragma warning(pop)
 
 using namespace Graphics;
 
@@ -161,7 +161,7 @@ uint64_t FCommandContext::Flush(bool WaitForCompletion /* = false */)
 
 uint64_t FCommandContext::Finish(bool WaitForCompletion /* = false */)
 {
-	ASSERT(CommandType == D3D12_COMMAND_LIST_TYPE_DIRECT | D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	ASSERT(CommandType == D3D12_COMMAND_LIST_TYPE_DIRECT || CommandType == D3D12_COMMAND_LIST_TYPE_COMPUTE);
 	FlushResourceBarriers();
 
 	FCommandQueue& CmdQueue = g_CommandManager.GetQueue(CommandType);
@@ -425,7 +425,7 @@ void FCommandContext::CopyTextureRegion(FGPUResource& Dest, UINT X, UINT Y, UINT
 	Box.top = Rect.top;
 	Box.bottom = Rect.bottom;
 
-	CommandList->CopyTextureRegion(&DestLoc, X, Y, X, &SrcLoc, &Box);
+	CommandList->CopyTextureRegion(&DestLoc, X, Y, Z, &SrcLoc, &Box);
 }
 
 void FCommandContext::WriteBuffer(FGPUResource& Dest, size_t DestOffset, const void* Data, size_t NumBytes)
@@ -736,14 +736,14 @@ void FGraphicsContext::SetDynamicConstantBufferView(UINT RootIndex, size_t Buffe
 void FGraphicsContext::SetBufferSrv(UINT RootIndex, FGpuBuffer& InSrv, UINT64 Offset /* = 0 */)
 {
 	D3D12_RESOURCE_STATES ResourceState = InSrv.GetResourceState();
-	ASSERT(ResourceState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS != 0);
+	ASSERT((ResourceState & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) != 0);
 	CommandList->SetGraphicsRootShaderResourceView(RootIndex, InSrv.GetGpuVirtualAddress() + Offset);
 }
 
 void FGraphicsContext::SetBufferUav(UINT RootIndex, FGpuBuffer& Uav, UINT64 Offset /* = 0 */)
 {
 	D3D12_RESOURCE_STATES ResourceState = Uav.GetResourceState();
-	ASSERT(ResourceState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS != 0);
+	ASSERT((ResourceState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) != 0);
 	CommandList->SetGraphicsRootUnorderedAccessView(RootIndex, Uav.GetGpuVirtualAddress() + Offset);
 }
 
@@ -815,7 +815,7 @@ void FGraphicsContext::SetDynamicVB(UINT Slot, size_t NumVertices, size_t Vertex
 	D3D12_VERTEX_BUFFER_VIEW VBView;
 	VBView.BufferLocation = VB.GpuAddress;
 	VBView.SizeInBytes = (UINT)BufferSize;
-	VBView.StrideInBytes = VertexStride;
+	VBView.StrideInBytes = (UINT)VertexStride;
 
 	CommandList->IASetVertexBuffers(Slot, 1, &VBView);
 }

@@ -20,18 +20,18 @@ public:
 	// Create a depth buffer.  If an address is supplied, memory will not be allocated.
 	// The vmem address allows you to alias buffers (which can be especially useful for
 	// reusing ESRAM across a frame.)
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format,
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, DXGI_FORMAT InFormat,
 		D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
 	// Create a depth buffer.  Memory will be allocated in ESRAM (on Xbox One).  On Windows,
 	// this functions the same as Create() without a video address.
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format,
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, DXGI_FORMAT InFormat,
 		EsramAllocator& Allocator);
 
 
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format,
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t NumSamples, DXGI_FORMAT InFormat,
 		D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format,
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t NumSamples, DXGI_FORMAT InFormat,
 		EsramAllocator& Allocator);
 
 
@@ -48,7 +48,7 @@ public:
 	
 
 protected:
-	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format);
+	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat);
 
 	float ClearDepth;
 	uint8_t ClearStencil;

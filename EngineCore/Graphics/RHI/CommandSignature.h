@@ -32,7 +32,7 @@ public:
 		IndirectParam.VertexBuffer.Slot = Slot;
 	}
 
-	void IndexBuferView(UINT Slot)
+	void IndexBufferView(void)
 	{
 		IndirectParam.Type = D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW;
 		

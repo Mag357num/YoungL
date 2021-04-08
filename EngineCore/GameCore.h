@@ -41,6 +41,5 @@ namespace GameCore
     { \
 		IGameApp* App = new app_class(); \
         GameCore::RunApplication( *App, L#app_class, hInstance, nCmdShow ); \
-		delete App; \
 		return 0; \
     }

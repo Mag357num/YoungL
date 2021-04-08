@@ -29,7 +29,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE CreateConstantBufferView(uint32_t Offset, uint32_t Size) const;
 
 	D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t Offset, uint32_t Size, uint32_t Stride) const;
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t BaseVertexIndex = 0) const
+	D3D12_VERTEX_BUFFER_VIEW VertexBufferView(uint32_t BaseVertexIndex = 0) const
 	{
 		uint32_t Offset = BaseVertexIndex * ElementSize;
 		return VertexBufferView(Offset, (uint32_t)(BufferSize - Offset), ElementSize);

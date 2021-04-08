@@ -14,7 +14,7 @@
 #include "CompiledShaders/PresentSDRPS.h"
 
 #define  SWAP_CHAIN_BUFFER_COUNT 2
-DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+DXGI_FORMAT SwapChainFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 namespace GameCore
 {
@@ -151,7 +151,7 @@ namespace Graphics
 	D3D12_RASTERIZER_DESC RasterizerTwoSided;
 	D3D12_RASTERIZER_DESC RasterizerDefault;
 
-	D3D12_BLEND_DESC BlendPreMultiplied;
+	D3D12_BLEND_DESC PresentSDRBlend;
 
 	D3D12_DEPTH_STENCIL_DESC DepthStateDisabled;
 
@@ -187,16 +187,16 @@ namespace Graphics
 		D3D12_BLEND_DESC alphaBlend = {};
 		alphaBlend.IndependentBlendEnable = FALSE;
 		alphaBlend.RenderTarget[0].BlendEnable = FALSE;
-		alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		alphaBlend.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+		alphaBlend.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
 		alphaBlend.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 		alphaBlend.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		alphaBlend.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+		alphaBlend.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 		alphaBlend.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		alphaBlend.RenderTarget[0].RenderTargetWriteMask = 0;
-
-		alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-		BlendPreMultiplied = alphaBlend;
+		alphaBlend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		alphaBlend.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+		alphaBlend.RenderTarget[0].LogicOpEnable = FALSE;
+		PresentSDRBlend = alphaBlend;
 
 		//depth stencil
 		DepthStateDisabled.DepthEnable = FALSE;
@@ -263,19 +263,24 @@ void Display::Initialize()
 	Graphics::InitCommonState();
 
 	//initialize root signature
-	s_PresentRS.Reset(4, 2);
-	s_PresentRS[0].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
-	s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
-	s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
-	s_PresentRS[3].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+	s_PresentRS.Reset(1, 1);
+	s_PresentRS[0].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1);
+	//s_PresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
+	//s_PresentRS[2].InitAsBufferSRV(2, D3D12_SHADER_VISIBILITY_PIXEL);
+	//s_PresentRS[3].InitAsDescritporRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
 	s_PresentRS.InitStaticSampler(0, SamplerLinearClampDesc);
-	s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
+	//s_PresentRS.InitStaticSampler(1, SamplerPointClampDesc);
 	s_PresentRS.Finalize(L"Present");
 
 	//initialize pso
 	PresentSDRPSO.SetRootSignature(s_PresentRS);
-	PresentSDRPSO.SetBlendState(Graphics::BlendPreMultiplied);
-	PresentSDRPSO.SetRasterizerState(Graphics::RasterizerTwoSided);
+	PresentSDRPSO.SetBlendState(Graphics::PresentSDRBlend);
+	//PresentSDRPSO.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
+	//PresentSDRPSO.SetRasterizerState(Graphics::RasterizerTwoSided);
+	D3D12_RASTERIZER_DESC Rasterizer = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	Rasterizer.CullMode = D3D12_CULL_MODE_FRONT;
+	PresentSDRPSO.SetRasterizerState(Rasterizer);
+
 	PresentSDRPSO.SetDepthStencilState(Graphics::DepthStateDisabled);
 	PresentSDRPSO.SetSampleMask(0xFFFFFFFF);
 	PresentSDRPSO.SetInputLayout(0, nullptr);
@@ -371,21 +376,22 @@ void Graphics::CompositeOverlays()
 void Graphics::PreparePresentSDR()
 {
 	FGraphicsContext& PresentContext = FGraphicsContext::Begin(L"Present");
-	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);
+	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	PresentContext.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
+	PresentContext.ClearColor(g_DisplayPlane[g_CurrentBuffer]);
+	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
+	PresentContext.SetRenderTargets(g_DisplayPlane[g_CurrentBuffer].GetRtv());
 
 	PresentContext.SetRootSignature(s_PresentRS);
 	PresentContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	PresentContext.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSrv());
-	
 	//FColorBuffer& Dest = g_DisplayPlane[g_CurrentBuffer];
 	PresentContext.SetPipelineState(PresentSDRPSO);
-	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	PresentContext.SetRenderTargets(g_DisplayPlane[g_CurrentBuffer].GetRtv());
-	PresentContext.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
 	PresentContext.Draw(3);
 
-	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT, true);
+	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 
 	PresentContext.Finish();
 }

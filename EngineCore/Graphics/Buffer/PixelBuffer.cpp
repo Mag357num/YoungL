@@ -304,12 +304,12 @@ void FPixelBuffer::AssociateWithResource(ID3D12Device* Device, const std::wstrin
 }
 
 
-D3D12_RESOURCE_DESC FPixelBuffer::DescribleTexture2D(uint32_t Width, uint32_t Height, uint32_t DepthOrArraySize, uint32_t NumMips, DXGI_FORMAT ForMat, UINT Flags)
+D3D12_RESOURCE_DESC FPixelBuffer::DescribleTexture2D(uint32_t InWidth, uint32_t InHeight, uint32_t DepthOrArraySize, uint32_t InNumMips, DXGI_FORMAT InForMat, UINT Flags)
 {
-	Width = Width;
-	Height = Height;
+	Width = InWidth;
+	Height = InHeight;
 	ArraySize = DepthOrArraySize;
-	Format = ForMat;
+	Format = InForMat;
 
 	D3D12_RESOURCE_DESC Desc = {};
 	Desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -317,10 +317,10 @@ D3D12_RESOURCE_DESC FPixelBuffer::DescribleTexture2D(uint32_t Width, uint32_t He
 	Desc.Alignment = 0;
 	Desc.DepthOrArraySize = DepthOrArraySize;
 	Desc.Flags = (D3D12_RESOURCE_FLAGS)Flags;
-	Desc.Format = ForMat;
-	Desc.MipLevels = NumMips;
-	Desc.Width = Width;
-	Desc.Height = Height;
+	Desc.Format = InForMat;
+	Desc.MipLevels = InNumMips;
+	Desc.Width = InWidth;
+	Desc.Height = InHeight;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
 

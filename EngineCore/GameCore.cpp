@@ -30,7 +30,7 @@ namespace GameCore
 	{
 		Graphics::Initialize();
 		//SystemTime::Initialize();
-		//GameInput::Initialize();
+		GameInput::Initialize();
 		//EngineTuning::Initialize();
 
 		game.Startup();
@@ -41,7 +41,7 @@ namespace GameCore
 		Graphics::g_CommandManager.IdleGPU();
 		game.Cleanup();
 
-		//GameInput::ShutDown();
+		GameInput::ShutDown();
 	}
 
 	bool UpdateApplication(IGameApp& game)
@@ -50,7 +50,7 @@ namespace GameCore
 
 		float DeltaTime = Graphics::GetFrameTime();
 
-		//GameInput::Update(DeltaTime);
+		GameInput::Update(DeltaTime);
 		//EngineTuning::Update(DeltaTime);
 
 		game.Update(DeltaTime);
@@ -64,8 +64,7 @@ namespace GameCore
 	// Default implementation to be overridden by the application
 	bool IGameApp::IsDone(void)
 	{
-		//return GameInput::IsFirstPressed(GameInput::kKey_escape);
-		return false;
+		return GameInput::IsFirstPressed(GameInput::kKey_escape);
 	}
 
 #if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -141,7 +140,7 @@ namespace GameCore
 			break;
 
 		case WM_DESTROY:
-			PostQuitMessage(0);
+			PostQuitMessage(1);
 			break;
 
 		default:

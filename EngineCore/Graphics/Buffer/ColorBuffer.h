@@ -12,7 +12,7 @@ class FColorBuffer : public FPixelBuffer
 {
 public:
 
-	FColorBuffer(FColor InClearColor = FColor(0.0f, 0.0f, 0.0f, 0.0f)) :
+	FColorBuffer(FColor InClearColor = FColor(0.0f, 1.0f, 0.0f, 1.0f)) :
 		ClearColor(InClearColor),
 		NumMipMaps(0),
 		FragmentCount(1),
@@ -33,24 +33,24 @@ public:
 	// Create a color buffer.  If an address is supplied, memory will not be allocated.
 	// The vmem address allows you to alias buffers (which can be especially useful for
 	// reusing ESRAM across a frame.)
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips,
-		DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t InNumMips,
+		DXGI_FORMAT InFormat, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
 	// Create a color buffer.  Memory will be allocated in ESRAM (on Xbox One).  On Windows,
    // this functions the same as Create() without a video address.
-	void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips,
-		DXGI_FORMAT Format, EsramAllocator& Allocator);
+	void Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t InNumMips,
+		DXGI_FORMAT InFormat, EsramAllocator& Allocator);
 
 	// Create a color buffer.  If an address is supplied, memory will not be allocated.
 	// The vmem address allows you to alias buffers (which can be especially useful for
 	// reusing ESRAM across a frame.)
-	void CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount,
-		DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
+	void CreateArray(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t ArrayCount,
+		DXGI_FORMAT InFormat, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
 	// Create a color buffer.  Memory will be allocated in ESRAM (on Xbox One).  On Windows,
    // this functions the same as Create() without a video address.
-	void CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount,
-		DXGI_FORMAT Format, EsramAllocator& Allocator);
+	void CreateArray(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t ArrayCount,
+		DXGI_FORMAT InFormat, EsramAllocator& Allocator);
 
 
 	//get pre created cpu visible descriptor handles
@@ -58,7 +58,7 @@ public:
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRtv(void) const { return RtvHandle; }
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUav(void) const { return UavHandle[0]; }
 
-	void SetClearColor(FColor ClearColor) { ClearColor = ClearColor; }
+	void SetClearColor(FColor InClearColor) { ClearColor = InClearColor; }
 	FColor GetClearColor(void) const { return ClearColor; }
 	
 	void SetMsaaMode(uint32_t NumColorSamples, uint32_t NumCoverageSamples)
@@ -90,14 +90,14 @@ protected:
 	// _BitScanReverse to find the highest set bit.  Each dimension reduces by
 	// half and truncates bits.  The dimension 256 (0x100) has 9 mip levels, same
 	// as the dimension 511 (0x1FF).
-	static inline uint32_t ComputeNumMips(uint32_t Width, uint32_t Height)
+	static inline uint32_t ComputeNumMips(uint32_t InWidth, uint32_t InHeight)
 	{
 		uint32_t HeighBit;
-		_BitScanReverse((unsigned long*)&HeighBit, Width | Height);
+		_BitScanReverse((unsigned long*)&HeighBit, InWidth | InHeight);
 		return HeighBit + 1;
 	}
 
-	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips = 1);
+	void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat, uint32_t InArraySize, uint32_t NumMips = 1);
 
 	FColor ClearColor;
 	D3D12_CPU_DESCRIPTOR_HANDLE SrvHandle;

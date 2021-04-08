@@ -2,13 +2,13 @@
 #include "DepthBuffer.h"
 #include "../GraphicsCore.h"
 
-void FDepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)
+void FDepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat)
 {
 	ID3D12Resource* TempResource = Resource.Get();
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
 
-	DsvDesc.Format = GetDSVFormat(Format);
+	DsvDesc.Format = GetDSVFormat(InFormat);
 	if (TempResource->GetDesc().SampleDesc.Count ==1)
 	{
 		DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -80,14 +80,14 @@ void FDepthBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format)
 
 }
 
-void FDepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, EsramAllocator& Allocator)
+void FDepthBuffer::Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t NumSamples, DXGI_FORMAT InFormat, EsramAllocator& Allocator)
 {
-	Create(Name, Width, Height, NumSamples, Format);
+	Create(Name, InWidth, InHeight, NumSamples, InFormat);
 }
 
-void FDepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumSamples, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
+void FDepthBuffer::Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, uint32_t NumSamples, DXGI_FORMAT InFormat, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
 {
-	D3D12_RESOURCE_DESC ResoruceDesc = DescribleTexture2D(Width, Height, 1, 1, Format, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	D3D12_RESOURCE_DESC ResoruceDesc = DescribleTexture2D(InWidth, InHeight, 1, 1, InFormat, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	ResoruceDesc.SampleDesc.Count = NumSamples;
 
 	D3D12_CLEAR_VALUE ClearValue = {};
@@ -96,12 +96,12 @@ void FDepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Hei
 	CreateDerivedViews(Graphics::g_Device, Format);
 }
 
-void FDepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, EsramAllocator& Allocator)
+void FDepthBuffer::Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, DXGI_FORMAT InFormat, EsramAllocator& Allocator)
 {
-	Create(Name, Width, Height, 1, Format, Allocator);
+	Create(Name, InWidth, InHeight, 1, InFormat, Allocator);
 }
 
-void FDepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
+void FDepthBuffer::Create(const std::wstring& Name, uint32_t InWidth, uint32_t InHeight, DXGI_FORMAT InFormat, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr /* = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN */)
 {
-	Create(Name, Width, Height, 1, Format, VidMemPtr);
+	Create(Name, InWidth, InHeight, 1, InFormat, VidMemPtr);
 }
