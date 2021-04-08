@@ -379,7 +379,7 @@ void Graphics::PreparePresentSDR()
 	PresentContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	PresentContext.SetViewportAndScissor(0, 0, g_NativeWidth, g_NativeHeight);
-	PresentContext.ClearColor(g_DisplayPlane[g_CurrentBuffer]);
+	//PresentContext.ClearColor(g_DisplayPlane[g_CurrentBuffer]);
 	PresentContext.TransitionResource(g_DisplayPlane[g_CurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
 	PresentContext.SetRenderTargets(g_DisplayPlane[g_CurrentBuffer].GetRtv());
 
@@ -387,7 +387,7 @@ void Graphics::PreparePresentSDR()
 	PresentContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	PresentContext.SetDynamicDescriptor(0, 0, g_SceneColorBuffer.GetSrv());
-	//FColorBuffer& Dest = g_DisplayPlane[g_CurrentBuffer];
+
 	PresentContext.SetPipelineState(PresentSDRPSO);
 	PresentContext.Draw(3);
 

@@ -5,9 +5,9 @@
 
 using namespace Graphics;
 
-DXGI_FORMAT FPixelBuffer::GetBaseFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetBaseFormat(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
 	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
@@ -48,13 +48,13 @@ DXGI_FORMAT FPixelBuffer::GetBaseFormat(DXGI_FORMAT Format)
 		return DXGI_FORMAT_R16G16_TYPELESS;
 
 	default:
-		return Format;
+		return InFormat;
 	}
 }
 
-DXGI_FORMAT FPixelBuffer::GetUAVFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetUAVFormat(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 	case DXGI_FORMAT_R8G8B8A8_TYPELESS:
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
@@ -88,13 +88,13 @@ DXGI_FORMAT FPixelBuffer::GetUAVFormat(DXGI_FORMAT Format)
 
 
 	default:
-		return Format;
+		return InFormat;
 	}
 }
 
-DXGI_FORMAT FPixelBuffer::GetDSVFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetDSVFormat(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 		//32 bit z w/ stencil
 	case DXGI_FORMAT_R32G8X24_TYPELESS:
@@ -116,16 +116,16 @@ DXGI_FORMAT FPixelBuffer::GetDSVFormat(DXGI_FORMAT Format)
 		return DXGI_FORMAT_D16_UNORM;
 
 	default:
-		return Format;
+		return InFormat;
 	}
 
 	
 
 }
 
-DXGI_FORMAT FPixelBuffer::GetDepthFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetDepthFormat(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 		// 32-bit Z w/ Stencil
 	case DXGI_FORMAT_R32G8X24_TYPELESS:
@@ -158,9 +158,9 @@ DXGI_FORMAT FPixelBuffer::GetDepthFormat(DXGI_FORMAT Format)
 	}
 }
 
-DXGI_FORMAT FPixelBuffer::GetStencilFormat(DXGI_FORMAT Format)
+DXGI_FORMAT FPixelBuffer::GetStencilFormat(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 		// 32-bit Z w/ Stencil
 	case DXGI_FORMAT_R32G8X24_TYPELESS:
@@ -181,9 +181,9 @@ DXGI_FORMAT FPixelBuffer::GetStencilFormat(DXGI_FORMAT Format)
 	}
 }
 
-size_t FPixelBuffer::BytesPerPixel(DXGI_FORMAT Format)
+size_t FPixelBuffer::BytesPerPixel(DXGI_FORMAT InFormat)
 {
-	switch (Format)
+	switch (InFormat)
 	{
 	case DXGI_FORMAT_R32G32B32A32_TYPELESS:
 	case DXGI_FORMAT_R32G32B32A32_FLOAT:
@@ -291,7 +291,7 @@ void FPixelBuffer::AssociateWithResource(ID3D12Device* Device, const std::wstrin
 	Resource.Attach(InResource);
 	UsageState = CurrentState;
 
-	Width = ResourceDesc.Width;
+	Width = (uint32_t)ResourceDesc.Width;
 	Height = ResourceDesc.Height;
 	ArraySize = ResourceDesc.DepthOrArraySize;
 	Format = ResourceDesc.Format;
@@ -317,10 +317,10 @@ D3D12_RESOURCE_DESC FPixelBuffer::DescribleTexture2D(uint32_t InWidth, uint32_t 
 	Desc.Alignment = 0;
 	Desc.DepthOrArraySize = DepthOrArraySize;
 	Desc.Flags = (D3D12_RESOURCE_FLAGS)Flags;
-	Desc.Format = InForMat;
+	Desc.Format = GetBaseFormat(InForMat);
 	Desc.MipLevels = InNumMips;
-	Desc.Width = InWidth;
-	Desc.Height = InHeight;
+	Desc.Width = (UINT64)InWidth;
+	Desc.Height = (UINT64)InHeight;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
 

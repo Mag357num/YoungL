@@ -29,12 +29,12 @@ protected:
 	void CreateTextureResource(ID3D12Device* Device, const std::wstring& Name, const D3D12_RESOURCE_DESC& ResourceDesc,
 		D3D12_CLEAR_VALUE ClearValue, EsramAllocator& Allocator);
 
-	static DXGI_FORMAT GetBaseFormat(DXGI_FORMAT Format);
-	static DXGI_FORMAT GetUAVFormat(DXGI_FORMAT Format);
-	static DXGI_FORMAT GetDSVFormat(DXGI_FORMAT Format);
-	static DXGI_FORMAT GetDepthFormat(DXGI_FORMAT Format);
-	static DXGI_FORMAT GetStencilFormat(DXGI_FORMAT Format);
-	static size_t BytesPerPixel(DXGI_FORMAT Format);
+	static DXGI_FORMAT GetBaseFormat(DXGI_FORMAT InFormat);
+	static DXGI_FORMAT GetUAVFormat(DXGI_FORMAT InFormat);
+	static DXGI_FORMAT GetDSVFormat(DXGI_FORMAT InFormat);
+	static DXGI_FORMAT GetDepthFormat(DXGI_FORMAT InFormat);
+	static DXGI_FORMAT GetStencilFormat(DXGI_FORMAT InFormat);
+	static size_t BytesPerPixel(DXGI_FORMAT InFormat);
 
 	uint32_t Width;
 	uint32_t Height;

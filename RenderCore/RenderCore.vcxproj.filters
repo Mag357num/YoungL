@@ -16,6 +16,18 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{d5393531-9edf-414e-869f-fb299fca621e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\RHI">
+      <UniqueIdentifier>{959d36bf-87e4-49a0-8b3c-7525d25accfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\RHI\D3D12">
+      <UniqueIdentifier>{b9d0bfeb-b800-448c-adce-b7a09e996664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\RHI">
+      <UniqueIdentifier>{66368ed3-1c54-4eeb-9dda-c1ee2218b4c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\RHI\D3D12">
+      <UniqueIdentifier>{86e39a44-6148-4a93-8536-77a89832c3ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -36,12 +48,45 @@
     <ClInclude Include="Uploadbuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\RHIContext.h">
+      <Filter>头文件\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIContext_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="D3DExample.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\RHIContext.cpp">
+      <Filter>源文件\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
+      <Filter>源文件\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCore.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -27,6 +27,7 @@ void FColorBuffer::Create(const std::wstring& Name, uint32_t InWidth, uint32_t I
 	D3D12_RESOURCE_DESC ResourceDesc = DescribleTexture2D(InWidth, InHeight, 1, NumMipMaps, InFormat, ResourceFlag);
 
 	D3D12_CLEAR_VALUE ClearValue;
+	ClearValue.Format = InFormat;
 	ClearValue.Color[0] = ClearColor.R();
 	ClearValue.Color[1] = ClearColor.G();
 	ClearValue.Color[2] = ClearColor.B();
@@ -48,13 +49,14 @@ void FColorBuffer::CreateArray(const std::wstring& Name, uint32_t InWidth, uint3
 	D3D12_RESOURCE_DESC ResourceDesc = DescribleTexture2D(InWidth, InHeight, ArrayCount, 1, InFormat, ResourceFlag);
 
 	D3D12_CLEAR_VALUE ClearValue;
+	ClearValue.Format = InFormat;
 	ClearValue.Color[0] = ClearColor.R();
 	ClearValue.Color[1] = ClearColor.G();
 	ClearValue.Color[2] = ClearColor.B();
 	ClearValue.Color[3] = ClearColor.A();
 
 	CreateTextureResource(Graphics::g_Device, Name, ResourceDesc, ClearValue, VidMemPtr);
-	CreateDerivedViews(Graphics::g_Device, Format, ArrayCount, 1);
+	CreateDerivedViews(Graphics::g_Device, InFormat, ArrayCount, 1);
 }
 
 void FColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat, uint32_t InArraySize, uint32_t NumMips /* = 1 */)
@@ -68,9 +70,9 @@ void FColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat
 	D3D12_UNORDERED_ACCESS_VIEW_DESC UavDesc = {};
 
 	RtvDesc.Format = InFormat;
-	SrvDesc.Format = InFormat;
 	UavDesc.Format = GetUAVFormat(InFormat);
 
+	SrvDesc.Format = InFormat;
 	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
 	if (InArraySize > 1)
@@ -94,7 +96,7 @@ void FColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat
 	else if (FragmentCount > 1)
 	{
 		RtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
-		SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY;
+		SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
 	}
 	else
 	{
@@ -120,6 +122,9 @@ void FColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT InFormat
 	Device->CreateRenderTargetView(TempResource, &RtvDesc, RtvHandle);
 
 	Device->CreateShaderResourceView(TempResource, &SrvDesc, SrvHandle);
+
+	if (FragmentCount > 1)
+		return;
 
 	//create uav for each mip level
 	for (uint32_t i=0; i< NumMips; ++i)

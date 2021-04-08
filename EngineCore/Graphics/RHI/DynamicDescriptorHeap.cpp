@@ -37,101 +37,198 @@ uint32_t FDynamicDescriptorHeap::FDescriptorHandleCache::ComputeStagedSize()
 }
 
 void FDynamicDescriptorHeap::FDescriptorHandleCache::CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE InType, uint32_t DescriptorSize, 
-	FDescriptorHandle DeshandleStart, 
+	FDescriptorHandle DestHandleStart, 
 	ID3D12GraphicsCommandList* CmdList, 
 	void(STDMETHODCALLTYPE ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE))
 {
+	//uint32_t StaleParamCount = 0;
+	//uint32_t TableSize[FDescriptorHandleCache::MaxNumDescriptorTables];
+	//uint32_t RootIndices[FDescriptorHandleCache::MaxNumDescriptorTables];
+	//uint32_t NeedSpace = 0;
+	//uint32_t RootIndex;
+
+	//uint32_t StaleParams = StaleRootParamsBitMap;
+	//while (_BitScanForward((unsigned long*)&RootIndex, StaleParams))
+	//{
+	//	RootIndices[StaleParamCount] = RootIndex;
+	//	StaleParams ^= (1 << RootIndex);
+
+	//	uint32_t MaxSethandle = 0;
+	//	ASSERT(TRUE == _BitScanReverse((unsigned long*)&MaxSethandle, RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
+	//		"Root entry marked as stale but has no stale descriptors");
+
+	//	NeedSpace += MaxSethandle + 1;
+	//	TableSize[StaleParamCount] = MaxSethandle + 1;
+
+	//	++StaleParamCount;
+	//}
+
+	//ASSERT(StaleParamCount <= FDescriptorHandleCache::MaxNumDescriptorTables, "We're only equipped to handle so many descriptor tables");
+
+	//StaleRootParamsBitMap = 0;
+
+	//static const uint32_t MaxNumDescriptorsPerCopy = 16;
+	//UINT NumDestdescriptorRanges = 0;
+	//D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStarts[MaxNumDescriptorsPerCopy];
+	//UINT DestDescriptorRangeSize[MaxNumDescriptorsPerCopy];
+
+	//UINT NumSrcDescriptorRanges = 0;
+	//D3D12_CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStarts[MaxNumDescriptorsPerCopy];
+	//UINT SrcDescriptorRangeSize[MaxNumDescriptorsPerCopy];
+
+	//for (uint32_t i = 0; i < StaleParamCount; ++i)
+	//{
+	//	RootIndex = RootIndices[i];
+	//	(CmdList->*SetFunc)(RootIndex, DestHandleStart);
+
+	//	FDescriptorTableCache& RootDescTable = RootDescriptorTable[RootIndex];
+
+	//	D3D12_CPU_DESCRIPTOR_HANDLE* SrcHandle = RootDescTable.TableStart;
+	//	uint64_t Sethandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
+	//	D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DestHandleStart;
+	//	DestHandleStart += TableSize[i] * DescriptorSize;
+
+	//	unsigned long SkipCount;
+	//	while (_BitScanForward(&SkipCount, Sethandles))
+	//	{
+	//		Sethandles >>= SkipCount;
+	//		SrcHandle += SkipCount;
+	//		CurDest.ptr += SkipCount * DescriptorSize;
+
+	//		unsigned long DescriptorCount;
+	//		_BitScanForward(&DescriptorCount, ~Sethandles);
+	//		Sethandles >>= DescriptorCount;
+
+	//		//if we run out of temp room, copy what we've got so far
+	//		if (NumSrcDescriptorRanges + DescriptorCount > MaxNumDescriptorsPerCopy)
+	//		{
+	//			g_Device->CopyDescriptors(NumDestdescriptorRanges, DestDescriptorRangeStarts, DestDescriptorRangeSize,
+	//				NumSrcDescriptorRanges, SrcDescriptorRangeStarts, SrcDescriptorRangeSize,
+	//				InType);
+
+	//			NumSrcDescriptorRanges = 0;
+	//			NumDestdescriptorRanges = 0;
+	//		}
+
+	//		//set up destination rage
+	//		DestDescriptorRangeStarts[NumDestdescriptorRanges] = CurDest;
+	//		DestDescriptorRangeSize[NumDestdescriptorRanges] = DescriptorCount;
+	//		++NumDestdescriptorRanges;
+
+
+	//		//set up source ranges
+	//		for (uint32_t j =0; j< DescriptorCount; ++j)
+	//		{
+	//			SrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandle[i];
+	//			SrcDescriptorRangeSize[NumSrcDescriptorRanges] = 1;
+	//			NumSrcDescriptorRanges++;
+	//		}
+
+	//		//move the destination pointer forward by the naum of descriptors we will coyp
+	//		SrcHandle += DescriptorCount;
+	//		CurDest.ptr += DescriptorCount * DescriptorSize;
+	//	}
+	//}
+
+	//g_Device->CopyDescriptors(NumDestdescriptorRanges, DestDescriptorRangeStarts, DestDescriptorRangeSize,
+	//	NumSrcDescriptorRanges, SrcDescriptorRangeStarts, SrcDescriptorRangeSize,
+	//	InType);
+
 	uint32_t StaleParamCount = 0;
 	uint32_t TableSize[FDescriptorHandleCache::MaxNumDescriptorTables];
 	uint32_t RootIndices[FDescriptorHandleCache::MaxNumDescriptorTables];
-	uint32_t NeedSpace = 0;
+	uint32_t NeededSpace = 0;
 	uint32_t RootIndex;
 
+	// Sum the maximum assigned offsets of stale descriptor tables to determine total needed space.
 	uint32_t StaleParams = StaleRootParamsBitMap;
 	while (_BitScanForward((unsigned long*)&RootIndex, StaleParams))
 	{
 		RootIndices[StaleParamCount] = RootIndex;
 		StaleParams ^= (1 << RootIndex);
 
-		uint32_t MaxSethandle = 0;
-		ASSERT(TRUE == _BitScanReverse((unsigned long*)&MaxSethandle, RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
+		uint32_t MaxSetHandle;
+		ASSERT(TRUE == _BitScanReverse((unsigned long*)&MaxSetHandle, RootDescriptorTable[RootIndex].AssignedHandlesBitMap),
 			"Root entry marked as stale but has no stale descriptors");
 
-		NeedSpace += MaxSethandle + 1;
-		TableSize[StaleParamCount] = MaxSethandle + 1;
+		NeededSpace += MaxSetHandle + 1;
+		TableSize[StaleParamCount] = MaxSetHandle + 1;
 
 		++StaleParamCount;
 	}
 
-	ASSERT(StaleParamCount <= FDescriptorHandleCache::MaxNumDescriptorTables, "We're only equipped to handle so many descriptor tables");
+	ASSERT(StaleParamCount <= FDescriptorHandleCache::MaxNumDescriptorTables,
+		"We're only equipped to handle so many descriptor tables");
 
 	StaleRootParamsBitMap = 0;
 
-	static const uint32_t MaxNumDescriptorsPerCopy = 16;
-	UINT NumDestdescriptorRanges = 0;
-	D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStarts[MaxNumDescriptorsPerCopy];
-	UINT DestDescriptorRangeSize[MaxNumDescriptorsPerCopy];
+	static const uint32_t kMaxDescriptorsPerCopy = 16;
+	UINT NumDestDescriptorRanges = 0;
+	D3D12_CPU_DESCRIPTOR_HANDLE pDestDescriptorRangeStarts[kMaxDescriptorsPerCopy];
+	UINT pDestDescriptorRangeSizes[kMaxDescriptorsPerCopy];
 
 	UINT NumSrcDescriptorRanges = 0;
-	D3D12_CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStarts[MaxNumDescriptorsPerCopy];
-	UINT SrcDescriptorRangeSize[MaxNumDescriptorsPerCopy];
+	D3D12_CPU_DESCRIPTOR_HANDLE pSrcDescriptorRangeStarts[kMaxDescriptorsPerCopy];
+	UINT pSrcDescriptorRangeSizes[kMaxDescriptorsPerCopy];
 
 	for (uint32_t i = 0; i < StaleParamCount; ++i)
 	{
 		RootIndex = RootIndices[i];
-		(CmdList->*SetFunc)(RootIndex, DeshandleStart);
+		(CmdList->*SetFunc)(RootIndex, DestHandleStart);
 
 		FDescriptorTableCache& RootDescTable = RootDescriptorTable[RootIndex];
 
-		D3D12_CPU_DESCRIPTOR_HANDLE* SrcHandle = RootDescTable.TableStart;
-		uint64_t Sethandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
-		D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DeshandleStart;
-		DeshandleStart += TableSize[i] * DescriptorSize;
+		D3D12_CPU_DESCRIPTOR_HANDLE* SrcHandles = RootDescTable.TableStart;
+		uint64_t SetHandles = (uint64_t)RootDescTable.AssignedHandlesBitMap;
+		D3D12_CPU_DESCRIPTOR_HANDLE CurDest = DestHandleStart;
+		DestHandleStart += TableSize[i] * DescriptorSize;
 
 		unsigned long SkipCount;
-		while (_BitScanForward(&SkipCount, Sethandles))
+		while (_BitScanForward64(&SkipCount, SetHandles))
 		{
-			Sethandles >>= SkipCount;
-			SrcHandle += SkipCount;
+			// Skip over unset descriptor handles
+			SetHandles >>= SkipCount;
+			SrcHandles += SkipCount;
 			CurDest.ptr += SkipCount * DescriptorSize;
 
 			unsigned long DescriptorCount;
-			_BitScanForward(&DescriptorCount, ~Sethandles);
-			Sethandles >>= DescriptorCount;
+			_BitScanForward64(&DescriptorCount, ~SetHandles);
+			SetHandles >>= DescriptorCount;
 
-			//if we run out of temp room, copy thwt we've got so far
-			if (NumSrcDescriptorRanges + DescriptorCount > MaxNumDescriptorsPerCopy)
+			// If we run out of temp room, copy what we've got so far
+			if (NumSrcDescriptorRanges + DescriptorCount > kMaxDescriptorsPerCopy)
 			{
-				g_Device->CopyDescriptors(NumDestdescriptorRanges, DestDescriptorRangeStarts, DestDescriptorRangeSize,
-					NumSrcDescriptorRanges, SrcDescriptorRangeStarts, SrcDescriptorRangeSize,
+				g_Device->CopyDescriptors(
+					NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
+					NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
 					InType);
 
 				NumSrcDescriptorRanges = 0;
-				NumDestdescriptorRanges = 0;
+				NumDestDescriptorRanges = 0;
 			}
 
-			//set up destination rage
-			DestDescriptorRangeStarts[NumDestdescriptorRanges] = CurDest;
-			DestDescriptorRangeSize[NumDestdescriptorRanges] = DescriptorCount;
-			++NumDestdescriptorRanges;
+			// Setup destination range
+			pDestDescriptorRangeStarts[NumDestDescriptorRanges] = CurDest;
+			pDestDescriptorRangeSizes[NumDestDescriptorRanges] = DescriptorCount;
+			++NumDestDescriptorRanges;
 
-
-			//set up source ranges
-			for (uint32_t j =0; j< DescriptorCount; ++j)
+			// Setup source ranges (one descriptor each because we don't assume they are contiguous)
+			for (uint32_t j = 0; j < DescriptorCount; ++j)
 			{
-				SrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandle[i];
-				SrcDescriptorRangeSize[NumSrcDescriptorRanges] = 1;
-				NumSrcDescriptorRanges++;
+				pSrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandles[j];
+				pSrcDescriptorRangeSizes[NumSrcDescriptorRanges] = 1;
+				++NumSrcDescriptorRanges;
 			}
 
-			//move the destination pointer forward by the naum of descriptors we will coyp
-			SrcHandle += DescriptorCount;
+			// Move the destination pointer forward by the number of descriptors we will copy
+			SrcHandles += DescriptorCount;
 			CurDest.ptr += DescriptorCount * DescriptorSize;
 		}
 	}
 
-	g_Device->CopyDescriptors(NumDestdescriptorRanges, DestDescriptorRangeStarts, DestDescriptorRangeSize,
-		NumSrcDescriptorRanges, SrcDescriptorRangeStarts, SrcDescriptorRangeSize,
+	g_Device->CopyDescriptors(
+		NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
+		NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
 		InType);
 
 }

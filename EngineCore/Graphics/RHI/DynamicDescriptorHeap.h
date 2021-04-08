@@ -113,7 +113,7 @@ private:
 		static const uint32_t MaxNumDescriptorTables = 16;
 
 		uint32_t ComputeStagedSize();
-		void CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE InType, uint32_t DescriptorSize, FDescriptorHandle DeshandleStart,
+		void CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE InType, uint32_t DescriptorSize, FDescriptorHandle DestHandleStart,
 			ID3D12GraphicsCommandList* CmdList, void(STDMETHODCALLTYPE ID3D12GraphicsCommandList::*SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE));
 
 		FDescriptorTableCache RootDescriptorTable[MaxNumDescriptorTables];
