@@ -90,7 +90,7 @@ void FRenderer::RenderObjects()
 	RHIContext->PrepareShaderParameter();
 
 	//Draw Rendering items in scene
-	//RHIContext->DrawRenderingItems(RenderingItems);
+	RHIContext->DrawRenderingItems(RenderingItems);
 
 	//change back buffer state to present
 	RHIContext->TransitionBackBufferStateToPresent();

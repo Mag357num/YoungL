@@ -32,20 +32,25 @@ void FRHIRenderingItem_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 {
 	FRHIContext_D3D12* RHIContext_D3D12 = reinterpret_cast<FRHIContext_D3D12*>(Context);
 	ConstantBuffer = new FRHIConstantBuffer_D3D12();
+	FRHIConstantBuffer_D3D12* Buffer = reinterpret_cast<FRHIConstantBuffer_D3D12*>(ConstantBuffer);
 
-	//M_ConstantUploadBuffer = std::make_unique<UploadBuffer<ObjectConstants>>(M_Device.Get(), 1, true);
-	//UINT ObjectBufferSize = UploadBuffer<ObjectConstants>::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	Buffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12>(new FRHIUploadBuffer_D3D12(true));
+	Buffer->UploadBuffer->CreateUploadResource(1);
+	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12::CalcConstantBufferByteSize(sizeof(FObjectConstants));
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart();
-	//D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
+	D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
 
-	//D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = M_ConstantUploadBuffer->GetResource()->GetGPUVirtualAddress();
-	//int BufIndex = 0;
-	//GpuAddress += BufIndex * ObjectBufferSize;
-	//ViewDesc.BufferLocation = GpuAddress;
-	//ViewDesc.SizeInBytes = ObjectBufferSize;
+	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(Buffer->UploadBuffer->GetResource());
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
+	int BufIndex = 0;
+	GpuAddress += BufIndex * ObjectBufferSize;
+	ViewDesc.BufferLocation = GpuAddress;
+	ViewDesc.SizeInBytes = ObjectBufferSize;
 
-	//M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
+	D3D12RHI::M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
+	Buffer->SetRootParameterIndex(0);
+	Buffer->SetGpuhandle(RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 }
 
 void FRHIRenderingItem_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)

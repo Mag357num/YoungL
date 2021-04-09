@@ -22,6 +22,7 @@ public:
 	void SetCpuhandle(D3D12_CPU_DESCRIPTOR_HANDLE InHandle) { CpuHandle = InHandle; }
 
 	UINT GetRootParameterIndex(){return RootParameterIndex; }
+	void SetRootParameterIndex(UINT InIndex){RootParameterIndex = InIndex;}
 
 	std::unique_ptr<FRHIUploadBuffer_D3D12> UploadBuffer;
 private:

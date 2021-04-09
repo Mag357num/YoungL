@@ -73,7 +73,7 @@ public:
 
 	virtual IRHIRenderingItem* CreateEmptyRenderingItem()override;
 
-	ID3D12DescriptorHeap* GetDescriptorHeap() {
+	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap() {
 		return M_CbvSrvUavHeap.Get();
 	}
 
@@ -115,13 +115,8 @@ private:
 	D3D12_VIEWPORT M_ScreenViewport;
 	D3D12_RECT M_ScissorRect;
 
-	//std::vector<std::unique_ptr<Geometry>> M_Geometies;
-
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
-
-	////constant buffer
-	//std::unique_ptr<UploadBuffer<ObjectConstants>> M_ConstantUploadBuffer = nullptr;
 
 	//signature
 	ComPtr<ID3D12RootSignature> M_RootSignaure;
