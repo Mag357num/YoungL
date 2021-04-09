@@ -30,16 +30,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderCore.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="D3DExample.h">
@@ -63,14 +57,44 @@
     <ClInclude Include="Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="d3dx12.h">
+    <ClInclude Include="RHI\D3D12\RHIResource_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIGraphicsPipelineState_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIShaderResource_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIVertexBuffer_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIIndexBuffer_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIResourceHandle_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshActor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIRenderingItem_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIConstantBuffer_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\d3dx12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIUploadBuffer_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenderCore.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="D3DExample.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -87,6 +111,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

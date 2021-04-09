@@ -33,14 +33,6 @@ LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPar
 		}
 		return 0;
 
-	case WM_PAINT:
-		//if (pSample)
-		//{
-		//	pSample->OnUpdate();
-		//	pSample->OnRender();
-		//}
-		return 0;
-
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -127,6 +119,10 @@ void FWinApp::InitEngine()
 		Renderer = new FRenderer();
 		Renderer->CreateRHIContext(ClientWidth, ClientHeight);
 	}
+
+	//we does't have game && render sync mechanism; 
+	// pass to render directly
+	Renderer->CreateRenderingItem(GameCore->GetGeometries());
 }
 
 void FWinApp::DestroyApp()

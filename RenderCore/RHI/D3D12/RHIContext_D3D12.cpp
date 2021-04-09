@@ -1,11 +1,29 @@
 #include "RHIContext_D3D12.h"
+#include "RHIGraphicsPipelineState_D3D12.h"
+#include "CompiledShaders/TestVS.h"
+#include "CompiledShaders/TestPS.h"
 
-#include "../../d3dx12.h"
+#include <DirectXColors.h>
+
+#include <D3Dcompiler.h>
+#pragma comment(lib, "D3DCompiler.lib")
+
+#include "RHIVertexBuffer_D3D12.h"
+#include "RHIIndexBuffer_D3D12.h"
+#include "RHIConstantBuffer_D3D12.h"
+#include "RHIRenderingItem_D3D12.h"
 
 namespace WinApp
 {
 	extern HWND Mainhandle;
 };
+
+namespace D3D12RHI
+{
+	ComPtr<ID3D12Device> M_Device;
+}
+
+using namespace D3D12RHI;
 
 void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 {
@@ -92,6 +110,15 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 	//initialize back buffer
 	OnResize();
+
+	BuildRootSignature();
+	BuildDescriptorHeap();
+	BuildShadersInputLayout();
+}
+
+FRHIContext_D3D12::~FRHIContext_D3D12()
+{
+	//release dx
 }
 
 void FRHIContext_D3D12::Resize(int InWidth, int InHeight)
@@ -192,6 +219,217 @@ void FRHIContext_D3D12::OnResize()
 	M_ScissorRect = { 0,0, ClientWidth, ClientHeight };
 }
 
+//for render model
+void FRHIContext_D3D12::BuildDescriptorHeap()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc;
+	HeapDesc.NumDescriptors = 1;
+	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	HeapDesc.NodeMask = 0;
+	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&M_CbvSrvUavHeap));
+}
+
+
+void FRHIContext_D3D12::BuildRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+	// Create a single descriptor table of CBVs.
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
+	// A root signature is an array of root parameters.
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+	if (errorBlob != nullptr)
+	{
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+
+	M_Device->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		IID_PPV_ARGS(&M_RootSignaure));
+}
+
+
+void FRHIContext_D3D12::BuildShadersInputLayout()
+{
+	UINT CompileFlags = 0;
+
+#if defined(DEBUG) || defined(_DEBUG)  
+	CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	ComPtr<ID3DBlob> CompileError;
+	D3DCompileFromFile(ShaderPathVS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
+
+	if (CompileError != nullptr)
+	{
+		OutputDebugStringA((char*)CompileError->GetBufferPointer());
+	}
+
+	D3DCompileFromFile(ShaderPathPS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
+	if (CompileError != nullptr)
+	{
+		OutputDebugStringA((char*)CompileError->GetBufferPointer());
+	}
+
+	M_ShadersInputDesc =
+	{
+		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+}
+
+IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
+{
+	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+	//
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
+	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	Desc.pRootSignature = M_RootSignaure.Get();
+	Desc.InputLayout = { M_ShadersInputDesc.data(), (UINT)M_ShadersInputDesc.size() };
+	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+	Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+
+	Desc.VS =
+	{
+		g_TestVS,
+		sizeof(g_TestVS)
+	};
+	Desc.PS =
+	{
+		g_TestPS,
+		sizeof(g_TestPS)
+	};
+
+	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	Desc.NumRenderTargets = 1;
+	Desc.RTVFormats[0] = M_BackBufferFormat;
+	Desc.DSVFormat = M_DepthStencilFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.SampleMask = UINT_MAX;
+
+	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsPSO->PSO));
+
+	return D3D12GraphicsPSO;
+}
+
+void FRHIContext_D3D12::BeginDraw(IRHIGraphicsPipelineState* InPSO)
+{
+	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
+	M_CommandAllocator->Reset();
+	M_CommandList->Reset(M_CommandAllocator.Get(), D3D12PSO->PSO.Get());
+}
+
+void FRHIContext_D3D12::EndDraw()
+{
+	M_CommandList->Close();
+	ID3D12CommandList* CmdLists[] = { M_CommandList.Get() };
+	M_CommandQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);
+}
+
+void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
+{
+	D3D12_VIEWPORT VP;
+	VP.Width = Viewport.Width;
+	VP.Height = Viewport.Height;
+	VP.TopLeftX = Viewport.X;
+	VP.TopLeftY = Viewport.Y;
+	VP.MaxDepth = Viewport.MaxDepth;
+	VP.MinDepth = Viewport.MinDepth;
+
+	M_CommandList->RSSetViewports(1, &VP);
+}
+
+void FRHIContext_D3D12::SetScissor(long InX, long InY, long InWidth, long InHeight)
+{
+	D3D12_RECT Rect;
+	Rect.left = InX;
+	Rect.top = InY;
+	Rect.right = InWidth;
+	Rect.bottom = InHeight;
+
+	M_CommandList->RSSetScissorRects(1, &Rect);
+}
+
+void FRHIContext_D3D12::SetBackBufferAsRt()
+{
+
+	//clear target view
+	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::Black, 0, nullptr);
+	M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE BackBufferHandle = GetCurrentBackBufferView();
+	D3D12_CPU_DESCRIPTOR_HANDLE DsvrHandle = GetCurrentDepthStencilView();
+	M_CommandList->OMSetRenderTargets(1, &BackBufferHandle, true, &DsvrHandle);
+}
+
+void FRHIContext_D3D12::TransitionBackBufferStateToRT()
+{
+	//change targe state
+	D3D12_RESOURCE_BARRIER BarrierRT = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	M_CommandList->ResourceBarrier(1, &BarrierRT);
+}
+
+void FRHIContext_D3D12::TransitionBackBufferStateToPresent()
+{
+	D3D12_RESOURCE_BARRIER BarrierPresent = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	M_CommandList->ResourceBarrier(1, &BarrierPresent);
+}
+
+
+void FRHIContext_D3D12::PrepareShaderParameter()
+{
+	ID3D12DescriptorHeap* DescriporHeaps[] = { M_CbvSrvUavHeap.Get() };
+	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
+	M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
+}
+
+void FRHIContext_D3D12::SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO)
+{
+	//FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
+	//M_CommandList->SetPipelineState(D3D12PSO->PSO)
+
+}
+
+void FRHIContext_D3D12::DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)
+{
+	for (int Index = 0; Index < Items.size(); ++Index)
+	{
+		FRHIVertexBuffer_D3D12* VertexBuffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(Items[Index]->GetVertexBuffer());
+		D3D12_VERTEX_BUFFER_VIEW VbView = VertexBuffer->GetVBView();
+		M_CommandList->IASetVertexBuffers(0, 1, &VbView);
+		
+		FRHIIndexBuffer_D3D12* IndexBuffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(Items[Index]->GetIndexBuffer());
+		D3D12_INDEX_BUFFER_VIEW IbView = IndexBuffer->GetIBView();
+		M_CommandList->IASetIndexBuffer(&IbView);
+		M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		 
+		FRHIConstantBuffer_D3D12* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12*>(Items[Index]->GetConstantBuffer());
+		M_CommandList->SetGraphicsRootDescriptorTable(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuHandle());
+		M_CommandList->DrawIndexedInstanced((UINT)Items[Index]->GetIndexCount(), 1, 0, 0, 0);
+	}
+}
 
 void FRHIContext_D3D12::FlushCommandQueue()
 {
@@ -207,4 +445,15 @@ void FRHIContext_D3D12::FlushCommandQueue()
 		WaitForSingleObject(EventHandle, INFINITE);
 		CloseHandle(EventHandle);
 	}
+}
+
+void FRHIContext_D3D12::Present()
+{
+	M_SwapChain->Present(0, 0);
+	M_CurrentBackBuffer = (M_CurrentBackBuffer + 1) % M_SwapchainBackbufferCount;
+}
+
+IRHIRenderingItem* FRHIContext_D3D12::CreateEmptyRenderingItem()
+{
+	return new FRHIRenderingItem_D3D12();
 }

@@ -8,9 +8,6 @@
 
 using namespace Microsoft::WRL;
 
-#define  AssetPath L"Models/ModelSave.Bin"
-#define  ShaderPathVS L"Shaders\\TestVS.hlsl"
-#define  ShaderPathPS L"Shaders\\TestPS.hlsl"
 #define WindowClass L"MainWnd"
 #define  MenuName L"D3DEx"
 #define WindowTitle L"D3D12Example"

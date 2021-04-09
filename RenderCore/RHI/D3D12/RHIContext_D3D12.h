@@ -9,36 +9,87 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-//include from engine core
-//#include "../../EngineCore/d3dx12.h"
 
 //#include "Uploadbuffer.h"
 
 #include <string>
 #include <wrl.h>
 
+#include "d3dx12.h"
+
 using namespace Microsoft::WRL;
 using namespace DirectX;
+
+#define  ShaderPathVS L"Shaders\\TestVS.hlsl"
+#define  ShaderPathPS L"Shaders\\TestPS.hlsl"
 
 class FRHIContext_D3D12 : public IRHIContext
 {
 public:
 	FRHIContext_D3D12(){}
-	~FRHIContext_D3D12(){}
+	virtual ~FRHIContext_D3D12();
 
 	virtual void InitializeRHI(int InWidth, int InHeight)override;
 	virtual void Resize(int InWidth, int InHeight)override;
+
+	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
+
+	// for populate commands
+	ID3D12Resource* GetCurrentBackBuffer() {
+		return M_BackBuffer[M_CurrentBackBuffer].Get();
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()
+	{
+		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+			M_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
+			M_CurrentBackBuffer,
+			M_RtvDescriptorSize);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentDepthStencilView()
+	{
+		return M_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+	}
 	
+	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO)override;
+	virtual void EndDraw()override;
+
+	virtual void SetViewport(const FViewport& Viewport)override;
+	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight)override;
+
+	virtual void SetBackBufferAsRt()override;
+	virtual void TransitionBackBufferStateToRT()override;
+	virtual void TransitionBackBufferStateToPresent()override;
+
+	virtual void PrepareShaderParameter()override;
+	virtual void SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO)override;
+
+	virtual void DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)override;
+
+
+	virtual void FlushCommandQueue()override;
+	virtual void Present()override;
+
+	virtual IRHIRenderingItem* CreateEmptyRenderingItem()override;
+
+	ID3D12DescriptorHeap* GetDescriptorHeap() {
+		return M_CbvSrvUavHeap.Get();
+	}
+
 private:
 	void OnResize();
-	void FlushCommandQueue();
+	void BuildRootSignature();
+	void BuildDescriptorHeap();
+
+	void BuildShadersInputLayout();
 
 	//for graphics
 	int ClientWidth = 800;
 	int ClientHeight = 600;
 
 	ComPtr<IDXGIFactory4> M_Factory;
-	ComPtr<ID3D12Device> M_Device;
+	//ComPtr<ID3D12Device> M_Device;
 	ComPtr<IDXGISwapChain> M_SwapChain;
 
 	ComPtr<ID3D12CommandAllocator> M_CommandAllocator;
@@ -66,22 +117,14 @@ private:
 
 	//std::vector<std::unique_ptr<Geometry>> M_Geometies;
 
-	////heap for cbv srv uav heap
-	//ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
+	//heap for cbv srv uav heap
+	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
 
 	////constant buffer
 	//std::unique_ptr<UploadBuffer<ObjectConstants>> M_ConstantUploadBuffer = nullptr;
 
-	////signature
-	//ComPtr<ID3D12RootSignature> M_RootSignaure;
-
-	////vs, ps
-	//ComPtr<ID3DBlob> M_Vs;
-	//ComPtr<ID3DBlob> M_Ps;
-	//std::vector<D3D12_INPUT_ELEMENT_DESC> M_ShadersInputDesc;
-
-	////pso
-	//ComPtr<ID3D12PipelineState>	M_Pso;
+	//signature
+	ComPtr<ID3D12RootSignature> M_RootSignaure;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -89,5 +132,10 @@ private:
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
+
+	//vs, ps
+	ComPtr<ID3DBlob> M_Vs;
+	ComPtr<ID3DBlob> M_Ps;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> M_ShadersInputDesc;
 
 };
