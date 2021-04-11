@@ -73,6 +73,8 @@ public:
 
 	virtual IRHIRenderingItem* CreateEmptyRenderingItem()override;
 
+	virtual IRHIConstantBuffer* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)override;
+
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap() {
 		return M_CbvSrvUavHeap.Get();
 	}

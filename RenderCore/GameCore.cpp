@@ -13,7 +13,14 @@ void FGameCore::OnKeyUp(UINT8 Key)
 
 void FGameCore::Initialize()
 {
-	LoadAssets();
+	AssetPaths.push_back("Models/ModelFloor.Bin");
+	AssetPaths.push_back("Models/ModelSave.Bin");
+
+	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
+	{
+		LoadAssets(AssetPaths[Index]);
+	}
+	
 }
 
 void FGameCore::Tick()
@@ -21,11 +28,11 @@ void FGameCore::Tick()
 
 }
 
-void FGameCore::LoadAssets()
+void FGameCore::LoadAssets(std::string& Path)
 {
 	//load asset
 	std::vector<FVertex> Vertices;
-	std::ifstream Fin(AssetPath, std::ios::in | std::ios::binary);
+	std::ifstream Fin(Path, std::ios::in | std::ios::binary);
 
 	int VertexNum;
 	Fin.read((char*)&VertexNum, sizeof(int));

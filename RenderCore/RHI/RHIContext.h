@@ -212,6 +212,8 @@ public:
 
 	virtual IRHIRenderingItem* CreateEmptyRenderingItem(){return nullptr;}
 
+	virtual IRHIConstantBuffer* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
+
 protected:
 
 

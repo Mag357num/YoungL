@@ -28,6 +28,16 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	RHIContext->InitializeRHI(InWidth, Inheight);
 	IRHIGraphicsPipelineState* BasePassPSO = RHIContext->CreateGraphicsPSO();
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
+
+	//initialize scene constant
+	SceneConstant.Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
+
+	//// Build the view matrix.
+	FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
+	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
+	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
+
+	SceneConstant.View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
 }
 
 void FRenderer::DestroyRHIContext()
@@ -70,6 +80,8 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 
 		RenderingItems.push_back(Item);
 	}
+
+	//buil scene constant buffer
 }
 
 void FRenderer::RenderObjects()

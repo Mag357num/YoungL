@@ -29,4 +29,7 @@ private:
 
 	//
 	FViewport Viewport;
+
+	//save camer info
+	FSceneConstant SceneConstant;
 };

@@ -213,6 +213,15 @@ struct FObjectConstants
 
 };
 
+struct FSceneConstant
+{
+	FSceneConstant(){}
+
+	FMatrix View;
+	FMatrix Proj;
+}; 
+
+
 namespace Utilities
 {
 //	inline void Print(const char* msg) { printf("%s", msg); }

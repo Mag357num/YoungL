@@ -6,6 +6,12 @@ cbuffer cbPerObject : register(b0)
 	float3 CameraLocation;
 };
 
+cbuffer manPassObject : register(b1)
+{
+	float4x4 View;
+	float4x4 Proj;
+};
+
 struct VertexIn
 {
 	float3 Pos : POSITION;

@@ -2,9 +2,9 @@
 
 #include <intsafe.h>
 #include "MeshActor.h"
-
-#define  AssetPath L"Models/ModelSave.Bin"
-
+#include <string>
+#define  AssetPathFLOOR L"Models/ModelFloor.Bin"
+#define  AssetPathModel L"Models/ModelSave.Bin"
 
 class FGameCore
 {
@@ -13,7 +13,9 @@ public:
 	~FGameCore(){}
 
 	virtual void Initialize();
-	virtual void ShutDown(){ Geometries.empty();}
+	virtual void ShutDown(){ Geometries.empty();
+	AssetPaths.empty();
+	}
 
 	virtual void Tick();
 
@@ -23,9 +25,11 @@ public:
 	std::vector<std::unique_ptr<AMeshActor>>& GetGeometries() {
 		return Geometries;}
 private:
-	void LoadAssets();
+	void LoadAssets(std::string& Path);
 
 	std::vector<std::unique_ptr<AMeshActor>> Geometries;
+
+	std::vector<std::string> AssetPaths;
 
 };
 
