@@ -193,7 +193,6 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="D3DExample.h" />
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="MeshActor.h" />
     <ClInclude Include="Renderer.h" />
@@ -209,18 +208,19 @@
     <ClInclude Include="RHI\D3D12\RHIShaderResource_D3D12.h" />
     <ClInclude Include="RHI\D3D12\RHIUploadBuffer_D3D12.h" />
     <ClInclude Include="RHI\D3D12\RHIVertexBuffer_D3D12.h" />
+    <ClInclude Include="RHI\D3D12\TestDX12\D3DExample.h" />
+    <ClInclude Include="RHI\D3D12\TestDX12\Uploadbuffer.h" />
     <ClInclude Include="RHI\RHIContext.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Uploadbuffer.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D3DExample.cpp" />
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="RenderCore.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp" />
+    <ClCompile Include="RHI\D3D12\TestDX12\D3DExample.cpp" />
     <ClCompile Include="RHI\RHIContext.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>

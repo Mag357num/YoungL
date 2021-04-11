@@ -11,6 +11,8 @@ public:
 
 	void RenderObjects();
 
+	void UpdateConstantBuffer();
+
 	void Resize(int InWidth, int InHeight);
 
 	//

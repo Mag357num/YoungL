@@ -3,7 +3,7 @@
 
 #define MAX_LOADSTRING 100
 
-
+using namespace Utilities;
 
 void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 {
@@ -103,4 +103,33 @@ void FRenderer::RenderObjects()
 
 	//flush commands
 	RHIContext->FlushCommandQueue();
+}
+
+void FRenderer::UpdateConstantBuffer()
+{
+	for (int Index = 0 ; Index < RenderingItems.size(); ++Index)
+	{
+		FMatrix World = Utilities::IdentityMatrix;
+
+		FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
+
+		//// Build the view matrix.
+		FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
+		FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
+		FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
+
+		FMatrix View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
+
+		FMatrix WorldViewProj = World * View * Proj;
+
+		// Update the constant buffer with the latest worldViewProj matrix.
+		FObjectConstants ObjectConstant;
+
+		//copy to upload buffer transposed???
+		ObjectConstant.WorldViewProj = Utilities::MatrixTranspose(WorldViewProj);
+		ObjectConstant.CameraLocation = FVector(CamPos.X, CamPos.Y, CamPos.Z);
+		RenderingItems[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
+	}
+
+
 }

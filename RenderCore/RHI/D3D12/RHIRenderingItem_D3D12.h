@@ -36,6 +36,9 @@ void FRHIRenderingItem_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 
 	Buffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12>(new FRHIUploadBuffer_D3D12(true));
 	Buffer->UploadBuffer->CreateUploadResource(1);
+	//mapdata
+	//Buffer->UploadBuffer->CopyData(0, *InObjConstants);
+
 	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12::CalcConstantBufferByteSize(sizeof(FObjectConstants));
 
 	D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();

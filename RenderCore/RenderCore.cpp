@@ -1,8 +1,6 @@
 ﻿// RenderCore.cpp : 定义应用程序的入口点。
 //
 
-//#include "RenderCore.h"
-
 #pragma once
 
 #include "resource.h"
@@ -14,15 +12,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	//DXExample Example(hInstance);
-	//if (Example.Initialize())
-	//{
-	//	return Example.Run();
-	//}
-	//else
-	//{
-	//	return 0;
-	//}
 
 	FWinApp WinApp(hInstance);
 	if (WinApp.InitializeWindow())

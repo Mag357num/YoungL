@@ -150,5 +150,6 @@ void FWinApp::Update()
 void FWinApp::Render()
 {
 	Renderer->RenderObjects();
+	Renderer->UpdateConstantBuffer();
 }
 

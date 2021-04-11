@@ -43,5 +43,6 @@ void FGameCore::LoadAssets()
 	//create resource
 	std::unique_ptr<FGeometry> Geo = std::make_unique<FGeometry>(Vertices, Indices);
 	std::unique_ptr<AMeshActor> GeoActor = std::make_unique<AMeshActor>();
+	GeoActor->SetGeometry(Geo);
 	Geometries.push_back(std::move(GeoActor));
 }

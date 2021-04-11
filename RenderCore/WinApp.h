@@ -21,18 +21,24 @@ public:
 		ClientHeight = 600;
 	}
 
-	~FWinApp(){}
+	~FWinApp(){
+	}
 
 	bool InitializeWindow();
 
 	int Run();
 
+	//game update
 	void Update();
+
+	//render update
 	void Render();
 
 private:
 	void InitGame();
 	void InitEngine();
+
+	//release game and engine ptr
 	void DestroyApp();
 
 

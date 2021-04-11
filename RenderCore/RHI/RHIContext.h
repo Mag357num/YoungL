@@ -107,6 +107,7 @@ public:
 	IRHIConstantBuffer() {}
 	virtual ~IRHIConstantBuffer() {}
 
+	virtual void CopyData(int ElementIndex, const FObjectConstants& Data){}
 protected:
 };
 

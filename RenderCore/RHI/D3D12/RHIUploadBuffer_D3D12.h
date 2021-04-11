@@ -27,6 +27,7 @@ public:
 			}
 		}
 
+		MappedData = nullptr;
 	}
 
 	static UINT CalcConstantBufferByteSize(UINT ByteSize)
@@ -53,7 +54,6 @@ private:
 	BYTE* MappedData = nullptr;
 
 	UINT ElementSize = 0;
-	bool IsConstantBuffer = false;
 
 };
 

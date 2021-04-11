@@ -7,7 +7,7 @@
 #pragma comment(lib, "dxgi.lib")
 
 //include from engine core
-#include "../EngineCore/d3dx12.h"
+#include "../d3dx12.h"
 
 #include "Uploadbuffer.h"
 
