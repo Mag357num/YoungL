@@ -7,12 +7,12 @@ namespace D3D12RHI
 	extern ComPtr<ID3D12Device> M_Device;
 }
 
-//template<typename T>
-class FRHIUploadBuffer_D3D12 : public IRHIUploadBuffer<FObjectConstants>
+template<typename T>
+class FRHIUploadBuffer_D3D12
 {
 public:
 	FRHIUploadBuffer_D3D12(bool IsConstant)
-	:IRHIUploadBuffer<FObjectConstants>(IsConstant)
+	:IsConstantBuffer(IsConstant)
 	{
 	}
 
@@ -46,30 +46,33 @@ public:
 		return (ByteSize + 255) & ~255;
 	}
 
-	virtual void CreateUploadResource(UINT ElementCount)override;
-
-	virtual void CopyData(int ElementIndex, const FObjectConstants& Data)override;
-
+	virtual void CreateUploadResource(UINT ElementCount);
+	
+	virtual void CopyData(int ElementIndex, const T& Data);
+	IRHIResource* GetResource() { return UploadResource; }
 private:
 	BYTE* MappedData = nullptr;
-
 	UINT ElementSize = 0;
+
+	IRHIResource* UploadResource;
+
+	bool IsConstantBuffer = false;
 
 };
 
-
-void FRHIUploadBuffer_D3D12::CreateUploadResource(UINT ElementCount)
+template<typename T>
+void FRHIUploadBuffer_D3D12<T>::CreateUploadResource(UINT ElementCount)
 {
 	UploadResource = new FRHIResource_D3D12();
 	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(UploadResource);
-	ElementSize = sizeof(FObjectConstants);
+	ElementSize = sizeof(T);
 
 	//constant buffer elements need to be multiples of 256 bytes
 	// This is because the hardware can only view constant data 
 	// at m*256 byte offsets and of n*256 byte lengths. 
 	if (IsConstantBuffer)
 	{
-		ElementSize = CalcConstantBufferByteSize(sizeof(FObjectConstants));
+		ElementSize = CalcConstantBufferByteSize(sizeof(T));
 	}
 
 	CD3DX12_HEAP_PROPERTIES HeapProperty(D3D12_HEAP_TYPE_UPLOAD);
@@ -85,7 +88,8 @@ void FRHIUploadBuffer_D3D12::CreateUploadResource(UINT ElementCount)
 	UploadResource_D3D12->Resource->Map(0, nullptr, reinterpret_cast<void**>(&MappedData));
 }
 
-void FRHIUploadBuffer_D3D12::CopyData(int ElementIndex, const FObjectConstants& Data)
+template<typename T>
+void FRHIUploadBuffer_D3D12<T>::CopyData(int ElementIndex, const T& Data)
 {
-	memcpy(&MappedData[ElementIndex * ElementSize], &Data, sizeof(FObjectConstants));
+	memcpy(&MappedData[ElementIndex * ElementSize], &Data, sizeof(T));
 }

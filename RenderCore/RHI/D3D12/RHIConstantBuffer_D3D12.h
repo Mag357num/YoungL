@@ -24,9 +24,9 @@ public:
 	UINT GetRootParameterIndex(){return RootParameterIndex; }
 	void SetRootParameterIndex(UINT InIndex){RootParameterIndex = InIndex;}
 
-	virtual void CopyData(int ElementIndex, const FObjectConstants& Data);
+	virtual void CopyData(int ElementIndex, const FObjectConstants& Data)override;
 
-	std::unique_ptr<FRHIUploadBuffer_D3D12> UploadBuffer;
+	std::unique_ptr<FRHIUploadBuffer_D3D12<FObjectConstants>> UploadBuffer;
 private:
 	UINT RootParameterIndex;
 

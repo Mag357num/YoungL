@@ -70,37 +70,6 @@ public:
 	virtual ~IRHIIndexBuffer() {}
 };
 
-template<typename T>
-class IRHIUploadBuffer
-{
-public:
-	IRHIUploadBuffer(bool IsConstant)
-		:IsConstantBuffer(IsConstant)
-	{
-
-	}
-
-	virtual ~IRHIUploadBuffer() {
-		delete UploadResource;
-		UploadResource = nullptr;
-
-		//todo:free mem data
-		free(MappedData);
-	}
-
-	virtual void CreateUploadResource(UINT ElementCount){}
-	IRHIResource* GetResource(){return UploadResource;}
-
-	virtual void CopyData(int ElementIndex, const T& Data){}
-
-protected:
-	IRHIResource* UploadResource;
-	BYTE* MappedData = nullptr;
-	UINT ElementSize;
-	bool IsConstantBuffer = false;
-
-};
-
 class IRHIConstantBuffer
 {
 public:
