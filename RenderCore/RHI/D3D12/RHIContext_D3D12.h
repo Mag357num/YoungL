@@ -67,13 +67,14 @@ public:
 
 	virtual void DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)override;
 
+	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 
 	virtual void FlushCommandQueue()override;
 	virtual void Present()override;
 
 	virtual IRHIRenderingItem* CreateEmptyRenderingItem()override;
 
-	virtual IRHIConstantBuffer* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)override;
+	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)override;
 
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap() {
 		return M_CbvSrvUavHeap.Get();

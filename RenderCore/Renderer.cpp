@@ -38,6 +38,10 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
 	SceneConstant.View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
+
+	//
+	//Create Scene Constant Buffer
+	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 }
 
 void FRenderer::DestroyRHIContext()
@@ -56,6 +60,12 @@ void FRenderer::DestroyRHIContext()
 
 	GraphicsPSOs.empty();
 	RenderingItems.empty();
+
+	if (SceneConstantBuffer)
+	{
+	delete SceneConstantBuffer;
+	SceneConstantBuffer = nullptr;
+	}
 }
 
 void FRenderer::Resize(int InWidth, int InHeight)
@@ -100,6 +110,10 @@ void FRenderer::RenderObjects()
 
 	//prepare shader parameters
 	RHIContext->PrepareShaderParameter();
+
+	//pass sceen constant buffer
+	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+	//M_CommandList->SetGraphicsRootDescriptorTable(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuHandle());
 
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingItems(RenderingItems);

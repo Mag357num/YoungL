@@ -2,7 +2,8 @@
 #include "../RHIContext.h"
 #include "RHIUploadBuffer_D3D12.h"
 
-class FRHIConstantBuffer_D3D12 : public IRHIConstantBuffer
+template<typename T>
+class FRHIConstantBuffer_D3D12 : public IRHIConstantBuffer<T>
 {
 public:
 	FRHIConstantBuffer_D3D12(){}
@@ -24,9 +25,9 @@ public:
 	UINT GetRootParameterIndex(){return RootParameterIndex; }
 	void SetRootParameterIndex(UINT InIndex){RootParameterIndex = InIndex;}
 
-	virtual void CopyData(int ElementIndex, const FObjectConstants& Data)override;
+	virtual void CopyData(int ElementIndex, const T& Data)override;
 
-	std::unique_ptr<FRHIUploadBuffer_D3D12<FObjectConstants>> UploadBuffer;
+	std::unique_ptr<FRHIUploadBuffer_D3D12<T>> UploadBuffer;
 private:
 	UINT RootParameterIndex;
 
@@ -34,7 +35,8 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
 };
 
-void FRHIConstantBuffer_D3D12::CopyData(int ElementIndex, const FObjectConstants& Data)
+template<typename T>
+void FRHIConstantBuffer_D3D12<T>::CopyData(int ElementIndex, const T& Data)
 {
 	UploadBuffer->CopyData(ElementIndex, Data);
 }

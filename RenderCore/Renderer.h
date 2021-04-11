@@ -32,4 +32,5 @@ private:
 
 	//save camer info
 	FSceneConstant SceneConstant;
+	IRHIConstantBuffer<FSceneConstant>* SceneConstantBuffer;
 };

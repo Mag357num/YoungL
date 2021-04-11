@@ -223,7 +223,7 @@ void FRHIContext_D3D12::OnResize()
 void FRHIContext_D3D12::BuildDescriptorHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc;
-	HeapDesc.NumDescriptors = 1;
+	HeapDesc.NumDescriptors = 2;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.NodeMask = 0;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -237,7 +237,7 @@ void FRHIContext_D3D12::BuildRootSignature()
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 2, 0);
 	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
 	// A root signature is an array of root parameters.
@@ -412,6 +412,12 @@ void FRHIContext_D3D12::SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO)
 
 }
 
+void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
+{
+	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
+	M_CommandList->SetGraphicsRootDescriptorTable(Buffer_D3D12->GetRootParameterIndex(), Buffer_D3D12->GetGpuHandle());
+}
+
 void FRHIContext_D3D12::DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)
 {
 	for (int Index = 0; Index < Items.size(); ++Index)
@@ -425,7 +431,7 @@ void FRHIContext_D3D12::DrawRenderingItems(std::vector<IRHIRenderingItem*>& Item
 		M_CommandList->IASetIndexBuffer(&IbView);
 		M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		 
-		FRHIConstantBuffer_D3D12* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12*>(Items[Index]->GetConstantBuffer());
+		FRHIConstantBuffer_D3D12<FObjectConstants>* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(Items[Index]->GetConstantBuffer());
 		M_CommandList->SetGraphicsRootDescriptorTable(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuHandle());
 		M_CommandList->DrawIndexedInstanced((UINT)Items[Index]->GetIndexCount(), 1, 0, 0, 0);
 	}
@@ -458,29 +464,39 @@ IRHIRenderingItem* FRHIContext_D3D12::CreateEmptyRenderingItem()
 	return new FRHIRenderingItem_D3D12();
 }
 
-IRHIConstantBuffer* FRHIContext_D3D12::CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)
+IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)
 {
-	FRHIConstantBuffer_D3D12* ConstantBuffer = new FRHIConstantBuffer_D3D12();
+	FRHIConstantBuffer_D3D12<FSceneConstant>* ConstantBuffer = new FRHIConstantBuffer_D3D12<FSceneConstant>();
 
 
-	//ConstantBuffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12>(new FRHIUploadBuffer_D3D12(true));
-	//ConstantBuffer->UploadBuffer->CreateUploadResource(1);
+	ConstantBuffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12<FSceneConstant>>(new FRHIUploadBuffer_D3D12<FSceneConstant>(true));
+	ConstantBuffer->UploadBuffer->CreateUploadResource(1);
 
-	//UINT ObjectBufferSize = FRHIUploadBuffer_D3D12::CalcConstantBufferByteSize(sizeof(FObjectConstants));
+	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12<FSceneConstant>::CalcConstantBufferByteSize(sizeof(FSceneConstant));
 
 	//D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	//D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
+	
 
-	//FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(Buffer->UploadBuffer->GetResource());
-	//D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
-	//int BufIndex = 0;
-	//GpuAddress += BufIndex * ObjectBufferSize;
-	//ViewDesc.BufferLocation = GpuAddress;
-	//ViewDesc.SizeInBytes = ObjectBufferSize;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE CpuDescriptor(GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart());
+	//slot 0 : for ObjectConstants ;reserved
+	CpuDescriptor.Offset(1, M_CbvSrvUavDescriptorSize);
 
-	//D3D12RHI::M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
-	//Buffer->SetRootParameterIndex(0);
-	//Buffer->SetGpuhandle(GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+	D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
+
+	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(ConstantBuffer->UploadBuffer->GetResource());
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
+	int BufIndex = 0;
+	GpuAddress += BufIndex * ObjectBufferSize;
+	ViewDesc.BufferLocation = GpuAddress;
+	ViewDesc.SizeInBytes = ObjectBufferSize;
+
+	D3D12RHI::M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
+	ConstantBuffer->SetRootParameterIndex(0);//0 for descriptor table
+
+	//slot 0 : for ObjectConstants ;reserved
+	CD3DX12_GPU_DESCRIPTOR_HANDLE GpuDescriptor(GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+	GpuDescriptor.Offset(1, M_CbvSrvUavDescriptorSize);
+	ConstantBuffer->SetGpuhandle(GpuDescriptor);
 
 	return ConstantBuffer;
 }

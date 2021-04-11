@@ -70,13 +70,14 @@ public:
 	virtual ~IRHIIndexBuffer() {}
 };
 
+template<typename T>
 class IRHIConstantBuffer
 {
 public:
 	IRHIConstantBuffer() {}
 	virtual ~IRHIConstantBuffer() {}
 
-	virtual void CopyData(int ElementIndex, const FObjectConstants& Data){}
+	virtual void CopyData(int ElementIndex, const T& Data){}
 protected:
 };
 
@@ -102,11 +103,11 @@ public:
 
 	IRHIVertexBuffer* GetVertexBuffer(){return VertexBuffer;}
 	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer; }
-	IRHIConstantBuffer* GetConstantBuffer(){return ConstantBuffer;}
+	IRHIConstantBuffer<FObjectConstants>* GetConstantBuffer(){return ConstantBuffer;}
 	size_t GetIndexCount(){return IndexCount;}
 
 protected:
-	IRHIConstantBuffer* ConstantBuffer;
+	IRHIConstantBuffer<FObjectConstants>* ConstantBuffer;
 	IRHIVertexBuffer* VertexBuffer;
 	IRHIIndexBuffer* IndexBuffer;
 
@@ -167,7 +168,7 @@ public:
 	virtual void PrepareShaderParameter(){}
 	virtual void SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO){}
 
-	virtual void SetConstantBuffer(){}
+	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer){}
 	virtual void SetShaderResourceView(){}
 
 	virtual void SetPrimitiveTopology(){}
@@ -181,7 +182,7 @@ public:
 
 	virtual IRHIRenderingItem* CreateEmptyRenderingItem(){return nullptr;}
 
-	virtual IRHIConstantBuffer* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
+	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
 
 protected:
 

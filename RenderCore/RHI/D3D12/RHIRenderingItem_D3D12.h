@@ -31,8 +31,8 @@ private:
 void FRHIRenderingItem_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)
 {
 	FRHIContext_D3D12* RHIContext_D3D12 = reinterpret_cast<FRHIContext_D3D12*>(Context);
-	ConstantBuffer = new FRHIConstantBuffer_D3D12();
-	FRHIConstantBuffer_D3D12* Buffer = reinterpret_cast<FRHIConstantBuffer_D3D12*>(ConstantBuffer);
+	ConstantBuffer = new FRHIConstantBuffer_D3D12<FObjectConstants>();
+	FRHIConstantBuffer_D3D12<FObjectConstants>* Buffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(ConstantBuffer);
 
 	Buffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12<FObjectConstants>>(new FRHIUploadBuffer_D3D12<FObjectConstants>(true));
 	Buffer->UploadBuffer->CreateUploadResource(1);
