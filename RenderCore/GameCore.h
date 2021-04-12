@@ -25,7 +25,7 @@ public:
 	std::vector<std::unique_ptr<AMeshActor>>& GetGeometries() {
 		return Geometries;}
 private:
-	void LoadAssets(std::string& Path);
+	void LoadAsset(std::string& Path);
 
 	std::vector<std::unique_ptr<AMeshActor>> Geometries;
 

@@ -7,22 +7,39 @@ static int ClientWidth;
 static int ClientHeight;
 static bool RequstStopThread;
 static FRenderer* Renderer;
-static std::weak_ptr<FGameCore> WeakGameCore;
+//static std::weak_ptr<FGameCore> WeakGameCore;
 
 
 namespace RenderFrameSync
 {
 	static UINT8 FrameSyncFence = 0;
-	static std::queue<std::function<void(FRenderer*, FGameCore*)>> TaskQueue;
 }
 
-
-class FRenderThreadTask
+struct FRenderThreadCommand
 {
+
 public:
-protected:
+
+	template<class F, class... Args, class=typename std::enable_if<!std::is_member_function_pointer<F>::value>::type>
+	void Wrap(F&& f, Args&& ... args)
+	{
+		Fun = [&]{f(args...);};
+	}
+
+	void Excute()
+	{
+		Fun();
+	}
+
 private:
+	std::function<void()> Fun;
 };
+
+namespace RenderThreadTask
+{
+	static std::queue<FRenderThreadCommand> CommandQueue;
+}
+
 
 class FRenderThread
 {
@@ -49,16 +66,11 @@ public:
 				Sleep(10);
 			} 
 
-			while (RenderFrameSync::TaskQueue.size() > 0)
+			while (RenderThreadTask::CommandQueue.size() > 0)
 			{
-				std::function<void(FRenderer*, FGameCore*)> Func = RenderFrameSync::TaskQueue.front();
-				if (!WeakGameCore.expired())
-				{
-					std::shared_ptr<FGameCore> TempGameCore = WeakGameCore.lock();
-					Func(Renderer, TempGameCore.get());
-				}
-				
-				RenderFrameSync::TaskQueue.pop();
+				FRenderThreadCommand Command = RenderThreadTask::CommandQueue.front();
+				Command.Excute();
+				RenderThreadTask::CommandQueue.pop();
 			}
 
 			Renderer->RenderObjects();
@@ -78,12 +90,12 @@ public:
 
 	}
 
-	void StartThread(int InWidth, int InHeight, std::weak_ptr<FGameCore> InGameCore){
+	void StartThread(int InWidth, int InHeight){
 		RequstStopThread = false;
 		ClientWidth = InWidth;
 		ClientHeight = InHeight;
 
-		WeakGameCore = InGameCore;
+		//WeakGameCore = InGameCore;
 
 		Thread = std::make_unique<std::thread>(Run);
 		Thread->detach();
@@ -96,9 +108,9 @@ public:
 
 	}
 
-	void PushTask(const std::function<void(FRenderer*, FGameCore*)>& InTask)
+	void PushTask(FRenderThreadCommand InCommand)
 	{
-		RenderFrameSync::TaskQueue.push(InTask);
+		RenderThreadTask::CommandQueue.push(InCommand);
 	}
 
 private:

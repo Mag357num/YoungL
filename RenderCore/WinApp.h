@@ -48,7 +48,7 @@ private:
 	int ClientHeight = 600;
 
 	//game and render
-	std::shared_ptr<FGameCore> GameCore;
+	FGameCore* GameCore;
 	FRenderer* Renderer;
 
 	FRenderThread* RenderThread;

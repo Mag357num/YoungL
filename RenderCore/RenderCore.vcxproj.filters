@@ -95,9 +95,6 @@
     <ClCompile Include="RHI\RHIContext.cpp">
       <Filter>源文件\RHI</Filter>
     </ClCompile>
-    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
-      <Filter>源文件\RHI\D3D12</Filter>
-    </ClCompile>
     <ClCompile Include="GameCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -109,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
+      <Filter>源文件\RHI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

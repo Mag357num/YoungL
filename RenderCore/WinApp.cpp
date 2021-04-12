@@ -69,7 +69,7 @@ bool FWinApp::InitializeWindow()
 	InitGame();
 
 	WinApp::Mainhandle = CreateWindow(WindowClass, WindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 
-		CW_USEDEFAULT, ClientWidth, ClientHeight, 0, 0, AppInstan, GameCore.get());
+		CW_USEDEFAULT, ClientWidth, ClientHeight, 0, 0, AppInstan, GameCore);
 
 	//show window
 	ShowWindow(WinApp::Mainhandle, SW_SHOW);
@@ -106,15 +106,15 @@ void FWinApp::InitGame()
 {
 	if (!GameCore)
 	{
-		GameCore = std::make_shared<FGameCore>();
+		GameCore = new FGameCore();
 		GameCore->Initialize();
 	}
 }
 
 
-static void CreateRenderingItem_RenderThread(FRenderer* InRender, FGameCore* InGame)
+static void CreateRenderingItem_RenderThread(FGameCore* InGame)
 {
-	InRender->CreateRenderingItem(InGame->GetGeometries());
+	Renderer->CreateRenderingItem(InGame->GetGeometries());
 }
 
 void FWinApp::InitEngine()
@@ -123,11 +123,11 @@ void FWinApp::InitEngine()
 	if (!RenderThread)
 	{
 		RenderThread = new FRenderThread();
-		RenderThread->StartThread(ClientWidth, ClientHeight, GameCore);
+		RenderThread->StartThread(ClientWidth, ClientHeight);
 
-		std::function<void(FRenderer*, FGameCore*)> Task;
-		Task = CreateRenderingItem_RenderThread;
-		RenderThread->PushTask(Task);
+		FRenderThreadCommand CreateRenderItemCommand;
+		CreateRenderItemCommand.Wrap(CreateRenderingItem_RenderThread, GameCore);
+		RenderThread->PushTask(CreateRenderItemCommand);
 	}
 
 }
@@ -137,7 +137,8 @@ void FWinApp::DestroyApp()
 	if (GameCore)
 	{
 		GameCore->ShutDown();
-		GameCore.reset();
+		delete GameCore;
+		GameCore = nullptr;
 	}
 
 

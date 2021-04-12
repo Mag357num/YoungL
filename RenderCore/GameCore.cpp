@@ -18,17 +18,18 @@ void FGameCore::Initialize()
 
 	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
 	{
-		LoadAssets(AssetPaths[Index]);
+		LoadAsset(AssetPaths[Index]);
 	}
 	
 }
 
 void FGameCore::Tick()
 {
-
+	//Tick Game Logic...
+	//todo:
 }
 
-void FGameCore::LoadAssets(std::string& Path)
+void FGameCore::LoadAsset(std::string& Path)
 {
 	//load asset
 	std::vector<FVertex> Vertices;
