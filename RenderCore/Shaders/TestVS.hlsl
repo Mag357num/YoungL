@@ -2,14 +2,14 @@
 
 cbuffer cbPerObject : register(b0)
 {
-	float4x4 gWorldViewProj;
-	float3 CameraLocation;
+	float4x4 ObjectWorld;
+
 };
 
 cbuffer manPassObject : register(b1)
 {
-	float4x4 View;
-	float4x4 Proj;
+	float4x4 ViewProj;
+	float3 CamLocation;
 };
 
 struct VertexIn
@@ -34,7 +34,8 @@ VertexOut main(VertexIn Vin)
 	VertexOut vout;
 	
 	// Transform to homogeneous clip space.
-	vout.PosH = mul(float4(Vin.Pos, 1.0f), gWorldViewProj);
+	float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
+	vout.PosH = mul(PosW, ViewProj);
 	
 	// Just pass vertex color into the pixel shader.
 	vout.Uv = Vin.Uv;

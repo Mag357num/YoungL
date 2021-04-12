@@ -3,8 +3,13 @@
 
 cbuffer cbPerObject : register(b0)
 {
-	float4x4 gWorldViewProj;
-	float3 CameraLocation;
+	float4x4 ObjectWorld;
+};
+
+cbuffer manPassObject : register(b1)
+{
+	float4x4 ViewProj;
+	float3 CamLocation;
 };
 
 struct VertexOut
@@ -35,7 +40,7 @@ float4 main(VertexOut Pin) : SV_Target
 	Light.Direction = float3(-1.0f ,-1.0f, -1.0f);
 	Light.Direction = normalize(Light.Direction);
 	
-	float3 ViewDirection = CameraLocation - Pin.PosW;
+	float3 ViewDirection = CamLocation - Pin.PosW;
 	ViewDirection = normalize(ViewDirection);
 	Pin.Normal = normalize(Pin.Normal);
 	

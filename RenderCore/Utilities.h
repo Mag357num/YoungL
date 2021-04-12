@@ -191,25 +191,14 @@ private:
 struct FObjectConstants
 {
 	FObjectConstants()
-		:WorldViewProj(1.0f, 0.0f, 0.0f, 0.0f,
+		:ObjectWorld(1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 0.0f, 1.0f)
 	{
-		CameraLocation = FVector(800.0f, 0.0f, 0.0f);
 	}
 
-	FMatrix WorldViewProj;
-
-	FVector CameraLocation = FVector(0.0f, 0.0f, 0.0f);
-
-	//XMFLOAT4X4 WorldViewProj = DirectX::XMFLOAT4X4(
-	//	1.0f, 0.0f, 0.0f, 0.0f,
-	//	0.0f, 1.0f, 0.0f, 0.0f,
-	//	0.0f, 0.0f, 1.0f, 0.0f,
-	//	0.0f, 0.0f, 0.0f, 1.0f);
-
-	//XMFLOAT3 CameraLocation = XMFLOAT3(800.0f, 0.0f, 0.0f);
+	FMatrix ObjectWorld;
 
 };
 
@@ -217,8 +206,8 @@ struct FSceneConstant
 {
 	FSceneConstant(){}
 
-	FMatrix View;
-	FMatrix Proj;
+	FMatrix ViewProj;
+	FVector CamLocation;
 }; 
 
 

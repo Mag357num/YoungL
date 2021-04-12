@@ -30,15 +30,20 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
 	//initialize scene constant
-	SceneConstant.Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
+	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
 
 	//// Build the view matrix.
 	FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
 	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
-	SceneConstant.View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
+	FMatrix View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
 
+	SceneConstant.ViewProj = View * Proj;
+
+	//copy to upload buffer transposed???
+	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.CamLocation = FVector(CamPos.X, CamPos.Y, CamPos.Z);
 	//
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
@@ -113,7 +118,6 @@ void FRenderer::RenderObjects()
 
 	//pass sceen constant buffer
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
-	//M_CommandList->SetGraphicsRootDescriptorTable(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuHandle());
 
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingItems(RenderingItems);
@@ -137,23 +141,9 @@ void FRenderer::UpdateConstantBuffer()
 	{
 		FMatrix World = Utilities::IdentityMatrix;
 
-		FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
-
-		//// Build the view matrix.
-		FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
-		FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
-		FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
-
-		FMatrix View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
-
-		FMatrix WorldViewProj = World * View * Proj;
-
 		// Update the constant buffer with the latest worldViewProj matrix.
 		FObjectConstants ObjectConstant;
-
-		//copy to upload buffer transposed???
-		ObjectConstant.WorldViewProj = Utilities::MatrixTranspose(WorldViewProj);
-		ObjectConstant.CameraLocation = FVector(CamPos.X, CamPos.Y, CamPos.Z);
+		ObjectConstant.ObjectWorld = World;
 		RenderingItems[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
 	}
 

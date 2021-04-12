@@ -1,3 +1,3 @@
 
 #define RenderCore_RootSig \
-	"CBV(b0)" 
+	"DescriptorTable(CBV(b0, numDescriptors = 2))"

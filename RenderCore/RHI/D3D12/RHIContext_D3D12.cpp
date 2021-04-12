@@ -473,7 +473,7 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 	ConstantBuffer->UploadBuffer->CreateUploadResource(1);
 
 	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12<FSceneConstant>::CalcConstantBufferByteSize(sizeof(FSceneConstant));
-
+	ConstantBuffer->CopyData(0, SceneConstant);
 	//D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	
 
