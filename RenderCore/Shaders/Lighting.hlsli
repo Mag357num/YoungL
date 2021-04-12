@@ -9,7 +9,6 @@ struct Material
 struct DirectionLight
 {
 	float3 Strength;
-	float3 Position;
 	float3 Direction;
 };
 

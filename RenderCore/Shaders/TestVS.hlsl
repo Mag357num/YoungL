@@ -4,12 +4,19 @@ cbuffer cbPerObject : register(b0)
 {
 	float4x4 ObjectWorld;
 
+	float3 Fresnel0;
+	float Shiness;
+	float3 AmbientLight;
 };
 
 cbuffer manPassObject : register(b1)
 {
 	float4x4 ViewProj;
-	float3 CamLocation;
+	float4 CamLocation;
+
+	//for global directional lighting
+	float4 LightDirection;
+	float4 LightStrength;
 };
 
 struct VertexIn

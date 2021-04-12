@@ -200,6 +200,11 @@ struct FObjectConstants
 
 	FMatrix ObjectWorld;
 
+
+	//saved for material
+	FVector Fresnel0 = FVector(0.04f, 0.04f, 0.04f);
+	float Shiness = 0.7f;
+	FVector AmbientLight = FVector(0.1f, 0.1f, 0.1f);
 };
 
 struct FSceneConstant
@@ -207,7 +212,11 @@ struct FSceneConstant
 	FSceneConstant(){}
 
 	FMatrix ViewProj;
-	FVector CamLocation;
+	FVector4D CamLocation;
+
+	//saved for global directional lighting
+	FVector4D LightDirection;
+	FVector4D LightStrength;
 }; 
 
 

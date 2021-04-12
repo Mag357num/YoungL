@@ -4,12 +4,20 @@
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 ObjectWorld;
+
+	float3 Fresnel0;
+	float Shiness;
+	float3 AmbientLight;
 };
 
 cbuffer manPassObject : register(b1)
 {
 	float4x4 ViewProj;
-	float3 CamLocation;
+	float4 CamLocation;
+
+	//for global directional lighting
+	float4 LightDirection;
+	float4 LightStrength;
 };
 
 struct VertexOut
@@ -28,19 +36,18 @@ float4 main(VertexOut Pin) : SV_Target
 	Material Mat;
 	//Mat.DiffuseAlbedo=float4(0.1f, 0.7f, 0.7f, 1.0f);
 	Mat.DiffuseAlbedo=Pin.Color;
-	Mat.Fresnel0=float3(0.04f,0.04f,0.04f);
-	Mat.Shiness=0.7f;
-	Mat.AmbientLight=float3(0.1f,0.1f,0.1f);
+	Mat.Fresnel0= Fresnel0;
+	Mat.Shiness= Shiness;
+	Mat.AmbientLight= AmbientLight;
 	
 	
 	DirectionLight Light;
-	Light.Position=float3(0.0f, 0.0f, 0.0f);
-	Light.Strength = float3(0.5f, 0.5f, 0.5f);
+	Light.Strength = float3(LightStrength.x, LightStrength.y, LightStrength.z);
 	Light.Strength = normalize(Light.Strength);
-	Light.Direction = float3(-1.0f ,-1.0f, -1.0f);
+	Light.Direction = float3(LightDirection.x, LightDirection.y, LightDirection.z);
 	Light.Direction = normalize(Light.Direction);
 	
-	float3 ViewDirection = CamLocation - Pin.PosW;
+	float3 ViewDirection = float3(CamLocation.x, CamLocation.y, CamLocation.z) - Pin.PosW;
 	ViewDirection = normalize(ViewDirection);
 	Pin.Normal = normalize(Pin.Normal);
 	

@@ -43,8 +43,12 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//copy to upload buffer transposed???
 	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
-	SceneConstant.CamLocation = FVector(CamPos.X, CamPos.Y, CamPos.Z);
-	//
+	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 1.0f);
+	
+	//create global directional lighting
+	SceneConstant.LightStrength = FVector4D(0.5f, 0.5f, 0.5f, 1.0f);
+	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 1.0f);
+
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 }
@@ -144,6 +148,10 @@ void FRenderer::UpdateConstantBuffer()
 		// Update the constant buffer with the latest worldViewProj matrix.
 		FObjectConstants ObjectConstant;
 		ObjectConstant.ObjectWorld = World;
+		ObjectConstant.Fresnel0 = FVector(0.04f, 0.04f, 0.04f);
+		ObjectConstant.Shiness = 0.7f;
+		ObjectConstant.AmbientLight = FVector(0.1f, 0.1f, 0.1f);
+
 		RenderingItems[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
 	}
 
