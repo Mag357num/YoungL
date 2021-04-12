@@ -96,15 +96,6 @@ public:
 
 	}
 
-	//temparory for main thread excute
-	void CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Geometries)
-	{
-		if (Renderer)
-		{
-			Renderer->CreateRenderingItem(Geometries);
-		}
-	}
-
 	void PushTask(const std::function<void(FRenderer*, FGameCore*)>& InTask)
 	{
 		RenderFrameSync::TaskQueue.push(InTask);
