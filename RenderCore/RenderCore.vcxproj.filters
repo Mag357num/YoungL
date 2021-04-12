@@ -28,12 +28,6 @@
     <Filter Include="源文件\RHI\D3D12">
       <UniqueIdentifier>{86e39a44-6148-4a93-8536-77a89832c3ad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\RHI\D3D12\TestDX12">
-      <UniqueIdentifier>{9be83c65-d836-41d1-bf37-523c092fb373}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\RHI\D3D12\TestDX12">
-      <UniqueIdentifier>{f3531f61-6f98-4147-ad11-0cff8258ffd9}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -93,12 +87,6 @@
     <ClInclude Include="RHI\D3D12\RHIUploadBuffer_D3D12.h">
       <Filter>头文件\RHI\D3D12</Filter>
     </ClInclude>
-    <ClInclude Include="RHI\D3D12\TestDX12\D3DExample.h">
-      <Filter>头文件\RHI\D3D12\TestDX12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\TestDX12\Uploadbuffer.h">
-      <Filter>头文件\RHI\D3D12\TestDX12</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RHI\RHIContext.cpp">
@@ -118,9 +106,6 @@
     </ClCompile>
     <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="RHI\D3D12\TestDX12\D3DExample.cpp">
-      <Filter>源文件\RHI\D3D12\TestDX12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
