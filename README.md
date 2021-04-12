@@ -1,11 +1,14 @@
 # YoungL Learn Project of DX12
 
+## 多线程的部分暂时的临时方案, 需要整改(待整理)
+
 ## Hierarchy of RenderCore
 
 - RenderCore
   - WinApp
   - GameCore
   - Render
+  - RenderThread
   - RHI
     - RHIContext
     - D3D12
