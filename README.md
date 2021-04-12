@@ -1,7 +1,5 @@
 # YoungL Learn Project of DX12
 
-## 多线程的部分是暂时的方案, 还需要整改(待整理)
-
 ## Hierarchy of RenderCore
 
 - RenderCore
