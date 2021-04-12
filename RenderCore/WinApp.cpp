@@ -5,6 +5,7 @@ namespace WinApp
 	HWND Mainhandle;
 };
 
+using namespace RenderFrameSync;
 
 LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPara)
 {
@@ -68,7 +69,7 @@ bool FWinApp::InitializeWindow()
 	InitGame();
 
 	WinApp::Mainhandle = CreateWindow(WindowClass, WindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 
-		CW_USEDEFAULT, ClientWidth, ClientHeight, 0, 0, AppInstan, GameCore);
+		CW_USEDEFAULT, ClientWidth, ClientHeight, 0, 0, AppInstan, GameCore.get());
 
 	//show window
 	ShowWindow(WinApp::Mainhandle, SW_SHOW);
@@ -93,7 +94,6 @@ int FWinApp::Run()
 		else
 		{
 			Update();
-			Render();
 		}
 	}
 
@@ -106,23 +106,30 @@ void FWinApp::InitGame()
 {
 	if (!GameCore)
 	{
-		GameCore = new FGameCore();
+		GameCore = std::make_shared<FGameCore>();
 		GameCore->Initialize();
 	}
 }
 
+
+static void CreateRenderingItem_RenderThread(FRenderer* InRender, FGameCore* InGame)
+{
+	InRender->CreateRenderingItem(InGame->GetGeometries());
+}
+
 void FWinApp::InitEngine()
 {
-	//init render core
-	if (!Renderer)
+	//try to start render thread
+	if (!RenderThread)
 	{
-		Renderer = new FRenderer();
-		Renderer->CreateRHIContext(ClientWidth, ClientHeight);
+		RenderThread = new FRenderThread();
+		RenderThread->StartThread(ClientWidth, ClientHeight, GameCore);
+
+		std::function<void(FRenderer*, FGameCore*)> Task;
+		Task = CreateRenderingItem_RenderThread;
+		RenderThread->PushTask(Task);
 	}
 
-	//we does't have game && render sync mechanism; 
-	// pass to render directly
-	Renderer->CreateRenderingItem(GameCore->GetGeometries());
 }
 
 void FWinApp::DestroyApp()
@@ -130,26 +137,26 @@ void FWinApp::DestroyApp()
 	if (GameCore)
 	{
 		GameCore->ShutDown();
-		delete GameCore;
-		GameCore = nullptr;
+		GameCore.reset();
 	}
 
-	if (Renderer)
+
+	if (RenderThread)
 	{
-		Renderer->DestroyRHIContext();
-		delete Renderer;
-		Renderer = nullptr;
+		RenderThread->StopThread();
+		delete RenderThread;
+		RenderThread = nullptr;
 	}
 }
 
 void FWinApp::Update()
 {
+	while (RenderFrameSync::FrameSyncFence >= 1)
+	{
+		Sleep(10);
+	}
+
 	GameCore->Tick();
-}
 
-void FWinApp::Render()
-{
-	Renderer->RenderObjects();
-	Renderer->UpdateConstantBuffer();
+	RenderFrameSync::FrameSyncFence++;
 }
-

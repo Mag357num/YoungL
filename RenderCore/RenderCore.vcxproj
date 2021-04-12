@@ -196,6 +196,7 @@
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="MeshActor.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderThread.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RHI\D3D12\RHIConstantBuffer_D3D12.h" />
     <ClInclude Include="RHI\D3D12\d3dx12.h" />

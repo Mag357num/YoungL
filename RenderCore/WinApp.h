@@ -5,6 +5,7 @@
 
 #include "GameCore.h"
 #include "Renderer.h"
+#include "RenderThread.h"
 
 using namespace Microsoft::WRL;
 
@@ -31,9 +32,6 @@ public:
 	//game update
 	void Update();
 
-	//render update
-	void Render();
-
 private:
 	void InitGame();
 	void InitEngine();
@@ -50,7 +48,9 @@ private:
 	int ClientHeight = 600;
 
 	//game and render
-	FGameCore* GameCore;
+	std::shared_ptr<FGameCore> GameCore;
 	FRenderer* Renderer;
+
+	FRenderThread* RenderThread;
 };
 
