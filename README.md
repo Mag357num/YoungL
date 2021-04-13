@@ -7,6 +7,7 @@
   - GameCore
   - Render
   - RenderThread
+  - RenderThreadManager
   - RHI
     - RHIContext
     - D3D12
@@ -34,6 +35,9 @@
 - version 0: basic process for drawing objects
 - version 1: basic blinn-phong
 - version 2: basic render core rhi framework
+- version 3: Add RenderThread
+- version 4: Add ReaderThreadManager and RenderCommand
+- version 5: Memory Release
 
 
 ## EngineCore:Expermental framework for rhi
