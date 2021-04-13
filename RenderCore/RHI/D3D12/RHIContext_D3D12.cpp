@@ -7,7 +7,7 @@
 
 #include <D3Dcompiler.h>
 #pragma comment(lib, "D3DCompiler.lib")
-
+#include <pix.h>
 #include <dxgidebug.h>
 
 #include "RHIVertexBuffer_D3D12.h"
@@ -347,15 +347,19 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 	return D3D12GraphicsPSO;
 }
 
-void FRHIContext_D3D12::BeginDraw(IRHIGraphicsPipelineState* InPSO)
+void FRHIContext_D3D12::BeginDraw(IRHIGraphicsPipelineState* InPSO, const wchar_t* Label)
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
 	M_CommandAllocator->Reset();
 	M_CommandList->Reset(M_CommandAllocator.Get(), D3D12PSO->PSO.Get());
+
+	::PIXBeginEvent(M_CommandList.Get(), PIX_COLOR_DEFAULT, Label);
 }
 
 void FRHIContext_D3D12::EndDraw()
 {
+	::PIXEndEvent(M_CommandList.Get());
+
 	M_CommandList->Close();
 	ID3D12CommandList* CmdLists[] = { M_CommandList.Get() };
 	M_CommandQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);

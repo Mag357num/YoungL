@@ -52,7 +52,7 @@ public:
 		return M_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 	
-	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO)override;
+	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO, const wchar_t* Label)override;
 	virtual void EndDraw()override;
 
 	virtual void SetViewport(const FViewport& Viewport)override;

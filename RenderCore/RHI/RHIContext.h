@@ -146,7 +146,7 @@ public:
 
 	virtual void Resize(int InWidth, int InHeight){}
 
-	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO){}
+	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO, const wchar_t* Label){}
 	virtual void EndDraw() {}
 
 

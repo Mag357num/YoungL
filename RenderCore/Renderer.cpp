@@ -119,7 +119,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 void FRenderer::RenderObjects()
 {
 	//reset command list and command allocator here
-	RHIContext->BeginDraw(GraphicsPSOs["BasePass"]);
+	RHIContext->BeginDraw(GraphicsPSOs["BasePass"], L"BasePass");
 
 	RHIContext->SetViewport(Viewport);
 	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
