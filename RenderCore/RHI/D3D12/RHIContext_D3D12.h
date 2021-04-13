@@ -92,7 +92,6 @@ private:
 	int ClientHeight = 600;
 
 	ComPtr<IDXGIFactory4> M_Factory;
-	//ComPtr<ID3D12Device> M_Device;
 	ComPtr<IDXGISwapChain> M_SwapChain;
 
 	ComPtr<ID3D12CommandAllocator> M_CommandAllocator;

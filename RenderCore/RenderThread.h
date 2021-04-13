@@ -12,11 +12,6 @@ static bool RequstStopThread;
 static FRenderer* Renderer;
 static UINT8 FrameSyncFence;
 
-//namespace RenderFrameSync
-//{
-//	static UINT8 FrameSyncFence = 0;
-//}
-
 struct FRenderThreadCommand
 {
 
@@ -87,7 +82,6 @@ public:
 		ClientWidth = InWidth;
 		ClientHeight = InHeight;
 		FrameSyncFence = 0;
-		//WeakGameCore = InGameCore;
 
 		Thread = std::make_unique<std::thread>(Run);
 		Thread->detach();

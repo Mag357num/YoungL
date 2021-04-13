@@ -32,7 +32,7 @@ private:
 	//
 	FViewport Viewport;
 
-	//save camer info
+	//save camera info
 	FSceneConstant SceneConstant;
 	IRHIConstantBuffer<FSceneConstant>* SceneConstantBuffer;
 };

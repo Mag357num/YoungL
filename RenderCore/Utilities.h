@@ -142,12 +142,6 @@ struct FMatrix
 		return M;
 	}
 
-	//FMatrix* operator= (FMatrix& InMatrix)const
-	//{
-	//	FMatrix Result;
-	//	return &Result;
-	//}
-
 	//matrix content
 	float Content[4][4];
 
