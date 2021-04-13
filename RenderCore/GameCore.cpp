@@ -1,12 +1,37 @@
 #include "GameCore.h"
 #include <fstream>
 
+FGameCore::FGameCore()
+{
+	Camera = std::make_unique<FCamera>();
+}
+
+FGameCore::~FGameCore()
+{
+	Camera.reset();
+}
+
 void FGameCore::OnKeyDown(UINT8 Key)
 {
 
 }
 
 void FGameCore::OnKeyUp(UINT8 Key)
+{
+
+}
+
+void FGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
+{
+
+}
+
+void FGameCore::OnMouseButtonUp(WPARAM BtnState, int X, int Y)
+{
+
+}
+
+void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 {
 
 }
@@ -23,10 +48,37 @@ void FGameCore::Initialize()
 	
 }
 
+
+static void UpdateSceneConstantBuffer_RenderThread(FMatrix* InView, FMatrix* InProj, FVector4D* InCamerLoc)
+{
+	FRenderThreadManager::UpdateSceneConstantBuffer(*InView, *InProj, *InCamerLoc);
+}
+
 void FGameCore::Tick()
 {
 	//Tick Game Logic...
 	//todo:
+
+	//update camera canstant
+	if (Camera->CameraInfoDirty())
+	{
+		//todo:enqueue render command to update scene constant buffer
+		//if (!RenderThreadManager_Weak.expired())
+		//{
+		//	FMatrix* View = Camera->GetCameraView();
+		//	FMatrix* Proj = Camera->GetCameraProj();
+		//	FVector4D* CamLoc = Camera->GetCameraLoc();
+
+		//	FRenderThreadCommand CreateRenderItemCommand;
+		//	CreateRenderItemCommand.Wrap(UpdateSceneConstantBuffer_RenderThread,
+		//		View, Proj, CamLoc);
+
+		//	std::shared_ptr<FRenderThreadManager> RenderManager = RenderThreadManager_Weak.lock();
+		//	RenderManager->PushRenderCommand(CreateRenderItemCommand);
+		//}
+
+		Camera->ResetDirtyFlat();
+	}
 }
 
 void FGameCore::LoadAsset(std::string& Path)

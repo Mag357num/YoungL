@@ -90,6 +90,12 @@
     <ClInclude Include="RenderThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderThreadManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RHI\RHIContext.cpp">
@@ -109,6 +115,12 @@
     </ClCompile>
     <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
       <Filter>源文件\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderThreadManager.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

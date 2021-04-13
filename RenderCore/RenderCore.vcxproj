@@ -147,7 +147,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\learn\LearnWork\YoungL\EngineCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -172,7 +172,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\learn\LearnWork\YoungL\EngineCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -193,10 +193,12 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="MeshActor.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderThread.h" />
+    <ClInclude Include="RenderThreadManager.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RHI\D3D12\RHIConstantBuffer_D3D12.h" />
     <ClInclude Include="RHI\D3D12\d3dx12.h" />
@@ -215,9 +217,11 @@
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="RenderCore.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RenderThreadManager.cpp" />
     <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp" />
     <ClCompile Include="RHI\RHIContext.cpp" />
     <ClCompile Include="WinApp.cpp" />

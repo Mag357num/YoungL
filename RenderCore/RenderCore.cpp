@@ -4,7 +4,7 @@
 #pragma once
 
 #include "resource.h"
-//#include "D3DExample.h"
+#include <windows.h>
 #include "WinApp.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

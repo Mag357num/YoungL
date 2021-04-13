@@ -4,8 +4,8 @@
 #include <wrl.h>
 
 #include "GameCore.h"
-#include "Renderer.h"
-#include "RenderThread.h"
+//#include "RenderThread.h"
+#include "RenderThreadManager.h"
 
 using namespace Microsoft::WRL;
 
@@ -32,6 +32,9 @@ public:
 	//game update
 	void Update();
 
+	//sync change to render thread
+	//void UpdateSceneConstantBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc);
+
 private:
 	void InitGame();
 	void InitEngine();
@@ -49,8 +52,10 @@ private:
 
 	//game and render
 	FGameCore* GameCore;
-	FRenderer* Renderer;
+	//FRenderer* Renderer;
 
-	FRenderThread* RenderThread;
+	//FRenderThread* RenderThread;
+
+	std::shared_ptr<FRenderThreadManager> RenderThreadManager;
 };
 

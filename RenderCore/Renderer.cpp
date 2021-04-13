@@ -32,7 +32,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	//initialize scene constant
 	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
 
-	//// Build the view matrix.
+	//// Build the initial view matrix.
 	FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
 	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
@@ -155,5 +155,16 @@ void FRenderer::UpdateConstantBuffer()
 		RenderingItems[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
 	}
 
+}
 
+void FRenderer::UpdateSceneConstantsBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc)
+{
+	SceneConstant.ViewProj = InView * InProj;
+
+	//copy to upload buffer transposed???
+	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.CamLocation = InCamerLoc;
+
+	//update buffer
+	SceneConstantBuffer->CopyData(0, SceneConstant);
 }

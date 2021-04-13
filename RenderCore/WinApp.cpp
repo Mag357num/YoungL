@@ -1,11 +1,10 @@
 #include "WinApp.h"
+#include <windowsx.h>
 
 namespace WinApp
 {
 	HWND Mainhandle;
 };
-
-using namespace RenderFrameSync;
 
 LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPara)
 {
@@ -33,6 +32,18 @@ LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPar
 			Game->OnKeyUp(static_cast<UINT8>(WPara));
 		}
 		return 0;
+
+	case WM_LBUTTONDOWN:
+	Game->OnMouseButtonDown(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		break;
+
+	case WM_LBUTTONUP:
+		Game->OnMouseButtonUp(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		break;
+
+	case WM_MOUSEMOVE:
+		Game->OnMouseMove(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -114,20 +125,22 @@ void FWinApp::InitGame()
 
 static void CreateRenderingItem_RenderThread(FGameCore* InGame)
 {
-	Renderer->CreateRenderingItem(InGame->GetGeometries());
+	FRenderThreadManager::CreateRenderingItems(InGame->GetGeometries());
 }
 
 void FWinApp::InitEngine()
 {
 	//try to start render thread
-	if (!RenderThread)
+	if (!RenderThreadManager)
 	{
-		RenderThread = new FRenderThread();
-		RenderThread->StartThread(ClientWidth, ClientHeight);
-
+		RenderThreadManager = std::make_shared<FRenderThreadManager>();
+		RenderThreadManager->StartRenderThread(ClientWidth, ClientHeight);
 		FRenderThreadCommand CreateRenderItemCommand;
 		CreateRenderItemCommand.Wrap(CreateRenderingItem_RenderThread, GameCore);
-		RenderThread->PushTask(CreateRenderItemCommand);
+		RenderThreadManager->PushRenderCommand(CreateRenderItemCommand);
+
+		//pass render thread manager to game core
+		GameCore->RenderThreadManager_Weak = RenderThreadManager;
 	}
 
 }
@@ -141,23 +154,21 @@ void FWinApp::DestroyApp()
 		GameCore = nullptr;
 	}
 
-
-	if (RenderThread)
+	if (RenderThreadManager)
 	{
-		RenderThread->StopThread();
-		delete RenderThread;
-		RenderThread = nullptr;
+		RenderThreadManager->StopRenderThread();
+		RenderThreadManager.reset();
 	}
 }
 
 void FWinApp::Update()
 {
-	while (RenderFrameSync::FrameSyncFence >= 1)
+	while (RenderThreadManager->GetFrameSyncFence() >= 1)
 	{
 		Sleep(10);
 	}
 
 	GameCore->Tick();
 
-	RenderFrameSync::FrameSyncFence++;
+	RenderThreadManager->IncreFrameSyncFence();
 }

@@ -1,19 +1,21 @@
 #pragma once
-#include<thread>
+#include <thread>
 #include <functional>
 #include <queue>
+#include <windows.h>
+
+#include "Renderer.h"
 
 static int ClientWidth;
 static int ClientHeight;
 static bool RequstStopThread;
 static FRenderer* Renderer;
-//static std::weak_ptr<FGameCore> WeakGameCore;
+static UINT8 FrameSyncFence;
 
-
-namespace RenderFrameSync
-{
-	static UINT8 FrameSyncFence = 0;
-}
+//namespace RenderFrameSync
+//{
+//	static UINT8 FrameSyncFence = 0;
+//}
 
 struct FRenderThreadCommand
 {
@@ -47,8 +49,6 @@ public:
 	FRenderThread(){}
 	~FRenderThread(){}
 
-	using RehderThreadTask = std::function<void(FRenderThread*, FGameCore*)>;
-
 	static void Run()
 	{
 		//FRenderer* Renderer;
@@ -61,7 +61,7 @@ public:
 
 		while (!RequstStopThread)
 		{
-			while (RenderFrameSync::FrameSyncFence < 1)
+			while (FrameSyncFence < 1)
 			{
 				Sleep(10);
 			} 
@@ -76,7 +76,7 @@ public:
 			Renderer->RenderObjects();
 			Renderer->UpdateConstantBuffer();
 
-			RenderFrameSync::FrameSyncFence--;
+			FrameSyncFence--;
 
 		}
 
@@ -94,7 +94,7 @@ public:
 		RequstStopThread = false;
 		ClientWidth = InWidth;
 		ClientHeight = InHeight;
-
+		FrameSyncFence = 0;
 		//WeakGameCore = InGameCore;
 
 		Thread = std::make_unique<std::thread>(Run);
@@ -113,8 +113,15 @@ public:
 		RenderThreadTask::CommandQueue.push(InCommand);
 	}
 
+	void IncreFrameSyncFence()
+	{
+		FrameSyncFence++;
+	}
+
+	UINT8 GetFrameSyncFence(){return FrameSyncFence;}
+
 private:
-	
+
 	//for graphics
 	std::unique_ptr<std::thread> Thread;
 };
