@@ -35,7 +35,6 @@
     - ModelFloor.Bin
 
 ## RenderCore: DX12 Course work
-- Has a class named D3DExample
 - version 0: basic process for drawing objects
 - version 1: basic blinn-phong(from Introduction to 3D Game Programming with DirectX12)
 - version 2: basic render core rhi framework
