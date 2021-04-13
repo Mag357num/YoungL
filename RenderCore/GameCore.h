@@ -17,8 +17,15 @@ public:
 	~FGameCore();
 
 	virtual void Initialize();
-	virtual void ShutDown(){ Geometries.empty();
-	AssetPaths.empty();
+	virtual void ShutDown()
+	{ 
+		Geometries.empty();
+		AssetPaths.empty();
+		if (SceneConstant)
+		{
+			delete SceneConstant;
+			SceneConstant = nullptr;
+		}
 	}
 
 	virtual void Tick();
@@ -43,5 +50,10 @@ private:
 
 	std::unique_ptr<FCamera> Camera;
 
+	FSceneConstant* SceneConstant;
+
+	//mouse position
+	FVector2D MousePosition;
+	bool bMouseButtonDown;
 };
 

@@ -25,6 +25,9 @@ public:
 			{
 				UploadResource_D3D12->Resource->Unmap(0, nullptr);
 			}
+
+			delete UploadResource;
+			UploadResource = nullptr;
 		}
 
 		MappedData = nullptr;

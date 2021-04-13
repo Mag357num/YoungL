@@ -80,14 +80,6 @@ public:
 
 		}
 
-		////
-		if (Renderer)
-		{
-			Renderer->DestroyRHIContext();
-			delete Renderer;
-			Renderer = nullptr;
-		}
-
 	}
 
 	void StartThread(int InWidth, int InHeight){
@@ -105,6 +97,14 @@ public:
 	{
 		RequstStopThread = true;
 		Thread.release();
+
+		////
+		if (Renderer)
+		{
+			Renderer->DestroyRHIContext();
+			delete Renderer;
+			Renderer = nullptr;
+		}
 
 	}
 

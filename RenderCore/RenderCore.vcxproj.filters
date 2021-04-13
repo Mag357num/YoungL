@@ -113,14 +113,14 @@
     <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
-      <Filter>源文件\RHI</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="RenderThreadManager.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
+      <Filter>源文件\RHI\D3D12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

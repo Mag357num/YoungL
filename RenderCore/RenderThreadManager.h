@@ -14,7 +14,7 @@ public:
 	UINT8 GetFrameSyncFence();
 
 	static void CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
-	static void UpdateSceneConstantBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc);
+	static void UpdateSceneConstantBuffer(FSceneConstant* SceneConstant);
 
 	void PushRenderCommand(FRenderThreadCommand InCommand);
 private:

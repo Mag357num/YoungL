@@ -13,7 +13,7 @@ public:
 
 	void UpdateConstantBuffer();
 
-	void UpdateSceneConstantsBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc);
+	void UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant);
 
 	void Resize(int InWidth, int InHeight);
 

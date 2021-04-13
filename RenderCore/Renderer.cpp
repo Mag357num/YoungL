@@ -55,6 +55,27 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 void FRenderer::DestroyRHIContext()
 {
+	//release pso state object
+	for (auto It=GraphicsPSOs.begin(); It != GraphicsPSOs.end(); ++It)
+	{
+		delete It->second;
+		It->second = nullptr;
+	}
+	GraphicsPSOs.empty();
+
+	if (SceneConstantBuffer)
+	{
+		delete SceneConstantBuffer;
+		SceneConstantBuffer = nullptr;
+	}
+
+	for (int ItemIndex = 0; ItemIndex < RenderingItems.size(); ItemIndex++)
+	{
+		RenderingItems[ItemIndex]->Release();
+		delete RenderingItems[ItemIndex];
+	}
+	RenderingItems.empty();
+	
 #ifdef _WIN32
 	delete RHIContext;
 	RHIContext = nullptr;
@@ -67,14 +88,6 @@ void FRenderer::DestroyRHIContext()
 
 #endif
 
-	GraphicsPSOs.empty();
-	RenderingItems.empty();
-
-	if (SceneConstantBuffer)
-	{
-	delete SceneConstantBuffer;
-	SceneConstantBuffer = nullptr;
-	}
 }
 
 void FRenderer::Resize(int InWidth, int InHeight)
@@ -157,13 +170,12 @@ void FRenderer::UpdateConstantBuffer()
 
 }
 
-void FRenderer::UpdateSceneConstantsBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc)
+void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 {
-	SceneConstant.ViewProj = InView * InProj;
 
 	//copy to upload buffer transposed???
-	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
-	SceneConstant.CamLocation = InCamerLoc;
+	SceneConstant.ViewProj = InSceneConstant->ViewProj;
+	SceneConstant.CamLocation = InSceneConstant->CamLocation;
 
 	//update buffer
 	SceneConstantBuffer->CopyData(0, SceneConstant);

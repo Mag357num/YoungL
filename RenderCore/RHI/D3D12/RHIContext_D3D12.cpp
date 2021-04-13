@@ -8,6 +8,8 @@
 #include <D3Dcompiler.h>
 #pragma comment(lib, "D3DCompiler.lib")
 
+#include <dxgidebug.h>
+
 #include "RHIVertexBuffer_D3D12.h"
 #include "RHIIndexBuffer_D3D12.h"
 #include "RHIConstantBuffer_D3D12.h"
@@ -34,7 +36,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 #if defined(DBUG) || defined(_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D12Debug> DebugInterface;
 	D3D12GetDebugInterface(IID_PPV_ARGS(&DebugInterface));
-	DebugInterface->EnableDebugLayer();
+	DebugInterface->EnableDebugLayer(); 
 #endif
 
 
@@ -118,7 +120,21 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 FRHIContext_D3D12::~FRHIContext_D3D12()
 {
-	//release dx
+
+	if (M_Device != nullptr)
+	{
+		FlushCommandQueue();
+	}
+
+//#if defined(DBUG) || defined(_DEBUG)
+//	{
+//		ID3D12DebugDevice* pDebugDevice = NULL;
+//		M_Device->QueryInterface(&pDebugDevice);
+//		pDebugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
+//		pDebugDevice->Release();
+//	}
+//#endif
+	
 }
 
 void FRHIContext_D3D12::Resize(int InWidth, int InHeight)

@@ -4,11 +4,20 @@
 FGameCore::FGameCore()
 {
 	Camera = std::make_unique<FCamera>();
+
+	bMouseButtonDown = false;
+	MousePosition = FVector2D(0.0f, 0.0f);
 }
 
 FGameCore::~FGameCore()
 {
 	Camera.reset();
+
+	if (SceneConstant)
+	{
+		delete SceneConstant;
+		SceneConstant = nullptr;
+	}
 }
 
 void FGameCore::OnKeyDown(UINT8 Key)
@@ -23,17 +32,30 @@ void FGameCore::OnKeyUp(UINT8 Key)
 
 void FGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
 {
-
+	MousePosition.X = (float)X;
+	MousePosition.Y = (float)Y;
+	bMouseButtonDown = true;
 }
 
 void FGameCore::OnMouseButtonUp(WPARAM BtnState, int X, int Y)
 {
-
+	bMouseButtonDown = false;
 }
 
 void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 {
+	if (bMouseButtonDown)
+	{
+		float Dx = X - MousePosition.X;
+		float Dy = Y - MousePosition.Y;
+		
+		Camera->Pitch(Dy * 0.2f);
+		Camera->Rotate(Dx * 0.2f);
 
+
+		MousePosition.X = (float)X;
+		MousePosition.Y = (float)Y;
+	}
 }
 
 void FGameCore::Initialize()
@@ -49,9 +71,9 @@ void FGameCore::Initialize()
 }
 
 
-static void UpdateSceneConstantBuffer_RenderThread(FMatrix* InView, FMatrix* InProj, FVector4D* InCamerLoc)
+static void UpdateSceneConstantBuffer_RenderThread(FSceneConstant* SceneConstant)
 {
-	FRenderThreadManager::UpdateSceneConstantBuffer(*InView, *InProj, *InCamerLoc);
+	FRenderThreadManager::UpdateSceneConstantBuffer(SceneConstant);
 }
 
 void FGameCore::Tick()
@@ -63,19 +85,29 @@ void FGameCore::Tick()
 	if (Camera->CameraInfoDirty())
 	{
 		//todo:enqueue render command to update scene constant buffer
-		//if (!RenderThreadManager_Weak.expired())
-		//{
-		//	FMatrix* View = Camera->GetCameraView();
-		//	FMatrix* Proj = Camera->GetCameraProj();
-		//	FVector4D* CamLoc = Camera->GetCameraLoc();
+		if (!RenderThreadManager_Weak.expired())
+		{
+			if (!SceneConstant)
+			{
+				SceneConstant = new FSceneConstant();
+			}
 
-		//	FRenderThreadCommand CreateRenderItemCommand;
-		//	CreateRenderItemCommand.Wrap(UpdateSceneConstantBuffer_RenderThread,
-		//		View, Proj, CamLoc);
+			FMatrix View = *Camera->GetCameraView();
+			FMatrix Proj = *Camera->GetCameraProj();
+			FVector4D CamLoc = *Camera->GetCameraLoc();
 
-		//	std::shared_ptr<FRenderThreadManager> RenderManager = RenderThreadManager_Weak.lock();
-		//	RenderManager->PushRenderCommand(CreateRenderItemCommand);
-		//}
+			SceneConstant->ViewProj = View * Proj;
+
+			//copy to upload buffer transposed???
+			SceneConstant->ViewProj = Utilities::MatrixTranspose(SceneConstant->ViewProj);
+			SceneConstant->CamLocation = FVector4D(CamLoc.X, CamLoc.Y, CamLoc.Z, 1.0f);
+
+			FRenderThreadCommand CreateRenderItemCommand;
+			CreateRenderItemCommand.Wrap(UpdateSceneConstantBuffer_RenderThread, SceneConstant);
+
+			std::shared_ptr<FRenderThreadManager> RenderManager = RenderThreadManager_Weak.lock();
+			RenderManager->PushRenderCommand(CreateRenderItemCommand);
+		}
 
 		Camera->ResetDirtyFlat();
 	}

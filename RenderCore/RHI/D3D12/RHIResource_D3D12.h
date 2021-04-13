@@ -7,8 +7,11 @@ class FRHIResource_D3D12 : public IRHIResource
 public:
 	FRHIResource_D3D12(){}
 	virtual ~FRHIResource_D3D12(){
-		Resource->Release();
-		Resource.Reset();
+		if (Resource != nullptr)
+		{
+			Resource.Reset();
+		}
+		
 	}
 
 	void Map(UINT SubResource, const D3D12_RANGE* ReadRange, void** Data);

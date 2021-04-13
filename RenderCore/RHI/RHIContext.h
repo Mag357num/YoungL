@@ -87,6 +87,11 @@ class IRHIRenderingItem
 public:
 	IRHIRenderingItem(){}
 	virtual ~IRHIRenderingItem(){
+
+	}
+
+	virtual void Release()
+	{
 		delete ConstantBuffer;
 		ConstantBuffer = nullptr;
 

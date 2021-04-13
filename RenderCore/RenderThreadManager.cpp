@@ -43,7 +43,7 @@ void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AMes
 	Renderer->CreateRenderingItem(Geometries);
 }
 
-void FRenderThreadManager::UpdateSceneConstantBuffer(FMatrix InView, FMatrix InProj, FVector4D InCamerLoc)
+void FRenderThreadManager::UpdateSceneConstantBuffer(FSceneConstant* SceneConstant)
 {
-	Renderer->UpdateSceneConstantsBuffer(InView, InProj, InCamerLoc);
+	Renderer->UpdateSceneConstantsBuffer(SceneConstant);
 }

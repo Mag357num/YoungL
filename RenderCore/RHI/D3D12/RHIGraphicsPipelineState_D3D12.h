@@ -10,7 +10,6 @@ class FRHIGraphicsPipelineState_D3D12 : public IRHIGraphicsPipelineState
 public:
 	FRHIGraphicsPipelineState_D3D12(){}
 	virtual ~FRHIGraphicsPipelineState_D3D12() {
-		PSO->Release();
 		PSO.Reset();
 	}
 

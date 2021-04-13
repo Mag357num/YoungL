@@ -6,8 +6,11 @@ class FRHIVertexBuffer_D3D12 : public IRHIVertexBuffer
 public:
 	FRHIVertexBuffer_D3D12(){}
 	virtual ~FRHIVertexBuffer_D3D12(){
-		VertexBuffer->Release();
-		VertexBuffer.Reset();
+		if (VertexBuffer!= nullptr)
+		{
+			VertexBuffer.Reset();
+		}
+		
 	}
 
 	D3D12_VERTEX_BUFFER_VIEW GetVBView(){

@@ -45,7 +45,9 @@ private:
 	float Fov;
 
 	//used for pitch and rotate
-	float Radius;
+	float CamRadius;
+	float CamPitch;
+	float CamRotate;
 
 	// save dirty state
 	bool IsCamerInfoDirty;

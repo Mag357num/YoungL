@@ -7,8 +7,10 @@ class FRHIIndexBuffer_D3D12 : public IRHIIndexBuffer
 public:
 	FRHIIndexBuffer_D3D12(){}
 	virtual ~FRHIIndexBuffer_D3D12(){
-		IndexBuffer->Release();
-		IndexBuffer.Reset();
+		if (IndexBuffer != nullptr)
+		{
+			IndexBuffer.Reset();
+		}
 	}
 
 	D3D12_INDEX_BUFFER_VIEW GetIBView(){
