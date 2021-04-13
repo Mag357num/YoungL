@@ -1,10 +1,13 @@
 # YoungL Learn Project of DX12
 
+![screenshot](RenderCore.png)
+
 ## Hierarchy of RenderCore
 
 - RenderCore
   - WinApp
   - GameCore
+  - Camera
   - Render
   - RenderThread
   - RenderThreadManager
@@ -29,15 +32,17 @@
     - TestPS.hlsl
   - Models
     - ModelSave.Bin
+    - ModelFloor.Bin
 
 ## RenderCore: DX12 Course work
 - Has a class named D3DExample
 - version 0: basic process for drawing objects
-- version 1: basic blinn-phong
+- version 1: basic blinn-phong(from Introduction to 3D Game Programming with DirectX12)
 - version 2: basic render core rhi framework
 - version 3: Add RenderThread
 - version 4: Add ReaderThreadManager and RenderCommand
-- version 5: Memory Release
+- version 5: Add Camera Control
+- version 6: Memory Release
 
 
 ## EngineCore:Expermental framework for rhi
