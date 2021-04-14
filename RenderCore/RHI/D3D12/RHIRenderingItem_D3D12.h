@@ -11,11 +11,11 @@ namespace D3D12RHI
 	extern ComPtr<ID3D12Device> M_Device;
 }
 
-class FRHIRenderingItem_D3D12 : public IRHIRenderingItem
+class FRHIRenderingMesh_D3D12 : public IRHIRenderingMesh
 {
 public:
-	FRHIRenderingItem_D3D12(){}
-	virtual ~FRHIRenderingItem_D3D12()
+	FRHIRenderingMesh_D3D12(){}
+	virtual ~FRHIRenderingMesh_D3D12()
 	{
 
 	}
@@ -28,7 +28,7 @@ private:
 
 };
 
-void FRHIRenderingItem_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)
+void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)
 {
 	FRHIContext_D3D12* RHIContext_D3D12 = reinterpret_cast<FRHIContext_D3D12*>(Context);
 	ConstantBuffer = new FRHIConstantBuffer_D3D12<FObjectConstants>();
@@ -56,7 +56,7 @@ void FRHIRenderingItem_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 	Buffer->SetGpuhandle(RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 }
 
-void FRHIRenderingItem_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)
+void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)
 {
 	IndexBuffer = new FRHIIndexBuffer_D3D12();
 	FRHIIndexBuffer_D3D12* Buffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
@@ -79,7 +79,7 @@ void FRHIRenderingItem_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)
 	Buffer->SetIndexBufferSize(IndexBufferSize);
 }
 
-void FRHIRenderingItem_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices)
+void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices)
 {
 	VertexBuffer = new FRHIVertexBuffer_D3D12();
 	FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);

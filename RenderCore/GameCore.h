@@ -19,8 +19,15 @@ public:
 	virtual void Initialize();
 	virtual void ShutDown()
 	{ 
-		Geometries.empty();
-		AssetPaths.empty();
+		if (!Geometries.empty())
+		{
+			printf("Empty Error!");
+		}
+		if (!AssetPaths.empty())
+		{
+			printf("Empty Error!");
+		}
+
 		if (SceneConstant)
 		{
 			delete SceneConstant;

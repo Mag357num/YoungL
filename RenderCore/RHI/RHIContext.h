@@ -4,28 +4,12 @@
 #include <string>
 #include <vector>
 #include <intsafe.h>
+
 using namespace std;
 
-
+#include "RHIResource.h"
+#include "RHIDepthResource.h"
 #include "../Utilities.h"
-
-enum ERHIResourceState
-{
-	State_None = 0,
-	State_Present,
-	State_RenderTarget,
-	State_Srv,
-	State_Uav
-};
-
-class IRHIResource
-{
-public:
-	IRHIResource(){}
-	virtual ~IRHIResource(){}
-protected:
-private:
-};
 
 class IRHIGraphicsPipelineState
 {
@@ -81,11 +65,11 @@ protected:
 };
 
 class IRHIContext;
-class IRHIRenderingItem
+class IRHIRenderingMesh
 {
 public:
-	IRHIRenderingItem(){}
-	virtual ~IRHIRenderingItem(){
+	IRHIRenderingMesh(){}
+	virtual ~IRHIRenderingMesh(){
 
 	}
 
@@ -177,16 +161,18 @@ public:
 
 	virtual void SetPrimitiveTopology(){}
 
-	virtual void DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items){}
+	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items){}
 	virtual void DrawIndexedInstanced(){}
 
 	virtual void FlushCommandQueue(){}
 
 	virtual void Present(){}
 
-	virtual IRHIRenderingItem* CreateEmptyRenderingItem(){return nullptr;}
+	virtual IRHIRenderingMesh* CreateEmptyRenderingMesh(){return nullptr;}
 
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
+
+	virtual FRHIDepthResource* CreateDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 
 protected:
 

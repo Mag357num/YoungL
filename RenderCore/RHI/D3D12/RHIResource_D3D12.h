@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../RHIContext.h"
+#include "../RHIResource.h"
 
 class FRHIResource_D3D12 : public IRHIResource
 {

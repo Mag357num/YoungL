@@ -65,20 +65,22 @@ public:
 	virtual void PrepareShaderParameter()override;
 	virtual void SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO)override;
 
-	virtual void DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)override;
+	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)override;
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 
 	virtual void FlushCommandQueue()override;
 	virtual void Present()override;
 
-	virtual IRHIRenderingItem* CreateEmptyRenderingItem()override;
+	virtual IRHIRenderingMesh* CreateEmptyRenderingMesh()override;
 
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)override;
 
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap() {
 		return M_CbvSrvUavHeap.Get();
 	}
+
+	virtual FRHIDepthResource* CreateDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)override;
 
 private:
 	void OnResize();

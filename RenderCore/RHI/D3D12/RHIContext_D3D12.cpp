@@ -14,6 +14,7 @@
 #include "RHIIndexBuffer_D3D12.h"
 #include "RHIConstantBuffer_D3D12.h"
 #include "RHIRenderingItem_D3D12.h"
+#include "RHIDepthResource_D3D12.h"
 
 namespace WinApp
 {
@@ -321,7 +322,26 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-	Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+
+	D3D12_DEPTH_STENCIL_DESC DSDesc;
+	DSDesc.DepthEnable = TRUE;
+	DSDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	DSDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	DSDesc.StencilEnable = FALSE;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	DSDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	DSDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	//Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	Desc.DepthStencilState = DSDesc;
 
 	Desc.VS =
 	{
@@ -437,7 +457,7 @@ void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant
 	M_CommandList->SetGraphicsRootDescriptorTable(Buffer_D3D12->GetRootParameterIndex(), Buffer_D3D12->GetGpuHandle());
 }
 
-void FRHIContext_D3D12::DrawRenderingItems(std::vector<IRHIRenderingItem*>& Items)
+void FRHIContext_D3D12::DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)
 {
 	for (int Index = 0; Index < Items.size(); ++Index)
 	{
@@ -478,9 +498,9 @@ void FRHIContext_D3D12::Present()
 	M_CurrentBackBuffer = (M_CurrentBackBuffer + 1) % M_SwapchainBackbufferCount;
 }
 
-IRHIRenderingItem* FRHIContext_D3D12::CreateEmptyRenderingItem()
+IRHIRenderingMesh* FRHIContext_D3D12::CreateEmptyRenderingMesh()
 {
-	return new FRHIRenderingItem_D3D12();
+	return new FRHIRenderingMesh_D3D12();
 }
 
 IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)
@@ -518,4 +538,12 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 	ConstantBuffer->SetGpuhandle(GpuDescriptor);
 
 	return ConstantBuffer;
+}
+
+//create depth resoruce
+FRHIDepthResource* FRHIContext_D3D12::CreateDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)
+{
+
+	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12();
+	return DepthResource;
 }

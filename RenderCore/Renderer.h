@@ -27,7 +27,7 @@ private:
 
 	std::map<std::string, IRHIGraphicsPipelineState*> GraphicsPSOs;
 
-	std::vector<IRHIRenderingItem*> RenderingItems;
+	std::vector<IRHIRenderingMesh*> RenderingMeshes;
 
 	//
 	FViewport Viewport;

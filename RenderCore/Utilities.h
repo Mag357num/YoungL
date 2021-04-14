@@ -172,8 +172,15 @@ public:
 
 	~FGeometry()
 	{
-		Vertices.empty();
-		Indices.empty();
+		if (!Vertices.empty())
+		{
+			printf("Empty Error!");
+		}
+		
+		if (!Indices.empty())
+		{
+			printf("Empty Error!");
+		}
 	}
 
 	std::vector<FVertex>& GetVertices(){return Vertices;}

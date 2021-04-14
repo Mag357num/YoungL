@@ -96,6 +96,18 @@
     <ClInclude Include="RenderThreadManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="RHI\RHIColorResource.h">
+      <Filter>头文件\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\RHIResource.h">
+      <Filter>头文件\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\RHIDepthResource.h">
+      <Filter>头文件\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\D3D12\RHIDepthResource_D3D12.h">
+      <Filter>头文件\RHI\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RHI\RHIContext.cpp">

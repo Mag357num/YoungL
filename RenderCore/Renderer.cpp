@@ -61,7 +61,11 @@ void FRenderer::DestroyRHIContext()
 		delete It->second;
 		It->second = nullptr;
 	}
-	GraphicsPSOs.empty();
+	//empty
+	if (!GraphicsPSOs.empty())
+	{
+		printf("Empty Error!");
+	}
 
 	if (SceneConstantBuffer)
 	{
@@ -69,12 +73,16 @@ void FRenderer::DestroyRHIContext()
 		SceneConstantBuffer = nullptr;
 	}
 
-	for (int ItemIndex = 0; ItemIndex < RenderingItems.size(); ItemIndex++)
+	for (int ItemIndex = 0; ItemIndex < RenderingMeshes.size(); ItemIndex++)
 	{
-		RenderingItems[ItemIndex]->Release();
-		delete RenderingItems[ItemIndex];
+		RenderingMeshes[ItemIndex]->Release();
+		delete RenderingMeshes[ItemIndex];
 	}
-	RenderingItems.empty();
+
+	if (!RenderingMeshes.empty())
+	{
+		printf("Empty Error!");
+	}
 	
 #ifdef _WIN32
 	delete RHIContext;
@@ -104,13 +112,13 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 	{
 		//create an empty rendering item
 
-		IRHIRenderingItem* Item = RHIContext->CreateEmptyRenderingItem();
+		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
 
 		Item->BuildConstantBuffer(Geometries[Index]->GetObjectConstants(), RHIContext);
 		Item->BuildVertexBuffer(Geometries[Index]->GetGeometry()->GetVertices());
 		Item->BuildIndexBuffer(Geometries[Index]->GetGeometry()->GetIndices());
 
-		RenderingItems.push_back(Item);
+		RenderingMeshes.push_back(Item);
 	}
 
 	//buil scene constant buffer
@@ -137,7 +145,7 @@ void FRenderer::RenderObjects()
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
 
 	//Draw Rendering items in scene
-	RHIContext->DrawRenderingItems(RenderingItems);
+	RHIContext->DrawRenderingMeshes(RenderingMeshes);
 
 	//change back buffer state to present
 	RHIContext->TransitionBackBufferStateToPresent();
@@ -154,7 +162,7 @@ void FRenderer::RenderObjects()
 
 void FRenderer::UpdateConstantBuffer()
 {
-	for (int Index = 0 ; Index < RenderingItems.size(); ++Index)
+	for (int Index = 0 ; Index < RenderingMeshes.size(); ++Index)
 	{
 		FMatrix World = Utilities::IdentityMatrix;
 
@@ -165,7 +173,7 @@ void FRenderer::UpdateConstantBuffer()
 		ObjectConstant.Shiness = 0.7f;
 		ObjectConstant.AmbientLight = FVector(0.1f, 0.1f, 0.1f);
 
-		RenderingItems[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
+		RenderingMeshes[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
 	}
 
 }
