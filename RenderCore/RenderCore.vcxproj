@@ -234,6 +234,7 @@
     <ClCompile Include="RenderThreadManager.cpp" />
     <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp" />
     <ClCompile Include="RHI\RHIContext.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -244,13 +245,13 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\TestPS.hlsl">
+    <FxCompile Include="Shaders\BasePassPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Shaders\TestVS.hlsl">
+    <FxCompile Include="Shaders\BasePassVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
@@ -259,7 +260,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Lighting.hlsli" />
-    <None Include="Shaders\RenderCoreRS.hlsli" />
+    <None Include="Shaders\BasePassRS.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

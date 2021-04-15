@@ -146,6 +146,9 @@
     <ClCompile Include="GameTimer.cpp">
       <Filter>源文件\RHI</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RenderCore.rc">
@@ -161,10 +164,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\TestPS.hlsl">
+    <FxCompile Include="Shaders\BasePassPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\TestVS.hlsl">
+    <FxCompile Include="Shaders\BasePassVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -172,7 +175,7 @@
     <None Include="Shaders\Lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\RenderCoreRS.hlsli">
+    <None Include="Shaders\BasePassRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

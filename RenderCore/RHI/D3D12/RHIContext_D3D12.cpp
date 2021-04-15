@@ -1,7 +1,7 @@
 #include "RHIContext_D3D12.h"
 #include "RHIGraphicsPipelineState_D3D12.h"
-#include "CompiledShaders/TestVS.h"
-#include "CompiledShaders/TestPS.h"
+#include "CompiledShaders/BasePassVS.h"
+#include "CompiledShaders/BasePassPS.h"
 
 #include <DirectXColors.h>
 
@@ -15,6 +15,7 @@
 #include "RHIConstantBuffer_D3D12.h"
 #include "RHIRenderingItem_D3D12.h"
 #include "RHIDepthResource_D3D12.h"
+#include "RHIResourceHandle_D3D12.h"
 
 namespace WinApp
 {
@@ -346,13 +347,13 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 
 	Desc.VS =
 	{
-		g_TestVS,
-		sizeof(g_TestVS)
+		g_BasePassVS,
+		sizeof(g_BasePassVS)
 	};
 	Desc.PS =
 	{
-		g_TestPS,
-		sizeof(g_TestPS)
+		g_BasePassPS,
+		sizeof(g_BasePassPS)
 	};
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -389,12 +390,12 @@ void FRHIContext_D3D12::EndDraw()
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
 {
 	D3D12_VIEWPORT VP;
-	VP.Width = Viewport.Width;
-	VP.Height = Viewport.Height;
-	VP.TopLeftX = Viewport.X;
-	VP.TopLeftY = Viewport.Y;
-	VP.MaxDepth = Viewport.MaxDepth;
-	VP.MinDepth = Viewport.MinDepth;
+	VP.Width = (float)Viewport.Width;
+	VP.Height = (float)Viewport.Height;
+	VP.TopLeftX = (float)Viewport.X;
+	VP.TopLeftY = (float)Viewport.Y;
+	VP.MaxDepth = (float)Viewport.MaxDepth;
+	VP.MinDepth = (float)Viewport.MinDepth;
 
 	M_CommandList->RSSetViewports(1, &VP);
 }
@@ -537,9 +538,81 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 }
 
 //create depth resoruce
-FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)
+FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
 {
 
 	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12();
+
+	D3D12_HEAP_PROPERTIES HeapProperties;
+	HeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+	HeapProperties.VisibleNodeMask = 0;
+
+	D3D12_RESOURCE_DESC ResourceDesc;
+	ZeroMemory(&ResourceDesc, sizeof(D3D12_RESOURCE_DESC));
+	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	ResourceDesc.Alignment = 0;
+	ResourceDesc.DepthOrArraySize = 1;
+	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	ResourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	ResourceDesc.Height = InHeight;
+	ResourceDesc.Width = InWidth;
+	ResourceDesc.MipLevels = 1;
+	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	ResourceDesc.SampleDesc.Count = 0;
+	ResourceDesc.SampleDesc.Quality = 1;
+
+	D3D12_CLEAR_VALUE ClearValue;
+	ClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	ClearValue.DepthStencil.Depth = 1.0f;
+	ClearValue.DepthStencil.Stencil = 0;
+
+	M_Device->CreateCommittedResource(&HeapProperties, D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_DEPTH_READ,
+	&ClearValue, IID_PPV_ARGS(&DepthResource->Resource));
+
+
 	return DepthResource;
+}
+
+void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)
+{
+	FRHIDepthResource_D3D12* DepthResource_D3D12 = reinterpret_cast<FRHIDepthResource_D3D12*>(InDepthResource);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
+	SrvCpuDescriptorStart.ptr += 1* M_CbvSrvUavDescriptorSize;/////////0;reserved for mainpass constant
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc= {};
+	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SrvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SrvDesc.Texture2D.MipLevels = 1;
+	SrvDesc.Texture2D.MostDetailedMip = 0;
+	SrvDesc.Texture2D.PlaneSlice = 0;
+	SrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	M_Device->CreateShaderResourceView(DepthResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
+
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	SrvGpuDescriptorStart.ptr += 1 * M_CbvSrvUavDescriptorSize;/////////0;reserved for mainpass constant
+
+	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
+	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
+	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
+	DepthResource_D3D12->SetSrvHandle(SrvHandle);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuDescriptorStart(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
+	DsvDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH;
+	DsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	DsvDesc.Texture2D.MipSlice = 0;
+
+	M_Device->CreateDepthStencilView(DepthResource_D3D12->Resource.Get(), &DsvDesc, DsvCpuDescriptorStart);
+
+
+	FRHIResourceHandle_D3D12* DsvHandle = new FRHIResourceHandle_D3D12();
+	DsvHandle->SetCpuhandle(DsvCpuDescriptorStart);
+	D3D12_GPU_DESCRIPTOR_HANDLE DsvGpuDescriptorStart(M_DsvHeap->GetGPUDescriptorHandleForHeapStart());
+	DsvHandle->SetGpuhandle(DsvGpuDescriptorStart);
+	DepthResource_D3D12->SetDsvHandle(DsvHandle);
 }

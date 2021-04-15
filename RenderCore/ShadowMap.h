@@ -1,12 +1,12 @@
 #pragma once
-
+#include "RHI/RHIContext.h"
 #include "RHI/RHIDepthResource.h"
 
 class FShadowMap
 {
 public:
 	FShadowMap(int InWidth, int InHeight)
-		:ShadowVP(0.0f, 0.0f, (float)InWidth, (float)InHeight)
+		:ShadowVP(0, 0, InWidth, InHeight)
 	{}
 	
 	~FShadowMap(){
@@ -15,11 +15,25 @@ public:
 			delete DepthResource;
 			DepthResource = nullptr;
 		}
+
+		if (SceneConstantBuffer)
+		{
+			delete SceneConstantBuffer;
+			SceneConstantBuffer = nullptr;
+		}
 	}
 
-	void SetDepthResource(FRHIDepthResource* InDepthRes){DepthResource = InDepthRes;}
+	void CreateShadowSceneConstant(IRHIContext* InContext);
+
+	void CreateDepthResource(IRHIContext* InContext);
+
+
 
 private:
 	FViewport ShadowVP;
 	FRHIDepthResource* DepthResource;
+
+	//save camera info
+	FSceneConstant SceneConstant;
+	IRHIConstantBuffer<FSceneConstant>* SceneConstantBuffer;
 };

@@ -104,7 +104,7 @@ protected:
 
 struct FViewport
 {
-	FViewport(float InX, float InY, float InWidth, float InHeight)
+	FViewport(int InX, int InY, int InWidth, int InHeight)
 		:X(InX),
 		Y(InY),
 		Width(InWidth),
@@ -115,10 +115,10 @@ struct FViewport
 
 	FViewport(){}
 
-	float X;
-	float Y;
-	float Width;
-	float Height;
+	int X;
+	int Y;
+	int Width;
+	int Height;
 
 	float MaxDepth;
 	float MinDepth;
@@ -176,7 +176,8 @@ public:
 
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
 
-	virtual FRHIDepthResource* CreateShadowDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
 
 protected:
 

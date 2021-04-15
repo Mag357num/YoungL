@@ -61,7 +61,9 @@ private:
 
 	//mouse position
 	FVector2D MousePosition;
+	//saved to update delta x && delta Y in window
 	POINT WindowOffset;
+
 	bool bMouseButtonDown;
 };
 

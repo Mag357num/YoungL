@@ -80,7 +80,8 @@ public:
 		return M_CbvSrvUavHeap.Get();
 	}
 
-	virtual FRHIDepthResource* CreateShadowDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)override;
+	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
+	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)override;
 
 private:
 	void OnResize();

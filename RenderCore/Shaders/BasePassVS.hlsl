@@ -1,4 +1,4 @@
-#include "RenderCoreRS.hlsli"
+#include "BasePassRS.hlsli"
 
 cbuffer cbPerObject : register(b0)
 {

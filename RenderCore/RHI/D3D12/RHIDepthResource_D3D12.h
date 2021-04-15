@@ -1,7 +1,7 @@
 #pragma once
 #include "../RHIDepthResource.h"
 
-class FRHIDepthResource_D3D12 : public FRHIDepthResource, FRHIResource_D3D12
+class FRHIDepthResource_D3D12 : public FRHIDepthResource, public FRHIResource_D3D12
 {
 public:
 	FRHIDepthResource_D3D12(){}
