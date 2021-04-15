@@ -1,7 +1,8 @@
 #pragma once
-#include "../RHIContext.h"
+#include "CompiledShaders/BasePassVS.h"//g_BasePassVS
+#include "CompiledShaders/BasePassPS.h"//g_BasePassPS
 
-class FRHIShaderResource_D3D12 : public IRHIShaderResource
+class FRHIShaderResource_D3D12
 {
 public:
 	FRHIShaderResource_D3D12(){}

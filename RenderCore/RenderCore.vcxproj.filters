@@ -170,12 +170,24 @@
     <FxCompile Include="Shaders\BasePassVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\DepthVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DepthPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Lighting.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\BasePassRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\DepthRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Common.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

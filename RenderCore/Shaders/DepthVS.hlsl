@@ -1,4 +1,4 @@
-#include "BasePassRS.hlsli"
+#include "DepthRS.hlsli"
 #include "Common.hlsli"
 
 cbuffer cbPerObject : register(b0)
@@ -10,7 +10,7 @@ cbuffer cbPerObject : register(b0)
 	float3 AmbientLight;
 };
 
-cbuffer manPassObject : register(b1)
+cbuffer mainPassObject : register(b1)
 {
 	float4x4 ViewProj;
 	float4 CamLocation;
@@ -20,20 +20,18 @@ cbuffer manPassObject : register(b1)
 	float4 LightStrength;
 };
 
-[RootSignature(RenderCore_RootSig)]
+[RootSignature(Depth_RootSig)]
 VertexOut main(VertexIn Vin)
 {
 	VertexOut vout;
-	
 	// Transform to homogeneous clip space.
 	float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
 	vout.PosH = mul(PosW, ViewProj);
-	
+
 	// Just pass vertex color into the pixel shader.
 	vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);
-	vout.Color = float4(vout.Normal* 0.5f +0.5f, 1.0f);
-    vout.PosW=Vin.Pos;
-	
-    return vout;
+	vout.Color = float4(vout.Normal * 0.5f + 0.5f, 1.0f);
+	vout.PosW = Vin.Pos;
+	return vout;
 }

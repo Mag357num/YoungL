@@ -1,5 +1,6 @@
 #include "Lighting.hlsli"
 #include "BasePassRS.hlsli"
+#include "Common.hlsli"
 
 cbuffer cbPerObject : register(b0)
 {
@@ -10,7 +11,7 @@ cbuffer cbPerObject : register(b0)
 	float3 AmbientLight;
 };
 
-cbuffer manPassObject : register(b1)
+cbuffer mainPassObject : register(b1)
 {
 	float4x4 ViewProj;
 	float4 CamLocation;
@@ -20,14 +21,7 @@ cbuffer manPassObject : register(b1)
 	float4 LightStrength;
 };
 
-struct VertexOut
-{
-	float4 PosH : SV_POSITION;
-	float4 Color : COLOR;
-	float3 Normal : NORMAL;
-	float2 Uv : TEXCOORD;
-	float3 PosW : POSITION;
-};
+Texture2D gShadowMap : register(t0);
 
 [RootSignature(RenderCore_RootSig)]
 float4 main(VertexOut Pin) : SV_Target

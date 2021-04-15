@@ -17,4 +17,5 @@
 
 #define RenderCore_RootSig \
 	"RootConstants(b0, num32BitConstants = 23), " \
-	"DescriptorTable(CBV(b1, numDescriptors = 1))"
+	"RootConstants(b1, num32BitConstants = 28), " \
+	"DescriptorTable(SRV(t0, numDescriptors = 1)),"
