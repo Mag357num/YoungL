@@ -2,10 +2,14 @@
 
 #include "RHI/RHIContext.h"
 #include "MeshActor.h"
+#include "ShadowMap.h"
 
 class FRenderer
 {
 public:
+	FRenderer(){}
+	~FRenderer(){}
+
 	void CreateRHIContext(int InWidth, int Inheight);
 	void DestroyRHIContext();
 
@@ -35,4 +39,6 @@ private:
 	//save camera info
 	FSceneConstant SceneConstant;
 	IRHIConstantBuffer<FSceneConstant>* SceneConstantBuffer;
+
+	FShadowMap* ShadowMap;
 };

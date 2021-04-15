@@ -66,6 +66,12 @@ void FGameCore::Initialize()
 	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
 	{
 		LoadAsset(AssetPaths[Index]);
+
+		//test modify 
+		if (Index == 0)
+		{
+			Geometries[0]->SetLocation(FVector(0.0f, 0.0f, -50.0f));
+		}
 	}
 	
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "../RHIContext.h"
+#include "../RHIResourceHandle.h"
 
 class FRHIResourceHandle_D3D12 : public IRHIResourceHandle
 {

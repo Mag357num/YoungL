@@ -108,6 +108,12 @@
     <ClInclude Include="RHI\D3D12\RHIDepthResource_D3D12.h">
       <Filter>头文件\RHI\D3D12</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI\RHIResourceHandle.h">
+      <Filter>头文件\RHI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RHI\RHIContext.cpp">

@@ -10,7 +10,7 @@ public:
 	void StartRenderThread(int InWidth, int InHeight);
 	void StopRenderThread();
 
-	void IncreFrameSyncFence();
+	void IncreFrameSyncFence(bool Flag);//true +1, false: -1
 	UINT8 GetFrameSyncFence();
 
 	static void CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries);

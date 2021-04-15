@@ -84,6 +84,13 @@ void FRenderer::DestroyRHIContext()
 		printf("Empty Error!");
 	}
 	
+	//shadowmap
+	if (ShadowMap)
+	{
+		delete ShadowMap;
+		ShadowMap = nullptr;
+	}
+
 #ifdef _WIN32
 	delete RHIContext;
 	RHIContext = nullptr;
@@ -162,19 +169,19 @@ void FRenderer::RenderObjects()
 
 void FRenderer::UpdateConstantBuffer()
 {
-	for (int Index = 0 ; Index < RenderingMeshes.size(); ++Index)
-	{
-		FMatrix World = Utilities::IdentityMatrix;
+	//for (int Index = 0 ; Index < RenderingMeshes.size(); ++Index)
+	//{
+	//	FMatrix World = Utilities::IdentityMatrix;
 
-		// Update the constant buffer with the latest worldViewProj matrix.
-		FObjectConstants ObjectConstant;
-		ObjectConstant.ObjectWorld = World;
-		ObjectConstant.Fresnel0 = FVector(0.04f, 0.04f, 0.04f);
-		ObjectConstant.Shiness = 0.7f;
-		ObjectConstant.AmbientLight = FVector(0.1f, 0.1f, 0.1f);
+	//	// Update the constant buffer with the latest worldViewProj matrix.
+	//	FObjectConstants ObjectConstant;
+	//	ObjectConstant.ObjectWorld = World;
+	//	ObjectConstant.Fresnel0 = FVector(0.04f, 0.04f, 0.04f);
+	//	ObjectConstant.Shiness = 0.7f;
+	//	ObjectConstant.AmbientLight = FVector(0.1f, 0.1f, 0.1f);
 
-		RenderingMeshes[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
-	}
+	//	RenderingMeshes[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
+	//}
 
 }
 

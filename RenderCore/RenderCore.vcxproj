@@ -218,6 +218,8 @@
     <ClInclude Include="RHI\RHIContext.h" />
     <ClInclude Include="RHI\RHIDepthResource.h" />
     <ClInclude Include="RHI\RHIResource.h" />
+    <ClInclude Include="RHI\RHIResourceHandle.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="WinApp.h" />

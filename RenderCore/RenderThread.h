@@ -3,6 +3,7 @@
 #include <functional>
 #include <queue>
 #include <windows.h>
+#include <mutex>
 
 #include "Renderer.h"
 
@@ -10,6 +11,8 @@ static int ClientWidth;
 static int ClientHeight;
 static bool RequstStopThread;
 static FRenderer* Renderer;
+
+static std::mutex FrameSyncMutex;
 static UINT8 FrameSyncFence;
 
 struct FRenderThreadCommand
@@ -71,8 +74,7 @@ public:
 			Renderer->RenderObjects();
 			Renderer->UpdateConstantBuffer();
 
-			FrameSyncFence--;
-
+			IncreFrameSyncFence(false);
 		}
 
 	}
@@ -107,9 +109,19 @@ public:
 		RenderThreadTask::CommandQueue.push(InCommand);
 	}
 
-	void IncreFrameSyncFence()
+	static void IncreFrameSyncFence(bool Flag)
 	{
-		FrameSyncFence++;
+		//todo add thread mutex
+		std::lock_guard<std::mutex> LockGuard(FrameSyncMutex);
+		if (Flag)
+		{
+			FrameSyncFence++;
+		}
+		else
+		{
+			FrameSyncFence--;
+		}
+		
 	}
 
 	UINT8 GetFrameSyncFence(){return FrameSyncFence;}

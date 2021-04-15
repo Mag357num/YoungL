@@ -20,13 +20,6 @@ protected:
 private:
 };
 
-class IRHIResourceHandle
-{
-public:
-	IRHIResourceHandle() {}
-	virtual ~IRHIResourceHandle() {}
-};
-
 class IRHIShaderResource
 {
 public:
@@ -111,6 +104,17 @@ protected:
 
 struct FViewport
 {
+	FViewport(float InX, float InY, float InWidth, float InHeight)
+		:X(InX),
+		Y(InY),
+		Width(InWidth),
+		Height(InHeight)
+	{
+
+	}
+
+	FViewport(){}
+
 	float X;
 	float Y;
 	float Width;
@@ -172,7 +176,7 @@ public:
 
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
 
-	virtual FRHIDepthResource* CreateDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual FRHIDepthResource* CreateShadowDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 
 protected:
 

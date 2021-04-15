@@ -170,5 +170,6 @@ void FWinApp::Update()
 
 	GameCore->Tick();
 
-	RenderThreadManager->IncreFrameSyncFence();
+	//todo : change to dispatch singal
+	RenderThreadManager->IncreFrameSyncFence(true);
 }

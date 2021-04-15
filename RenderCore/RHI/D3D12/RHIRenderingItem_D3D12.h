@@ -36,24 +36,18 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 
 	Buffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12<FObjectConstants>>(new FRHIUploadBuffer_D3D12<FObjectConstants>(true));
 	Buffer->UploadBuffer->CreateUploadResource(1);
-	//mapdata
-	//Buffer->UploadBuffer->CopyData(0, *InObjConstants);
+
+	Buffer->CopyData(0, *InObjConstants);
 
 	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12<FObjectConstants>::CalcConstantBufferByteSize(sizeof(FObjectConstants));
-
-	D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
 
 	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(Buffer->UploadBuffer->GetResource());
 	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
 	int BufIndex = 0;
 	GpuAddress += BufIndex * ObjectBufferSize;
-	ViewDesc.BufferLocation = GpuAddress;
-	ViewDesc.SizeInBytes = ObjectBufferSize;
 
-	D3D12RHI::M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
 	Buffer->SetRootParameterIndex(0);
-	Buffer->SetGpuhandle(RHIContext_D3D12->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
 void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)

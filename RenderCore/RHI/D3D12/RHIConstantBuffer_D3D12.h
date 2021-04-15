@@ -19,8 +19,14 @@ public:
 		return CpuHandle;
 	}
 
+	D3D12_GPU_VIRTUAL_ADDRESS GetGpuAddress() {
+		return GpuVirtualAddress;
+	}
+
 	void SetGpuhandle(D3D12_GPU_DESCRIPTOR_HANDLE InHandle) { GpuHandle = InHandle; }
 	void SetCpuhandle(D3D12_CPU_DESCRIPTOR_HANDLE InHandle) { CpuHandle = InHandle; }
+
+	void SetGpuVirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS InAddress){GpuVirtualAddress = InAddress;}
 
 	UINT GetRootParameterIndex(){return RootParameterIndex; }
 	void SetRootParameterIndex(UINT InIndex){RootParameterIndex = InIndex;}
@@ -33,6 +39,7 @@ private:
 
 	D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
 	D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
+	D3D12_GPU_VIRTUAL_ADDRESS GpuVirtualAddress;
 };
 
 template<typename T>

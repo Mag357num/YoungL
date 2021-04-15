@@ -28,9 +28,9 @@ void FRenderThreadManager::PushRenderCommand(FRenderThreadCommand InCommand)
 	RenderThread->PushTask(InCommand);
 }
 
-void FRenderThreadManager::IncreFrameSyncFence()
+void FRenderThreadManager::IncreFrameSyncFence(bool Flag)
 {
-	RenderThread->IncreFrameSyncFence();
+	FRenderThread::IncreFrameSyncFence(Flag);
 }
 
 UINT8 FRenderThreadManager::GetFrameSyncFence()

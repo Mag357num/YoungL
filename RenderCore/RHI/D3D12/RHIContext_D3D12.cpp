@@ -239,7 +239,7 @@ void FRHIContext_D3D12::OnResize()
 void FRHIContext_D3D12::BuildDescriptorHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc;
-	HeapDesc.NumDescriptors = 2;
+	HeapDesc.NumDescriptors = 1;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.NodeMask = 0;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -249,15 +249,16 @@ void FRHIContext_D3D12::BuildDescriptorHeap()
 
 void FRHIContext_D3D12::BuildRootSignature()
 {
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 2, 0);
-	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1, 0);
+	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+	slotRootParameter[1].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
@@ -471,7 +472,7 @@ void FRHIContext_D3D12::DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Ite
 		M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		 
 		FRHIConstantBuffer_D3D12<FObjectConstants>* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(Items[Index]->GetConstantBuffer());
-		M_CommandList->SetGraphicsRootDescriptorTable(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuHandle());
+		M_CommandList->SetGraphicsRootConstantBufferView(0, ConstantBuffer->GetGpuAddress());
 		M_CommandList->DrawIndexedInstanced((UINT)Items[Index]->GetIndexCount(), 1, 0, 0, 0);
 	}
 }
@@ -513,12 +514,9 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 
 	UINT ObjectBufferSize = FRHIUploadBuffer_D3D12<FSceneConstant>::CalcConstantBufferByteSize(sizeof(FSceneConstant));
 	ConstantBuffer->CopyData(0, SceneConstant);
-	//D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE CpuDescriptor(GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart());
-	//slot 0 : for ObjectConstants ;reserved
-	CpuDescriptor.Offset(1, M_CbvSrvUavDescriptorSize);
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC ViewDesc;
 
@@ -530,18 +528,16 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 	ViewDesc.SizeInBytes = ObjectBufferSize;
 
 	D3D12RHI::M_Device->CreateConstantBufferView(&ViewDesc, CpuDescriptor);
-	ConstantBuffer->SetRootParameterIndex(0);//0 for descriptor table
+	ConstantBuffer->SetRootParameterIndex(1);//1 for descriptor table 
 
-	//slot 0 : for ObjectConstants ;reserved
 	CD3DX12_GPU_DESCRIPTOR_HANDLE GpuDescriptor(GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
-	GpuDescriptor.Offset(1, M_CbvSrvUavDescriptorSize);
 	ConstantBuffer->SetGpuhandle(GpuDescriptor);
 
 	return ConstantBuffer;
 }
 
 //create depth resoruce
-FRHIDepthResource* FRHIContext_D3D12::CreateDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)
+FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int INWidth, int InHeight, EPixelBufferFormat InFormat)
 {
 
 	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12();
