@@ -34,6 +34,12 @@ void FGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
 {
 	MousePosition.X = (float)X;
 	MousePosition.Y = (float)Y;
+
+	POINT CurPoint = { 0, 0 };
+	GetCursorPos(&CurPoint);
+	WindowOffset.x = CurPoint.x - X;
+	WindowOffset.y = CurPoint.y - Y;
+
 	bMouseButtonDown = true;
 }
 
@@ -46,9 +52,10 @@ void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 {
 	if (bMouseButtonDown)
 	{
+		//get window offset
 		float Dx = X - MousePosition.X;
 		float Dy = Y - MousePosition.Y;
-		
+
 		Camera->Pitch(Dy * 0.2f);
 		Camera->Rotate(Dx * 0.2f);
 
@@ -82,10 +89,17 @@ static void UpdateSceneConstantBuffer_RenderThread(FSceneConstant* SceneConstant
 	FRenderThreadManager::UpdateSceneConstantBuffer(SceneConstant);
 }
 
-void FGameCore::Tick()
+void FGameCore::Tick(float DeltaTime)
 {
 	//Tick Game Logic...
 	//todo:
+	//deal with Rotate event
+	if (bMouseButtonDown)
+	{
+		POINT CurPoint = { 0, 0 };
+		GetCursorPos(&CurPoint);
+		OnMouseMove(WM_LBUTTONDOWN, CurPoint.x - WindowOffset.x, CurPoint.y - WindowOffset.y);
+	}
 
 	//update camera canstant
 	if (Camera->CameraInfoDirty())

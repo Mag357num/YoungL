@@ -34,16 +34,16 @@ LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPar
 		return 0;
 
 	case WM_LBUTTONDOWN:
-	Game->OnMouseButtonDown(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		Game->OnMouseButtonDown(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
 		break;
 
 	case WM_LBUTTONUP:
 		Game->OnMouseButtonUp(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
 		break;
 
-	case WM_MOUSEMOVE:
-		Game->OnMouseMove(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
-		break;
+	//case WM_MOUSEMOVE:
+	//	Game->OnMouseMove(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+	//	break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -115,10 +115,44 @@ int FWinApp::Run()
 
 void FWinApp::InitGame()
 {
+	//init game core
 	if (!GameCore)
 	{
 		GameCore = new FGameCore();
 		GameCore->Initialize();
+	}
+
+	//init game timer
+	if (!GameTimer)
+	{
+		GameTimer = new FGameTimer();
+		//prepare timer start
+		GameTimer->Reset();
+	}
+}
+
+void FWinApp::DestroyApp()
+{
+	//destroy game core
+	if (GameCore)
+	{
+		GameCore->ShutDown();
+		delete GameCore;
+		GameCore = nullptr;
+	}
+
+	//destroy game timer
+	if (GameTimer)
+	{
+		delete GameTimer;
+		GameTimer = nullptr;
+	}
+
+	//destroy render thread manager
+	if (RenderThreadManager)
+	{
+		RenderThreadManager->StopRenderThread();
+		RenderThreadManager.reset();
 	}
 }
 
@@ -145,22 +179,6 @@ void FWinApp::InitEngine()
 
 }
 
-void FWinApp::DestroyApp()
-{
-	if (GameCore)
-	{
-		GameCore->ShutDown();
-		delete GameCore;
-		GameCore = nullptr;
-	}
-
-	if (RenderThreadManager)
-	{
-		RenderThreadManager->StopRenderThread();
-		RenderThreadManager.reset();
-	}
-}
-
 void FWinApp::Update()
 {
 	while (RenderThreadManager->GetFrameSyncFence() >= 1)
@@ -168,7 +186,8 @@ void FWinApp::Update()
 		Sleep(10);
 	}
 
-	GameCore->Tick();
+	GameTimer->Tick();
+	GameCore->Tick(GameTimer->GetDeltaTime());
 
 	//todo : change to dispatch singal
 	RenderThreadManager->IncreFrameSyncFence(true);

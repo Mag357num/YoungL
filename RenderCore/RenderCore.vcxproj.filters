@@ -114,6 +114,9 @@
     <ClInclude Include="RHI\RHIResourceHandle.h">
       <Filter>头文件\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RHI\RHIContext.cpp">
@@ -139,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
       <Filter>源文件\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>源文件\RHI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -197,6 +197,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameCore.h" />
+    <ClInclude Include="GameTimer.h" />
     <ClInclude Include="MeshActor.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderThread.h" />
@@ -227,6 +228,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GameCore.cpp" />
+    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="RenderCore.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderThreadManager.cpp" />

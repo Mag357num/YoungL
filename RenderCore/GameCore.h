@@ -35,7 +35,7 @@ public:
 		}
 	}
 
-	virtual void Tick();
+	virtual void Tick(float DeltaTime);
 
 	virtual void OnKeyDown(UINT8 Key);
 	virtual void OnKeyUp(UINT8 Key);
@@ -61,6 +61,7 @@ private:
 
 	//mouse position
 	FVector2D MousePosition;
+	POINT WindowOffset;
 	bool bMouseButtonDown;
 };
 

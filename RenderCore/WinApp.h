@@ -4,7 +4,7 @@
 #include <wrl.h>
 
 #include "GameCore.h"
-//#include "RenderThread.h"
+#include "GameTimer.h"
 #include "RenderThreadManager.h"
 
 using namespace Microsoft::WRL;
@@ -52,9 +52,7 @@ private:
 
 	//game and render
 	FGameCore* GameCore;
-	//FRenderer* Renderer;
-
-	//FRenderThread* RenderThread;
+	FGameTimer* GameTimer;
 
 	std::shared_ptr<FRenderThreadManager> RenderThreadManager;
 };
