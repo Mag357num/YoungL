@@ -192,6 +192,7 @@
       <HeaderFileOutput>$(SolutionDir)\Build\$(Platform)\$(Configuration)\Output\$(ProjectName)\CompiledShaders\%(Filename).h</HeaderFileOutput>
       <ShaderModel>5.0</ShaderModel>
       <ShaderType>Compute</ShaderType>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -30,7 +30,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
 	//initialize scene constant
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
+	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 2000.0f);
 
 	//// Build the initial view matrix.
 	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);
@@ -49,8 +49,6 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	SceneConstant.LightStrength = FVector4D(0.5f, 0.5f, 0.5f, 0.0f);
 	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 0.0f);
 
-	//Create Scene Constant Buffer
-	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 
 	//create shadow map
 	if (!ShadowMap)
@@ -61,9 +59,25 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 		Bound.Radius = 500.0f;
 		ShadowMap->CreateDepthResource(RHIContext);
 		ShadowMap->CreateShadowSceneConstant(RHIContext, Bound, SceneConstant.LightDirection);
+
+		//set scene constants 
+		FMatrix LightVP = ShadowMap->GetLightViewProj();
+		// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+		FMatrix T(
+			0.5f, 0.0f, 0.0f, 0.0f,
+			0.0f, -0.5f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.0f, 1.0f);
+
+		SceneConstant.LightViewProj = LightVP * T;
+		SceneConstant.LightViewProj = Utilities::MatrixTranspose(SceneConstant.LightViewProj);
+
 		IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateGraphicsDepthPSO();
 		GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
 	}
+
+	//Create Scene Constant Buffer
+	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 }
 
 void FRenderer::DestroyRHIContext()
@@ -170,6 +184,9 @@ void FRenderer::RenderObjects()
 
 	//pass sceen constant buffer
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+
+	//apply shadow map
+	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
 
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingMeshes(RenderingMeshes);

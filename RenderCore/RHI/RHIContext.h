@@ -164,6 +164,7 @@ public:
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer){}
 	virtual void SetShaderResourceView(){}
+	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource){}
 
 	virtual void SetPrimitiveTopology(){}
 

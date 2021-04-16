@@ -35,6 +35,8 @@ public:
 
 	IRHIConstantBuffer<FSceneConstant>* GetSceneConstantBuffer(){return SceneConstantBuffer;}
 
+	FMatrix GetLightViewProj(){return Utilities::MatrixTranspose(SceneConstant.ViewProj);}
+
 private:
 	FViewport ShadowVP;
 	FRHIDepthResource* DepthResource;

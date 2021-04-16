@@ -3,9 +3,9 @@
 void FShadowMap::CreateShadowSceneConstant(IRHIContext* InContext, const FBoundSphere& InBound, FVector4D LightDir)
 {
 	//initialize scene constant//fov is 0.25Pi
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, 1.0f, 1.0f, 2000.0f);
+	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.5f * 3.1416f, 1.0f, 1.0f, 2000.0f);
 
-	float Distance = (float)(InBound.Radius / sin(0.125f * 3.1416f));//fov*1/2
+	float Distance = (float)(InBound.Radius / sin(0.25f * 3.1416f));//fov*1/2
 	LightDir = Utilities::Vector3Normalize(LightDir);
 	FVector4D LightPos = InBound.Center - LightDir * Distance;
 

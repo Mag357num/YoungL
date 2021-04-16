@@ -13,6 +13,7 @@ cbuffer cbPerObject : register(b0)
 cbuffer manPassObject : register(b1)
 {
 	float4x4 ViewProj;
+	float4x4 LightViewProj;
 	float4 CamLocation;
 
 	//for global directional lighting
@@ -28,7 +29,7 @@ VertexOut main(VertexIn Vin)
 	// Transform to homogeneous clip space.
 	float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
 	vout.PosH = mul(PosW, ViewProj);
-	
+	vout.ShadowPosH = mul(PosW, LightViewProj);
 	// Just pass vertex color into the pixel shader.
 	vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);

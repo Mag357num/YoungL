@@ -256,6 +256,7 @@ struct FSceneConstant
 	FSceneConstant(){}
 
 	FMatrix ViewProj;
+	FMatrix LightViewProj;
 	FVector4D CamLocation;
 
 	//saved for global directional lighting

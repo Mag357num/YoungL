@@ -255,13 +255,13 @@ void FRHIContext_D3D12::BuildRootSignature()
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1, 0);
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
 	slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
 	slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
@@ -647,6 +647,15 @@ void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant
 	M_CommandList->SetGraphicsRootConstantBufferView(Buffer_D3D12->GetRootParameterIndex(), Buffer_D3D12->GetGpuAddress());
 }
 
+void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
+{
+	if (InDepthResource && InDepthResource->GetSrvHandle())
+	{
+		FRHIResourceHandle_D3D12*  SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InDepthResource->GetSrvHandle());
+		M_CommandList->SetGraphicsRootDescriptorTable(2, *SrvHandle->GetGpuHandle());//root parameter index is 2
+	}
+}
+
 void FRHIContext_D3D12::DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)
 {
 	for (int Index = 0; Index < Items.size(); ++Index)
@@ -757,25 +766,25 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 {
 	FRHIDepthResource_D3D12* DepthResource_D3D12 = reinterpret_cast<FRHIDepthResource_D3D12*>(InDepthResource);
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
 
-	//D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc= {};
-	//SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	//SrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	//SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//SrvDesc.Texture2D.MipLevels = 1;
-	//SrvDesc.Texture2D.MostDetailedMip = 0;
-	//SrvDesc.Texture2D.PlaneSlice = 0;
-	//SrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SrvDesc.Texture2D.MipLevels = 1;
+	SrvDesc.Texture2D.MostDetailedMip = 0;
+	SrvDesc.Texture2D.PlaneSlice = 0;
+	SrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-	//M_Device->CreateShaderResourceView(DepthResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
+	M_Device->CreateShaderResourceView(DepthResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
 
-	//D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
 
-	//FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
-	//SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
-	//SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
-	//DepthResource_D3D12->SetSrvHandle(SrvHandle);
+	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
+	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
+	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
+	DepthResource_D3D12->SetSrvHandle(SrvHandle);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuDescriptorStart(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
 	DsvCpuDescriptorStart.ptr += M_DsvDescriptorSize;//0 reserved for base pass depth

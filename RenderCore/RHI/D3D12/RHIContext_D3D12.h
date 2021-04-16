@@ -74,6 +74,7 @@ public:
 	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)override;
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
+	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
 
 	virtual void FlushCommandQueue()override;
 	virtual void Present()override;
