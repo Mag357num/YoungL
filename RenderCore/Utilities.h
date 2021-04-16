@@ -32,7 +32,24 @@ struct FVector
 	{
 
 	}
+
 	FVector(){}
+
+	FVector operator+ (const FVector& InVec)const
+	{
+		return FVector(X + InVec.X, Y + InVec.Y, Z + InVec.Z);
+	}
+
+	FVector operator* (float Scale)const
+	{
+		return FVector(Scale * X, Scale * Y , Scale * Z);
+	}
+
+	FVector operator* (const FVector& InVec)const
+	{
+		return FVector(X * InVec.X, Y * InVec.Y, Z * InVec.Z);
+	}
+
 	float X;
 	float Y;
 	float Z;
@@ -50,6 +67,27 @@ struct FVector4D
 	}
 
 	FVector4D() {}
+
+	FVector4D operator+ (const FVector4D& InVec)const
+	{
+		return FVector4D(X + InVec.X, Y + InVec.Y, Z + InVec.Z, W + InVec.W);
+	}
+
+	FVector4D operator- (const FVector4D& InVec)const
+	{
+		return FVector4D(X - InVec.X, Y - InVec.Y, Z - InVec.Z, W - InVec.W);
+	}
+
+	FVector4D operator* (float Scale)const
+	{
+		return FVector4D(Scale * X, Scale * Y, Scale * Z, Scale * W);
+	}
+
+	FVector4D operator* (const FVector4D& InVec)const
+	{
+		return FVector4D(X * InVec.X, Y * InVec.Y, Z * InVec.Z, W * InVec.W);
+	}
+
 	float X;
 	float Y;
 	float Z;
@@ -224,6 +262,14 @@ struct FSceneConstant
 	FVector4D LightDirection;
 	FVector4D LightStrength;
 }; 
+
+struct FBoundSphere
+{
+	FBoundSphere(){}
+
+	FVector4D Center;
+	float Radius;
+};
 
 
 namespace Utilities

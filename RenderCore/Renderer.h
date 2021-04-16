@@ -26,7 +26,7 @@ public:
 
 protected:
 private:
-
+	void RenderDepth();
 	IRHIContext* RHIContext;
 
 	std::map<std::string, IRHIGraphicsPipelineState*> GraphicsPSOs;

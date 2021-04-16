@@ -33,7 +33,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
 
 	//// Build the initial view matrix.
-	FVector4D CamPos = FVector4D(500, 500, 100, 1.0f);
+	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);
 	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -43,14 +43,27 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//copy to upload buffer transposed???
 	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
-	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 1.0f);
+	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	
 	//create global directional lighting
-	SceneConstant.LightStrength = FVector4D(0.5f, 0.5f, 0.5f, 1.0f);
-	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 1.0f);
+	SceneConstant.LightStrength = FVector4D(0.5f, 0.5f, 0.5f, 0.0f);
+	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 0.0f);
 
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
+
+	//create shadow map
+	if (!ShadowMap)
+	{
+		ShadowMap = new FShadowMap(512, 512);
+		FBoundSphere Bound;
+		Bound.Center = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+		Bound.Radius = 500.0f;
+		ShadowMap->CreateDepthResource(RHIContext);
+		ShadowMap->CreateShadowSceneConstant(RHIContext, Bound, SceneConstant.LightDirection);
+		IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateGraphicsDepthPSO();
+		GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
+	}
 }
 
 void FRenderer::DestroyRHIContext()
@@ -134,7 +147,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 void FRenderer::RenderObjects()
 {
 	//reset command list and command allocator here
-	RHIContext->BeginDraw(GraphicsPSOs["BasePass"], L"BasePass");
+	RHIContext->BeginDraw(L"BasePass");
+
+	//render depth map first
+	//for realtime shadow
+	RenderDepth();
 
 	RHIContext->SetViewport(Viewport);
 	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
@@ -144,6 +161,9 @@ void FRenderer::RenderObjects()
 
 	//set backbuffer as rendertarget
 	RHIContext->SetBackBufferAsRt();
+
+	//set pipeline state
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["BasePass"]);
 
 	//prepare shader parameters
 	RHIContext->PrepareShaderParameter();
@@ -165,6 +185,29 @@ void FRenderer::RenderObjects()
 
 	//flush commands
 	RHIContext->FlushCommandQueue();
+}
+
+void FRenderer::RenderDepth()
+{
+	RHIContext->SetViewport(*ShadowMap->GetViewport());
+	RHIContext->SetScissor(0, 0, (long)ShadowMap->GetViewport()->Width, (long)ShadowMap->GetViewport()->Height);
+
+	FRHIDepthResource* DepthResource = ShadowMap->GetShadowMapResource();
+	IRHIResource* RHIResource = reinterpret_cast<IRHIResource*>(DepthResource);
+	RHIContext->TransitionResource(RHIResource, ERHIResourceState::State_DepthRead, ERHIResourceState::State_DepthWrite);
+
+	RHIContext->SetRenderTarget(nullptr, RHIResource);
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["DepthPass"]);
+
+	//prepare shader parameters
+	RHIContext->PrepareDepthShaderParameter();
+
+	//pass sceen constant buffer
+	RHIContext->SetSceneConstantBuffer(ShadowMap->GetSceneConstantBuffer());
+	//Draw Rendering items in scene
+	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+	RHIContext->TransitionResource(RHIResource, ERHIResourceState::State_DepthWrite, ERHIResourceState::State_DepthRead);
+
 }
 
 void FRenderer::UpdateConstantBuffer()

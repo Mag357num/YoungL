@@ -29,9 +29,9 @@ VertexOut main(VertexIn Vin)
 	vout.PosH = mul(PosW, ViewProj);
 
 	// Just pass vertex color into the pixel shader.
-	vout.Uv = Vin.Uv;
+	//vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);
 	vout.Color = float4(vout.Normal * 0.5f + 0.5f, 1.0f);
-	vout.PosW = Vin.Pos;
+	//vout.PosW = Vin.Pos;
 	return vout;
 }

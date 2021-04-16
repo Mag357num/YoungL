@@ -7,7 +7,10 @@ class FShadowMap
 public:
 	FShadowMap(int InWidth, int InHeight)
 		:ShadowVP(0, 0, InWidth, InHeight)
-	{}
+	{
+		ShadowVP.MinDepth = 0.0f;
+		ShadowVP.MaxDepth = 1.0f;
+	}
 	
 	~FShadowMap(){
 		if (DepthResource)
@@ -23,11 +26,14 @@ public:
 		}
 	}
 
-	void CreateShadowSceneConstant(IRHIContext* InContext);
+	void CreateShadowSceneConstant(IRHIContext* InContext, const FBoundSphere& InBound, FVector4D LightDir);
 
 	void CreateDepthResource(IRHIContext* InContext);
 
+	FViewport* GetViewport(){return &ShadowVP;}
+	FRHIDepthResource*GetShadowMapResource(){return DepthResource;}
 
+	IRHIConstantBuffer<FSceneConstant>* GetSceneConstantBuffer(){return SceneConstantBuffer;}
 
 private:
 	FViewport ShadowVP;

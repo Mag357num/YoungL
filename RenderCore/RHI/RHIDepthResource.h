@@ -22,6 +22,9 @@ public:
 	void SetSrvHandle(IRHIResourceHandle* InHandle){ SRVHandle = InHandle;}
 	void SetDsvHandle(IRHIResourceHandle* InHandle){ DSVHandle = InHandle; }
 
+	IRHIResourceHandle* GetDsvHandle(){return DSVHandle;}
+	IRHIResourceHandle* GetSrvHandle() { return SRVHandle; }
+
 protected:
 	IRHIResourceHandle* SRVHandle;
 	IRHIResourceHandle* DSVHandle;

@@ -134,9 +134,8 @@ public:
 
 	virtual void Resize(int InWidth, int InHeight){}
 
-	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO, const wchar_t* Label){}
+	virtual void BeginDraw(const wchar_t* Label){}
 	virtual void EndDraw() {}
-
 
 	virtual void SetViewport(const FViewport& Viewport){}
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight){}
@@ -147,9 +146,10 @@ public:
 	virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
 	virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
+	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
-	virtual void SetRenderTarget(IRHIResource* InResource){}
+	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth){}
 	
 	//use back buffer as rt
 	virtual void SetBackBufferAsRt(){}
@@ -158,7 +158,9 @@ public:
 
 	//set graphic pso
 	virtual void PrepareShaderParameter(){}
-	virtual void SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO){}
+	virtual void PrepareDepthShaderParameter(){}
+	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
+
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer){}
 	virtual void SetShaderResourceView(){}

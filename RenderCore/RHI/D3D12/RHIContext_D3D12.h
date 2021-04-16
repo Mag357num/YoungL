@@ -33,6 +33,7 @@ public:
 	virtual void Resize(int InWidth, int InHeight)override;
 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
+	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
@@ -52,18 +53,23 @@ public:
 		return M_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 	
-	virtual void BeginDraw(IRHIGraphicsPipelineState* InPSO, const wchar_t* Label)override;
+	virtual void BeginDraw(const wchar_t* Label)override;
 	virtual void EndDraw()override;
+
+	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)override;
 
 	virtual void SetViewport(const FViewport& Viewport)override;
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight)override;
 
 	virtual void SetBackBufferAsRt()override;
+	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth)override;
+
 	virtual void TransitionBackBufferStateToRT()override;
 	virtual void TransitionBackBufferStateToPresent()override;
+	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter)override;
 
 	virtual void PrepareShaderParameter()override;
-	virtual void SetGraphicsPipeline(IRHIGraphicsPipelineState* InPSO)override;
+	virtual void PrepareDepthShaderParameter()override;
 
 	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)override;
 
@@ -86,9 +92,12 @@ public:
 private:
 	void OnResize();
 	void BuildRootSignature();
+	void BuildDepthRootSignature();
 	void BuildDescriptorHeap();
 
 	void BuildShadersInputLayout();
+
+	D3D12_RESOURCE_STATES TranslateResourceState(ERHIResourceState InState);
 
 	//for graphics
 	int ClientWidth = 800;
@@ -125,6 +134,7 @@ private:
 
 	//signature
 	ComPtr<ID3D12RootSignature> M_RootSignaure;
+	ComPtr<ID3D12RootSignature> Depth_RootSignature;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,

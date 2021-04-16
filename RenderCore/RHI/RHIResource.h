@@ -6,7 +6,9 @@ enum ERHIResourceState
 	State_Present,
 	State_RenderTarget,
 	State_Srv,
-	State_Uav
+	State_Uav,
+	State_DepthRead,
+	State_DepthWrite
 };
 
 
