@@ -30,7 +30,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
 	//initialize scene constant
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 2000.0f);
+	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
 
 	//// Build the initial view matrix.
 	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);

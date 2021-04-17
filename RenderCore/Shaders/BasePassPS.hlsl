@@ -36,11 +36,11 @@ float4 main(VertexOut Pin) : SV_Target
 	int ShadowMapY = round(ShadowUV.y * Height);
 	float DepthInMap = gShadowMap.Load(int3(ShadowMapX, ShadowMapY, 0));
 	float ShadowFactor = 1.0f;
-	//if (ShadowUV.z > DepthInMap)
-	//{
-	//	//in shadow
-	//	ShadowFactor = 0.5f;
-	//}
+	if (ShadowUV.z > DepthInMap + 0.0003f)
+	{
+		//in shadow
+		ShadowFactor = 0.5f;
+	}
 
 	//construct material and light
 	Material Mat;

@@ -77,7 +77,7 @@ void FGameCore::Initialize()
 		//test modify 
 		if (Index == 0)
 		{
-			Geometries[0]->SetLocation(FVector(0.0f, 0.0f, -50.0f));
+			Geometries[0]->SetLocation(FVector(0.0f, 0.0f, -20.0f));
 		}
 	}
 	

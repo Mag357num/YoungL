@@ -24,7 +24,7 @@ FCamera::FCamera()
 	IsCamerInfoDirty = false;
 
 	View = Utilities::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
-	Proj = Utilities::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, 1.0f, 1000.0f);
+	Proj = Utilities::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, 1.0f, 2000.0f);
 
 	IsCamerInfoDirty = true;
 }
