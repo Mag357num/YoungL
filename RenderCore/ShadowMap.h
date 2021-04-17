@@ -28,6 +28,9 @@ public:
 
 	void CreateShadowSceneConstant(IRHIContext* InContext, const FBoundSphere& InBound, FVector4D LightDir);
 
+	//test rotate 
+	void AutomateRotateLight(const FBoundSphere& InBound);
+
 	void CreateDepthResource(IRHIContext* InContext);
 
 	FViewport* GetViewport(){return &ShadowVP;}
@@ -36,10 +39,15 @@ public:
 	IRHIConstantBuffer<FSceneConstant>* GetSceneConstantBuffer(){return SceneConstantBuffer;}
 
 	FMatrix GetLightViewProj(){return Utilities::MatrixTranspose(SceneConstant.ViewProj);}
+	FSceneConstant* GetLightSceneConstant(){return &SceneConstant;}
 
 private:
 	FViewport ShadowVP;
 	FRHIDepthResource* DepthResource;
+
+	//temp for rotate light
+	float LightPicth;//Light to XY
+	float LightYaw;//Z Rotate
 
 	//save camera info
 	FSceneConstant SceneConstant;

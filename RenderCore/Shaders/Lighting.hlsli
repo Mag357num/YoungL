@@ -42,7 +42,7 @@ float3 ComputeBlinnPhone_DirectionalLight(DirectionLight Light, Material Mat, fl
 	float OneMinusFo = dot(HalfVec, LightVec);
 	OneMinusFo = saturate(OneMinusFo);
 	float F0 = 1.0f - OneMinusFo;
-	float3 FresnelFactor = Mat.Fresnel0 + (1.0 - Mat.Fresnel0) * F0 * F0 * F0 * F0;
+	float3 FresnelFactor = Mat.Fresnel0 + (1.0 - Mat.Fresnel0) * F0 * F0 * F0 * F0 * F0;
 
 	float m = Mat.Shiness * 256.0f;
 	float HalfDotNormal = dot(HalfVec, Normal);

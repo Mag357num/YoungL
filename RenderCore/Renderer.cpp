@@ -248,10 +248,30 @@ void FRenderer::UpdateConstantBuffer()
 
 void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 {
+	//rotate lighting
+	FBoundSphere Bound;
+	Bound.Center = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+	Bound.Radius = 500.0f;
+	ShadowMap->AutomateRotateLight(Bound);
 
 	//copy to upload buffer transposed???
 	SceneConstant.ViewProj = InSceneConstant->ViewProj;
 	SceneConstant.CamLocation = InSceneConstant->CamLocation;
+
+	//pass light map light info to main pass , update lighting
+	SceneConstant.LightDirection = ShadowMap->GetLightSceneConstant()->LightDirection;
+
+	//set scene constants 
+	FMatrix LightVP = ShadowMap->GetLightViewProj();
+	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+	FMatrix T(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+
+	SceneConstant.LightViewProj = LightVP * T;
+	SceneConstant.LightViewProj = Utilities::MatrixTranspose(SceneConstant.LightViewProj);
 
 	//update buffer
 	SceneConstantBuffer->CopyData(0, SceneConstant);
