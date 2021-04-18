@@ -7,15 +7,22 @@
 - RenderCore
   - WinApp
   - GameCore
+  - GameTimer
   - Camera
+  - MeshActor
   - Render
+  - ShadowMap
   - RenderThread
   - RenderThreadManager
-  - RHI
+  - RHIDepthResource
     - RHIContext
+    - RHIResource
+    - RHIResourceHandle
+    - RHI
     - D3D12
       - d3dx12.h
       - RHIResource_D3D12
+      - RHIDepthResource_D3D12
       - RHIContext_D3D12
       - RHIVertextBuffer_D3D12
       - RHIIndexBuffer_D3D12
@@ -26,22 +33,27 @@
       - RHIRenderingItem_D3D12
       - RHIGraphicsPipelineState_D3D12
   - Shaders
-    - RenderCoreRS.hlsli
+    - Common.hlsli
+    - BasepassRS.hlsli
     - Lighting.hlsli
-    - TestVS.hlsl
-    - TestPS.hlsl
+    - BasepassVS.hlsl
+    - BasepassPS.hlsl
+    - DepthRS.hlsli
+    - DepthVS.hlsl
+    - DepthPS.hlsl
   - Models
     - ModelSave.Bin
     - ModelFloor.Bin
 
 ## RenderCore: DX12 Course work
-- version 0: basic process for drawing objects
-- version 1: basic blinn-phong(from Introduction to 3D Game Programming with DirectX12)
-- version 2: basic render core rhi framework
-- version 3: Add RenderThread
-- version 4: Add ReaderThreadManager and RenderCommand
-- version 5: Add Camera Control
-- version 6: Memory Release
+- version 0.0: basic process for drawing objects
+- version 0.1: basic blinn-phong(from Introduction to 3D Game Programming with DirectX12)
+- version 0.2: basic render core rhi framework
+- version 0.3: Add RenderThread
+- version 0.4: Add ReaderThreadManager and RenderCommand
+- version 0.5: Add Camera Control
+- version 0.6: Memory Release
+- version 0.7: Realtime Shadow
 
 
 ## EngineCore:Expermental framework for rhi
