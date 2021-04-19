@@ -6,6 +6,8 @@ FGameTimer::FGameTimer()
 	__int64 CountPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&CountPerSec);
 	SecondsPerCount = 1.0f / (double) CountPerSec;
+
+	FrameRate = 60;
 }
 
 FGameTimer::~FGameTimer()
@@ -58,7 +60,7 @@ void FGameTimer::Reset()
 	BaseTime = TemCurrTime;
 	PrevTime = TemCurrTime;
 	StopTime = 0;
-	bStoped = false;
+	bStoped = true;
 }
 
 void FGameTimer::Start()

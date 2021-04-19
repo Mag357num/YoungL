@@ -91,6 +91,9 @@ static void UpdateSceneConstantBuffer_RenderThread(FSceneConstant* SceneConstant
 
 void FGameCore::Tick(float DeltaTime)
 {
+
+	//Utilities::Print(L"Game Thread Tick.....\n");
+	
 	//Tick Game Logic...
 	//todo:
 	//deal with Rotate event

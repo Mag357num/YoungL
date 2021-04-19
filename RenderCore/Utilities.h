@@ -1,6 +1,10 @@
 #pragma once
 #include <vector>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <iostream>
+
+using namespace std;
 
 #define PI 3.141592654f
 #define TWOPI 6.283185307f
@@ -275,26 +279,33 @@ struct FBoundSphere
 
 namespace Utilities
 {
-//	inline void Print(const char* msg) { printf("%s", msg); }
-//	inline void Print(const wchar_t* msg) { wprintf(L"%ws", msg); }
+	static void Print(const char* msg) { 
+		printf("%s", msg);
+		fflush(stdout);
+	}
+	static void Print(const wchar_t* msg) {
+		wprintf(L"%ws", msg);
+		fflush(stdout);
+
+	}
 //
-//	inline void Printf(const char* format, ...)
-//	{
-//		char buffer[256];
-//		va_list ap;
-//		va_start(ap, format);
-//		vsprintf_s(buffer, 256, format, ap);
-//		Print(buffer);
-//	}
+	static void Printf(const char* format, ...)
+	{
+		char buffer[256];
+		va_list ap;
+		va_start(ap, format);
+		vsprintf_s(buffer, 256, format, ap);
+		Print(buffer);
+	}
 //
-//	inline void Printf(const wchar_t* format, ...)
-//	{
-//		wchar_t buffer[256];
-//		va_list ap;
-//		va_start(ap, format);
-//		vswprintf(buffer, 256, format, ap);
-//		Print(buffer);
-//	}
+	static void Printf(const wchar_t* format, ...)
+	{
+		wchar_t buffer[256];
+		va_list ap;
+		va_start(ap, format);
+		vswprintf(buffer, 256, format, ap);
+		Print(buffer);
+	}
 //
 //#ifndef RELEASE
 //	inline void PrintSubMessage(const char* format, ...)
@@ -680,4 +691,4 @@ namespace Utilities
 		FVector4D EyeDirection = VectorSubtract(FocusPosition, EyePosition);
 		return MatrixLookToLH(EyePosition, EyeDirection, UpDirection);
 	}
-};
+}

@@ -15,7 +15,8 @@ public:
 
 	void Tick();
 
-
+	int GetFrameRate(){return FrameRate;}
+	float GetFrameTime(){return 1000.0f / FrameRate;}
 private:
 
 	double SecondsPerCount;
@@ -28,6 +29,7 @@ private:
 	__int64 CurrTime;
 
 	bool bStoped;
+	int FrameRate;
 
 };
 

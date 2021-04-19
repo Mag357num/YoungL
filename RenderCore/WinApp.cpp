@@ -128,6 +128,7 @@ void FWinApp::InitGame()
 		GameTimer = new FGameTimer();
 		//prepare timer start
 		GameTimer->Reset();
+		GameTimer->Start();
 	}
 }
 
@@ -181,14 +182,19 @@ void FWinApp::InitEngine()
 
 void FWinApp::Update()
 {
-	while (RenderThreadManager->GetFrameSyncFence() >= 1)
-	{
-		Sleep(10);
-	}
+	//wait for render thread processed
+	RenderThreadManager->WaitForRenderThreadSingal();
 
 	GameTimer->Tick();
-	GameCore->Tick(GameTimer->GetDeltaTime());
+	float DeltaTime = GameTimer->GetDeltaTime();
+	if (DeltaTime < GameTimer->GetFrameTime())
+	{
+		int SleepTime = (int)round(GameTimer->GetFrameTime() - DeltaTime);
+		Sleep(SleepTime);
+	}
+	GameCore->Tick(DeltaTime);
 
-	//todo : change to dispatch singal
-	RenderThreadManager->IncreFrameSyncFence(true);
+	//todo : notify game thread is completed
+	RenderThreadManager->NotifyRenderThreadJob();
+	
 }

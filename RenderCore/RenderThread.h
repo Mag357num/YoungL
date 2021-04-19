@@ -13,7 +13,10 @@ static bool RequstStopThread;
 static FRenderer* Renderer;
 
 static std::mutex FrameSyncMutex;
-static UINT8 FrameSyncFence;
+static bool GameThreadReady = false;//initialized for game thread do first
+static bool RenderThreadProcessed = true;//initialized for game thread do first
+
+static std::condition_variable ThreadSingnal;
 
 struct FRenderThreadCommand
 {
@@ -59,10 +62,12 @@ public:
 
 		while (!RequstStopThread)
 		{
-			while (FrameSyncFence < 1)
-			{
-				Sleep(10);
-			} 
+			//WaitforGameThreadSingal();
+			std::unique_lock<std::mutex> RenderLock(FrameSyncMutex);
+			//wait for game thread is ready
+			WaitforGameThreadSingal(RenderLock);
+
+			//Utilities::Print("Render Thread Tick.....\n");
 
 			while (RenderThreadTask::CommandQueue.size() > 0)
 			{
@@ -74,7 +79,8 @@ public:
 			Renderer->RenderObjects();
 			Renderer->UpdateConstantBuffer();
 
-			IncreFrameSyncFence(false);
+			//notify reander thread is completed
+			NotifyGameThreadjob(RenderLock);
 		}
 
 	}
@@ -83,7 +89,6 @@ public:
 		RequstStopThread = false;
 		ClientWidth = InWidth;
 		ClientHeight = InHeight;
-		FrameSyncFence = 0;
 
 		Thread = std::make_unique<std::thread>(Run);
 		Thread->detach();
@@ -109,22 +114,32 @@ public:
 		RenderThreadTask::CommandQueue.push(InCommand);
 	}
 
-	static void IncreFrameSyncFence(bool Flag)
+	static void WaitforGameThreadSingal(std::unique_lock<std::mutex>& InLock)
 	{
-		//todo add thread mutex
-		std::lock_guard<std::mutex> LockGuard(FrameSyncMutex);
-		if (Flag)
-		{
-			FrameSyncFence++;
-		}
-		else
-		{
-			FrameSyncFence--;
-		}
-		
+		ThreadSingnal.wait(InLock, []{return GameThreadReady;});
 	}
 
-	UINT8 GetFrameSyncFence(){return FrameSyncFence;}
+	static void NotifyGameThreadjob(std::unique_lock<std::mutex>& InLock)
+	{
+		RenderThreadProcessed = true;
+		GameThreadReady = false;
+		InLock.unlock();
+		ThreadSingnal.notify_one();
+	}
+
+	static void WaitForRenderThreadSingal()
+	{
+		std::unique_lock<std::mutex> RenderLock(FrameSyncMutex);
+		ThreadSingnal.wait(RenderLock, [] {return RenderThreadProcessed; });
+	}
+
+	static void NotifyRenderThreadJob()
+	{
+		GameThreadReady = true;
+		RenderThreadProcessed = false;
+		ThreadSingnal.notify_one();
+	}
+
 
 private:
 

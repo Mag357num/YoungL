@@ -28,14 +28,14 @@ void FRenderThreadManager::PushRenderCommand(FRenderThreadCommand InCommand)
 	RenderThread->PushTask(InCommand);
 }
 
-void FRenderThreadManager::IncreFrameSyncFence(bool Flag)
+void FRenderThreadManager::WaitForRenderThreadSingal()
 {
-	FRenderThread::IncreFrameSyncFence(Flag);
+	RenderThread->WaitForRenderThreadSingal();
 }
 
-UINT8 FRenderThreadManager::GetFrameSyncFence()
+void FRenderThreadManager::NotifyRenderThreadJob()
 {
-	return RenderThread->GetFrameSyncFence();
+	RenderThread->NotifyRenderThreadJob();
 }
 
 void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries)
