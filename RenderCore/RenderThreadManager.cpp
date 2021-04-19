@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "RenderThreadManager.h"
 
 FRenderThreadManager::FRenderThreadManager()

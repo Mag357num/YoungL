@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "RHIContext_D3D12.h"
 #include "RHIGraphicsPipelineState_D3D12.h"
 #include "RHIShaderResource_D3D12.h"

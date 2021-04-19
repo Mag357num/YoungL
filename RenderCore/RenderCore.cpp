@@ -1,4 +1,5 @@
-﻿// RenderCore.cpp : 定义应用程序的入口点。
+﻿#include "pch.h"
+// RenderCore.cpp : 定义应用程序的入口点。
 //
 
 #pragma once

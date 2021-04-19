@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ShadowMap.h"
 
 void FShadowMap::CreateShadowSceneConstant(IRHIContext* InContext, const FBoundSphere& InBound, FVector4D LightDir)

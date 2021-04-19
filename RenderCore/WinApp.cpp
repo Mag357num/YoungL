@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "WinApp.h"
 #include <windowsx.h>
 

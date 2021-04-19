@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GameCore.h"
 #include <fstream>
 

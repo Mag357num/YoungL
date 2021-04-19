@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Camera.h"
 
 #define  CAMERAPI 3.1416f

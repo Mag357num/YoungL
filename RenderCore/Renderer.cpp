@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Renderer.h"
 #include "RHI/D3D12/RHIContext_D3D12.h"
 
