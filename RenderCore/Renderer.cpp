@@ -46,7 +46,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	
 	//create global directional lighting
-	SceneConstant.LightStrength = FVector4D(0.5f, 0.5f, 0.5f, 0.0f);
+	SceneConstant.LightStrength = FVector4D(1.0f, 1.0f, 1.0f, 0.0f);
 	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 0.0f);
 
 

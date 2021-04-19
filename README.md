@@ -1,6 +1,6 @@
 # YoungL Learn Project of DX12
 
-![screenshot](RenderCore.JPG)
+![screenshot](RenderCore.jpg)
 
 ## Hierarchy of RenderCore
 

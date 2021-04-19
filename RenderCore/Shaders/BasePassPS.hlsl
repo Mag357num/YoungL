@@ -59,9 +59,6 @@ float4 main(VertexOut Pin) : SV_Target
 
 		//get percentage 
 		ShadowFactor*= 0.11111f;
-
-		//adjust base shadow(complete black to 0.5)
-		ShadowFactor *= 0.5f;
 		
 		ShadowFactor  = 1.0f - ShadowFactor;
 	}
@@ -85,8 +82,7 @@ float4 main(VertexOut Pin) : SV_Target
 	ViewDirection = normalize(ViewDirection);
 	Pin.Normal = normalize(Pin.Normal);
 	
-	float3 OutColor = ComputeBlinnPhone_DirectionalLight(Light, Mat, Pin.Normal, ViewDirection);
-	return float4(OutColor, 1.0f) * ShadowFactor;
+	float3 OutColor = ComputeBlinnPhone_DirectionalLight(Light, Mat, Pin.Normal, ViewDirection, ShadowFactor);
+	return float4(OutColor, 1.0f);
 	
-	//return Pin.Color * ShadowFactor;
 }

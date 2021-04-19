@@ -248,7 +248,7 @@ struct FObjectConstants
 	//saved for material
 	FVector Fresnel0 = FVector(0.9f, 0.9f, 0.9f);
 	float Shiness = 0.1f;
-	FVector AmbientLight = FVector(0.1f, 0.1f, 0.1f);
+	FVector AmbientLight = FVector(0.2f, 0.2f, 0.2f);
 };
 
 struct FSceneConstant

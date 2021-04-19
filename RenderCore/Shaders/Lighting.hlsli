@@ -19,7 +19,7 @@ struct DirectionLight
 //color = (diffuse + specular)*lightStrength;;diffuse:from material data diffusealbedo
 //specular = Fresnellfactor* roughnessfactor
 
-//fresnellfactor from schlick formula: F = R0 +(1-Ro)*(F0)^4;
+//fresnellfactor from schlick formula: F = R0 +(1-Ro)*(F0)^5;
 //R0: Fresnel0 From material data
 //F0: 1-dot(halfvec , lightVec)
 //halfvec = (lightVec + viewdirection)
@@ -27,7 +27,7 @@ struct DirectionLight
 //roughtness factor from micro-face model (m+8)*(dot(halfvec, normal)^m)/8
 //m:shiness*256.0
 
-float3 ComputeBlinnPhone_DirectionalLight(DirectionLight Light, Material Mat, float3 Normal, float3 ViewDirection)
+float3 ComputeBlinnPhone_DirectionalLight(DirectionLight Light, Material Mat, float3 Normal, float3 ViewDirection, float ShadowFactor)
 {
 	//oppsite light direction
 	float3 LightVec = -Light.Direction;
@@ -54,7 +54,10 @@ float3 ComputeBlinnPhone_DirectionalLight(DirectionLight Light, Material Mat, fl
 	//aovid out of 1
 	SpecularAelbedo = SpecularAelbedo / (SpecularAelbedo + 1.0f);
 
-	float3 BlinnPhoneColor = (Mat.DiffuseAlbedo.rgb + SpecularAelbedo)* Light.Strength;
+	float NDL = dot(LightVec, Normal);
+	NDL = saturate(NDL);
+
+	float3 BlinnPhoneColor = (Mat.DiffuseAlbedo.rgb + SpecularAelbedo)* Light.Strength * NDL;
 	
-	return BlinnPhoneColor + AmbientColor;
+	return BlinnPhoneColor * ShadowFactor + AmbientColor;
 }

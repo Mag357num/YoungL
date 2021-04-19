@@ -34,6 +34,7 @@ VertexOut main(VertexIn Vin)
 	vout.Uv = Vin.Uv;
 	vout.Normal = normalize(Vin.Normal);
 	vout.Color = float4(vout.Normal* 0.5f +0.5f, 1.0f);
+	//vout.Color = float4(0.5f, 0.5f, 0.5f, 1.0f);
     vout.PosW=Vin.Pos;
 	
     return vout;
