@@ -16,17 +16,29 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{d5393531-9edf-414e-869f-fb299fca621e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\RHI">
-      <UniqueIdentifier>{959d36bf-87e4-49a0-8b3c-7525d25accfb}</UniqueIdentifier>
+    <Filter Include="头文件\Game">
+      <UniqueIdentifier>{cc48dd8a-ab63-4fab-ac49-959b70adbc1d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\RHI\D3D12">
-      <UniqueIdentifier>{b9d0bfeb-b800-448c-adce-b7a09e996664}</UniqueIdentifier>
+    <Filter Include="头文件\Render">
+      <UniqueIdentifier>{5e1995de-190e-4df1-9395-5329e74fc019}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\RHI">
+    <Filter Include="源文件\Game">
+      <UniqueIdentifier>{7eacb7fb-1c68-4588-88ea-8d0707a89e1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Render">
+      <UniqueIdentifier>{45302f06-ef61-4d49-b5d7-88b24098bd23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Render\RHI">
       <UniqueIdentifier>{66368ed3-1c54-4eeb-9dda-c1ee2218b4c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\RHI\D3D12">
+    <Filter Include="源文件\Render\RHI\D3D12">
       <UniqueIdentifier>{86e39a44-6148-4a93-8536-77a89832c3ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Render\RHI">
+      <UniqueIdentifier>{959d36bf-87e4-49a0-8b3c-7525d25accfb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Render\RHI\D3D12">
+      <UniqueIdentifier>{b9d0bfeb-b800-448c-adce-b7a09e996664}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,124 +48,124 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RHI\RHIContext.h">
-      <Filter>头文件\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIContext_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="GameCore.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="WinApp.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIResource_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIGraphicsPipelineState_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIShaderResource_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIVertexBuffer_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIIndexBuffer_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIResourceHandle_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
     <ClInclude Include="Utilities.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshActor.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIRenderingItem_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIConstantBuffer_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\d3dx12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIUploadBuffer_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderThread.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderThreadManager.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\RHIColorResource.h">
-      <Filter>头文件\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\RHIResource.h">
-      <Filter>头文件\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\RHIDepthResource.h">
-      <Filter>头文件\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\D3D12\RHIDepthResource_D3D12.h">
-      <Filter>头文件\RHI\D3D12</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\RHIResourceHandle.h">
-      <Filter>头文件\RHI</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Camera.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameCore.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameTimer.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\MeshActor.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Renderer.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RenderThread.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RenderThreadManager.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\ShadowMap.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIColorResource.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIContext.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIDepthResource.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIResource.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIResourceHandle.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\d3dx12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIConstantBuffer_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIContext_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIDepthResource_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIGraphicsPipelineState_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIIndexBuffer_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIRenderingItem_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIResource_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIResourceHandle_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIShaderResource_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIUploadBuffer_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIVertexBuffer_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RHI\RHIContext.cpp">
-      <Filter>源文件\RHI</Filter>
-    </ClCompile>
-    <ClCompile Include="GameCore.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="WinApp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="RenderCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderThreadManager.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp">
-      <Filter>源文件\RHI\D3D12</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>源文件\RHI</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera.cpp">
+      <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameCore.cpp">
+      <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameTimer.cpp">
+      <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Renderer.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RenderThreadManager.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\ShadowMap.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\RHIContext.cpp">
+      <Filter>源文件\Render\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\D3D12\RHIContext_D3D12.cpp">
+      <Filter>源文件\Render\RHI\D3D12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -200,51 +200,51 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="GameCore.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="MeshActor.h" />
+    <ClInclude Include="Game\Camera.h" />
+    <ClInclude Include="Game\GameCore.h" />
+    <ClInclude Include="Game\GameTimer.h" />
+    <ClInclude Include="Game\MeshActor.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="RenderThread.h" />
-    <ClInclude Include="RenderThreadManager.h" />
+    <ClInclude Include="Render\Renderer.h" />
+    <ClInclude Include="Render\RenderThread.h" />
+    <ClInclude Include="Render\RenderThreadManager.h" />
+    <ClInclude Include="Render\RHI\D3D12\d3dx12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIConstantBuffer_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIContext_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIDepthResource_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIGraphicsPipelineState_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIIndexBuffer_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIRenderingItem_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIResourceHandle_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIResource_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIShaderResource_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIUploadBuffer_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIVertexBuffer_D3D12.h" />
+    <ClInclude Include="Render\RHI\RHIColorResource.h" />
+    <ClInclude Include="Render\RHI\RHIContext.h" />
+    <ClInclude Include="Render\RHI\RHIDepthResource.h" />
+    <ClInclude Include="Render\RHI\RHIResource.h" />
+    <ClInclude Include="Render\RHI\RHIResourceHandle.h" />
+    <ClInclude Include="Render\ShadowMap.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="RHI\D3D12\RHIConstantBuffer_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\d3dx12.h" />
-    <ClInclude Include="RHI\D3D12\RHIContext_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIDepthResource_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIGraphicsPipelineState_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIIndexBuffer_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIRenderingItem_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIResourceHandle_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIResource_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIShaderResource_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIUploadBuffer_D3D12.h" />
-    <ClInclude Include="RHI\D3D12\RHIVertexBuffer_D3D12.h" />
-    <ClInclude Include="RHI\RHIColorResource.h" />
-    <ClInclude Include="RHI\RHIContext.h" />
-    <ClInclude Include="RHI\RHIDepthResource.h" />
-    <ClInclude Include="RHI\RHIResource.h" />
-    <ClInclude Include="RHI\RHIResourceHandle.h" />
-    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="GameCore.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Game\Camera.cpp" />
+    <ClCompile Include="Game\GameCore.cpp" />
+    <ClCompile Include="Game\GameTimer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RenderCore.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="RenderThreadManager.cpp" />
-    <ClCompile Include="RHI\D3D12\RHIContext_D3D12.cpp" />
-    <ClCompile Include="RHI\RHIContext.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="Render\Renderer.cpp" />
+    <ClCompile Include="Render\RenderThreadManager.cpp" />
+    <ClCompile Include="Render\RHI\D3D12\RHIContext_D3D12.cpp" />
+    <ClCompile Include="Render\RHI\RHIContext.cpp" />
+    <ClCompile Include="Render\ShadowMap.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>

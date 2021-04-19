@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RHI/RHIContext.h"
-#include "MeshActor.h"
+#include "../Game/MeshActor.h"
 #include "ShadowMap.h"
 
 class FRenderer

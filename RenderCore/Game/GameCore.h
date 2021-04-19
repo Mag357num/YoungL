@@ -8,7 +8,7 @@
 #define  AssetPathModel L"Models/ModelSave.Bin"
 
 #include "Camera.h"
-#include "RenderThreadManager.h"
+#include "../Render/RenderThreadManager.h"
 
 class FGameCore
 {

@@ -2,11 +2,11 @@
 
 #include "Utilities.h"
 
-#include "GameCore.h"
-#include "GameTimer.h"
-#include "MeshActor.h"
+#include "Game/GameCore.h"
+#include "Game/GameTimer.h"
+#include "Game/MeshActor.h"
 
 //#include "Renderer.h"
-#include "RenderThread.h"
-#include "RenderThreadManager.h"
-#include "ShadowMap.h"
+#include "Render/RenderThread.h"
+#include "Render/RenderThreadManager.h"
+#include "Render/ShadowMap.h"

@@ -3,9 +3,9 @@
 #include <string>
 #include <wrl.h>
 
-#include "GameCore.h"
-#include "GameTimer.h"
-#include "RenderThreadManager.h"
+#include "Game/GameCore.h"
+#include "Game/GameTimer.h"
+#include "Render/RenderThreadManager.h"
 
 using namespace Microsoft::WRL;
 
