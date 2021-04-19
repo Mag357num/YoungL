@@ -40,6 +40,9 @@
     <Filter Include="头文件\Render\RHI\D3D12">
       <UniqueIdentifier>{b9d0bfeb-b800-448c-adce-b7a09e996664}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Math">
+      <UniqueIdentifier>{3b8d2aa7-62b6-495b-b575-370962fbfbf8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="Render\RHI\D3D12\RHIVertexBuffer_D3D12.h">
       <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Math.h">
+      <Filter>头文件\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

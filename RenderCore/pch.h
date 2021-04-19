@@ -10,3 +10,5 @@
 #include "Render/RenderThread.h"
 #include "Render/RenderThreadManager.h"
 #include "Render/ShadowMap.h"
+
+#include "Math/Math.h"

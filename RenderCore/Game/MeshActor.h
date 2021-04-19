@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Utilities.h"
+#include "../Math/Math.h"
 #include <memory>
 
 class AMeshActor
@@ -22,7 +23,7 @@ public:
 		ObjectConstants->ObjectWorld.Content[3][1] = InLoc.Y;
 		ObjectConstants->ObjectWorld.Content[3][2] = InLoc.Z;
 
-		ObjectConstants->ObjectWorld = Utilities::MatrixTranspose(ObjectConstants->ObjectWorld);
+		ObjectConstants->ObjectWorld = FMath::MatrixTranspose(ObjectConstants->ObjectWorld);
 	}
 
 private:

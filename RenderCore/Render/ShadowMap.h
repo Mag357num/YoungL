@@ -38,7 +38,7 @@ public:
 
 	IRHIConstantBuffer<FSceneConstant>* GetSceneConstantBuffer(){return SceneConstantBuffer;}
 
-	FMatrix GetLightViewProj(){return Utilities::MatrixTranspose(SceneConstant.ViewProj);}
+	FMatrix GetLightViewProj(){return FMath::MatrixTranspose(SceneConstant.ViewProj);}
 	FSceneConstant* GetLightSceneConstant(){return &SceneConstant;}
 
 private:

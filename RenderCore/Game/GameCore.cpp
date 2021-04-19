@@ -123,7 +123,7 @@ void FGameCore::Tick(float DeltaTime)
 			SceneConstant->ViewProj = View * Proj;
 
 			//copy to upload buffer transposed???
-			SceneConstant->ViewProj = Utilities::MatrixTranspose(SceneConstant->ViewProj);
+			SceneConstant->ViewProj = FMath::MatrixTranspose(SceneConstant->ViewProj);
 			SceneConstant->CamLocation = FVector4D(CamLoc.X, CamLoc.Y, CamLoc.Z, 1.0f);
 
 			FRenderThreadCommand CreateRenderItemCommand;

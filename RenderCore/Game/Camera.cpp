@@ -16,7 +16,7 @@ FCamera::FCamera()
 	FVector4D TempCameraTarget = FVector4D(CamTarget.X, CamTarget.Y, CamTarget.Z, 0.0f);
 	FVector4D TempCameraLoc = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	FVector4D TempUp = FVector4D(CamUp.X, CamUp.Y, CamUp.Z, 0.0f);
-	FVector4D LengthRe = Utilities::Vector3Length(Utilities::VectorSubtract(TempCameraTarget, TempCameraLoc));
+	FVector4D LengthRe = FMath::Vector3Length(FMath::VectorSubtract(TempCameraTarget, TempCameraLoc));
 	
 	CamRadius = LengthRe.X;
 	CamPitch = 0.0f;
@@ -24,8 +24,8 @@ FCamera::FCamera()
 
 	IsCamerInfoDirty = false;
 
-	View = Utilities::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
-	Proj = Utilities::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, 1.0f, 2000.0f);
+	View = FMath::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
+	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, 1.0f, 2000.0f);
 
 	IsCamerInfoDirty = true;
 }
@@ -41,14 +41,14 @@ void FCamera::UpdateView()
 	FVector4D TempCameraLoc = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	FVector4D TempUp = FVector4D(CamUp.X, CamUp.Y, CamUp.Z, 0.0f);
 
-	View = Utilities::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
+	View = FMath::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
 
 	IsCamerInfoDirty = true;
 }
 
 void FCamera::UpdateProj()
 {
-	Proj = Utilities::MatrixPerspectiveFovLH(CAMERAPI * Fov / 180.0f, AspectRatio, 1.0f, 1000.0f);
+	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov / 180.0f, AspectRatio, 1.0f, 1000.0f);
 	IsCamerInfoDirty = true;
 }
 

@@ -31,19 +31,19 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
 	//initialize scene constant
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
+	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.25f * 3.1416f, (1.0f * Viewport.Width / Viewport.Height), 1.0f, 1000.0f);
 
 	//// Build the initial view matrix.
 	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);
 	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
-	FMatrix View = Utilities::MatrixLookAtLH(CamPos, CamTarget, CamUp);
+	FMatrix View = FMath::MatrixLookAtLH(CamPos, CamTarget, CamUp);
 
 	SceneConstant.ViewProj = View * Proj;
 
 	//copy to upload buffer transposed???
-	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.ViewProj = FMath::MatrixTranspose(SceneConstant.ViewProj);
 	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	
 	//create global directional lighting
@@ -71,7 +71,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 			0.5f, 0.5f, 0.0f, 1.0f);
 
 		SceneConstant.LightViewProj = LightVP * T;
-		SceneConstant.LightViewProj = Utilities::MatrixTranspose(SceneConstant.LightViewProj);
+		SceneConstant.LightViewProj = FMath::MatrixTranspose(SceneConstant.LightViewProj);
 
 		IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateGraphicsDepthPSO();
 		GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
@@ -272,7 +272,7 @@ void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 		0.5f, 0.5f, 0.0f, 1.0f);
 
 	SceneConstant.LightViewProj = LightVP * T;
-	SceneConstant.LightViewProj = Utilities::MatrixTranspose(SceneConstant.LightViewProj);
+	SceneConstant.LightViewProj = FMath::MatrixTranspose(SceneConstant.LightViewProj);
 
 	//update buffer
 	SceneConstantBuffer->CopyData(0, SceneConstant);

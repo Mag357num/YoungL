@@ -8,21 +8,21 @@ void FShadowMap::CreateShadowSceneConstant(IRHIContext* InContext, const FBoundS
 	LightYaw = (float)atan(LightDir.Y / LightDir.X);
 
 	//initialize scene constant//fov is 0.25Pi
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.5f * 3.1416f, 1.0f, 1.0f, 2000.0f);
+	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.5f * 3.1416f, 1.0f, 1.0f, 2000.0f);
 
 	float Distance = (float)(InBound.Radius / sin(0.25f * 3.1416f));//fov*1/2
-	LightDir = Utilities::Vector3Normalize(LightDir);
+	LightDir = FMath::Vector3Normalize(LightDir);
 	FVector4D LightPos = InBound.Center - LightDir * Distance;
 
 	//// Build the initial view matrix.
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
-	FMatrix View = Utilities::MatrixLookAtLH(LightPos, InBound.Center, CamUp);
+	FMatrix View = FMath::MatrixLookAtLH(LightPos, InBound.Center, CamUp);
 
 	SceneConstant.ViewProj = View * Proj;
 
 	//copy to upload buffer transposed???
-	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.ViewProj = FMath::MatrixTranspose(SceneConstant.ViewProj);
 	SceneConstant.CamLocation = LightPos;
 
 	//create global directional lighting
@@ -45,21 +45,21 @@ void FShadowMap::AutomateRotateLight(const FBoundSphere& InBound)
 	FVector4D LightDir = FVector4D((float)cos(LightYaw), (float)sin(LightYaw), (float)tan(LightPicth), 0.0f);
 
 	//initialize scene constant//fov is 0.25Pi
-	FMatrix Proj = Utilities::MatrixPerspectiveFovLH(0.5f * 3.1416f, 1.0f, 1.0f, 2000.0f);
+	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.5f * 3.1416f, 1.0f, 1.0f, 2000.0f);
 
 	float Distance = (float)(InBound.Radius / sin(0.25f * 3.1416f));//fov*1/2
-	LightDir = Utilities::Vector3Normalize(LightDir);
+	LightDir = FMath::Vector3Normalize(LightDir);
 	FVector4D LightPos = InBound.Center + LightDir * Distance;
 
 	//// Build the initial view matrix.
 	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
 
-	FMatrix View = Utilities::MatrixLookAtLH(LightPos, InBound.Center, CamUp);
+	FMatrix View = FMath::MatrixLookAtLH(LightPos, InBound.Center, CamUp);
 
 	SceneConstant.ViewProj = View * Proj;
 
 	//copy to upload buffer transposed???
-	SceneConstant.ViewProj = Utilities::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.ViewProj = FMath::MatrixTranspose(SceneConstant.ViewProj);
 	SceneConstant.CamLocation = LightPos;
 
 	//create global directional lighting
