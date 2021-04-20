@@ -24,6 +24,7 @@ public:
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)override;
 	virtual void BuildIndexBuffer(std::vector<uint32_t>& InIndices)override;
 	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices)override;
+	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices)override;
 private:
 
 };
@@ -93,5 +94,28 @@ void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices
 	Buffer->VertexBuffer->Unmap(0, nullptr);
 
 	Buffer->SetVertexBufferSize(VertexBufferSize);
+	Buffer->SetStrideInBytes(VertexStrideSize);
 }
 
+void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FSkinVertex>& InVertices)
+{
+	VertexBuffer = new FRHIVertexBuffer_D3D12();
+	FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
+
+	VertexBufferSize = sizeof(FSkinVertex) * InVertices.size();
+	VertexStrideSize = sizeof(FSkinVertex);
+	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+	CD3DX12_RESOURCE_DESC VtResDesc = CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize);
+	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,
+		D3D12_HEAP_FLAG_NONE, &VtResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+		IID_PPV_ARGS(&Buffer->VertexBuffer));
+
+	UINT8* VertexBegin;
+	D3D12_RANGE VtCopyRange;
+	Buffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
+	memcpy(VertexBegin, InVertices.data(), VertexBufferSize);
+	Buffer->VertexBuffer->Unmap(0, nullptr);
+
+	Buffer->SetVertexBufferSize(VertexBufferSize);
+	Buffer->SetStrideInBytes(VertexStrideSize);
+}

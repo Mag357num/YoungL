@@ -3,6 +3,7 @@
 #include <intsafe.h>
 #include <wtypes.h>
 #include "MeshActor.h"
+#include "SkinMeshActor.h"
 #include <string>
 #define  AssetPathFLOOR L"Models/ModelFloor.Bin"
 #define  AssetPathModel L"Models/ModelSave.Bin"
@@ -21,11 +22,36 @@ public:
 	virtual void Initialize();
 	virtual void ShutDown()
 	{ 
-		if (!Geometries.empty())
+		if (StaticActors.size() > 0)
+		{
+			for (size_t Index = 0; Index < StaticActors.size(); Index++)
+			{
+				StaticActors[Index].reset();
+			}
+		}
+		if (!StaticActors.empty())
 		{
 			printf("Empty Error!");
 		}
+
+		if (SkinedActors.size() > 0)
+		{
+			for (size_t Index = 0; Index < SkinedActors.size(); Index++)
+			{
+				SkinedActors[Index].reset();
+			}
+		}
+		if (!SkinedActors.empty())
+		{
+			printf("Empty Error!");
+		}
+
 		if (!AssetPaths.empty())
+		{
+			printf("Empty Error!");
+		}
+
+		if (!SkinedPaths.empty())
 		{
 			printf("Empty Error!");
 		}
@@ -46,16 +72,23 @@ public:
 	virtual void OnMouseButtonUp(WPARAM BtnState, int X, int Y);
 	virtual void OnMouseMove(WPARAM BtnState, int X, int Y);
 
-	std::vector<std::unique_ptr<AMeshActor>>& GetGeometries() {
-		return Geometries;}
+	std::vector<std::unique_ptr<AMeshActor>>& GetStaticActors() {
+		return StaticActors;}
+
+	std::vector<std::unique_ptr<ASkinMeshActor>>& GetSkinedActors() {
+		return SkinedActors;
+	}
 
 	std::weak_ptr<FRenderThreadManager> RenderThreadManager_Weak;
 private:
-	void LoadAsset(std::string& Path);
+	void LoadActor(std::string& Path, bool bSkinedActor = false);
 
-	std::vector<std::unique_ptr<AMeshActor>> Geometries;
+	//unique_ptr will be automated released when ~FGameCore
+	std::vector<std::unique_ptr<AMeshActor>> StaticActors;
+	std::vector<std::unique_ptr<ASkinMeshActor>> SkinedActors;
 
 	std::vector<std::string> AssetPaths;
+	std::vector<std::string> SkinedPaths;
 
 	std::unique_ptr<FCamera> Camera;
 

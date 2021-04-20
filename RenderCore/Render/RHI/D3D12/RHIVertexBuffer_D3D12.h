@@ -17,16 +17,18 @@ public:
 		D3D12_VERTEX_BUFFER_VIEW Desc;
 		Desc.BufferLocation = VertexBuffer->GetGPUVirtualAddress();
 		Desc.SizeInBytes = (UINT)VertexBufferSize;
-		Desc.StrideInBytes = sizeof(FVertex);
+		Desc.StrideInBytes = (UINT)StrideInBytes;
 
 		return Desc;
 	}
 
 	void SetVertexBufferSize(size_t InSize){VertexBufferSize = InSize;}
+	void SetStrideInBytes(size_t InStride) { StrideInBytes = InStride; }
 
 	ComPtr<ID3D12Resource> VertexBuffer;
 private:
 	size_t VertexBufferSize = 0;
+	size_t StrideInBytes =0;
 	
 };
 

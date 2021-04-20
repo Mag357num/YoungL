@@ -131,6 +131,14 @@ struct FMatrix
 	FVector4D GetRow1() { return FVector4D(Content[1][0], Content[1][1], Content[1][2], Content[1][3]); }
 	FVector4D GetRow0() { return FVector4D(Content[0][0], Content[0][1], Content[0][2], Content[0][3]); }
 
+	void SetRow3(FVector4D InRow)
+	{
+		Content[3][0] = InRow.X;
+		Content[3][1] = InRow.Y;
+		Content[3][2] = InRow.Z;
+		Content[3][3] = InRow.W;
+	}
+
 	//------------------------------------------------------------------------------
 	// Perform a 4x4 matrix multiply by a 4x4 matrix
 	static FMatrix MatrixMultiply
@@ -189,8 +197,6 @@ struct FMatrix
 
 };
 
-
-
 struct FVertex
 {
 	FVertex() {}
@@ -199,8 +205,34 @@ struct FVertex
 	FVector2D Uv;
 };
 
+struct FSkinVertex
+{
+	FSkinVertex() {}
+
+	FVector Position;
+	FVector Normal;
+	FVector2D Uv;
+
+	uint8_t BoneIndex[4];
+	float BoneWights[4];
+};
+
 namespace FMath
 {
+	const uint32_t PERMUTE_0X = 0;
+	const uint32_t PERMUTE_0Y = 1;
+	const uint32_t PERMUTE_0Z = 2;
+	const uint32_t PERMUTE_0W = 3;
+	const uint32_t PERMUTE_1X = 4;
+	const uint32_t PERMUTE_1Y = 5;
+	const uint32_t PERMUTE_1Z = 6;
+	const uint32_t PERMUTE_1W = 7;
+
+	const uint32_t SWIZZLE_X = 0;
+	const uint32_t SWIZZLE_Y = 1;
+	const uint32_t SWIZZLE_Z = 2;
+	const uint32_t SWIZZLE_W = 3;
+
 	static FMatrix IdentityMatrix = FMatrix(
 		1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
@@ -319,7 +351,86 @@ namespace FMath
 		return Result;
 	}
 
+	static FVector4D VectorAdd(FVector4D V1,
+		FVector4D V2)
+	{
+		FVector4D Result = FVector4D(V1.X + V2.X,
+			V1.Y + V2.Y,
+			V1.Z + V2.Z,
+			V1.W + V2.W);
+		return Result;
+	}
+	
+	static FVector4D VectorMultiply(FVector4D V1,
+		FVector4D V2)
+	{
+		FVector4D Result = FVector4D(V1.X * V2.X,
+			V1.Y * V2.Y,
+			V1.Z * V2.Z,
+			V1.W * V2.W);
+		return Result;
+	}
 
+	//replicate the w componnet of the vector
+	FVector4D VectorSplatW(FVector4D V)
+	{
+		FVector4D Ret;
+
+		Ret.X = Ret.Y = Ret.Z = Ret.W = V.W;
+
+		return Ret;
+	}
+
+	FVector4D VectorPermute(FVector4D V1, FVector4D V2, uint32_t PermuteX, 
+						uint32_t PermuteY, uint32_t PermuteZ, uint32_t PermuteW)
+	{
+		FVector4D Ret;
+
+		float Content[2][4] = {{V1.X, V1.Y,V1.Z, V1.W},
+								{V2.X, V2.Y,V2.Z, V2.W}};
+
+		const uint32_t i0 = PermuteX && 3;
+		const uint32_t vi0 = PermuteX >> 2;
+		Ret.X = Content[vi0][i0];
+
+		const uint32_t i1 = PermuteY && 3;
+		const uint32_t vi1 = PermuteY >> 2;
+		Ret.Y = Content[vi1][i1];
+
+		const uint32_t i2 = PermuteZ && 3;
+		const uint32_t vi2 = PermuteZ >> 2;
+		Ret.Z = Content[vi2][i2];
+
+		const uint32_t i3 = PermuteW && 3;
+		const uint32_t vi3 = PermuteW >> 2;
+		Ret.W = Content[vi3][i3];
+
+		return Ret;
+	}
+
+	FVector4D VectorSwizzle(FVector4D V, uint32_t E0, uint32_t E1, uint32_t E2, uint32_t E3)
+	{
+		FVector4D Ret;
+
+		float Content[4] = {V.X, V.Y, V.Z, V.W};
+
+		Ret.X = Content[E0];
+		Ret.Y = Content[E1];
+		Ret.Z = Content[E2];
+		Ret.W = Content[E3];
+
+		return Ret;
+	}
+
+	static FVector4D VectorMultiplyAdd(FVector4D V1,
+		FVector4D V2, FVector4D V3)
+	{
+		FVector4D Result = FVector4D(V1.X * V2.X + V3.X,
+			V1.Y * V2.Y + V3.Y,
+			V1.Z * V2.Z + V3.Z,
+			V1.W * V2.W + V3.W);
+		return Result;
+	}
 
 	static FVector4D Vector3Dot
 	(
@@ -516,6 +627,101 @@ namespace FMath
 	{
 		FVector4D EyeDirection = VectorSubtract(FocusPosition, EyePosition);
 		return MatrixLookToLH(EyePosition, EyeDirection, UpDirection);
+	}
+
+	static FMatrix MatrixScalingFromVector(FVector4D InScale)
+	{
+		FMatrix Ret;
+
+		Ret.Content[0][0] = InScale.X;
+		Ret.Content[0][1] = 0.0f;
+		Ret.Content[0][2] = 0.0f;
+		Ret.Content[0][3] = 0.0f;
+
+		Ret.Content[0][0] = 0.0f;
+		Ret.Content[0][1] = InScale.Y;
+		Ret.Content[0][2] = 0.0f;
+		Ret.Content[0][3] = 0.0f;
+
+		Ret.Content[0][0] = 0.0f;
+		Ret.Content[0][1] = 0.0f;
+		Ret.Content[0][2] = InScale.Z;
+		Ret.Content[0][3] = 0.0f;
+
+		Ret.Content[0][0] = 0.0f;
+		Ret.Content[0][1] = 0.0f;
+		Ret.Content[0][2] = 0.0f;
+		Ret.Content[0][3] = 1.0f;
+
+		return Ret;
+	}
+
+	static FMatrix MatrixxRotationQuaternion(FVector4D InRotation)
+	{
+		static const FVector4D Constant1110 = { 1.0f, 1.0f, 1.0f, 0.0f };
+
+		FVector4D Q0 = VectorAdd(InRotation, InRotation);
+		FVector4D Q1= VectorMultiply(InRotation, Q0);
+
+		FVector4D V0 = VectorPermute(Q1, Constant1110, PERMUTE_0Y, PERMUTE_0X, PERMUTE_0X, PERMUTE_1W);
+		FVector4D V1 = VectorPermute(Q1, Constant1110, PERMUTE_0Z, PERMUTE_0Z, PERMUTE_0Y, PERMUTE_1W);
+		FVector4D R0 = VectorSubtract(Constant1110, V0);
+		R0 = VectorSubtract(R0, V1);
+
+		V0 = VectorSwizzle(InRotation, SWIZZLE_X, SWIZZLE_X, SWIZZLE_Y, SWIZZLE_W);
+		V1 = VectorSwizzle(Q0, SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_W);
+		V0 = VectorMultiply(V0, V1);
+
+		V1 = VectorSplatW(InRotation);
+		FVector4D V2 = VectorSwizzle(Q0, SWIZZLE_Y,SWIZZLE_Z, SWIZZLE_X, SWIZZLE_W);
+		V1 = VectorMultiply(V1, V2);
+
+		FVector4D R1 = VectorAdd(V0, V1);
+		FVector4D R2 = VectorSubtract(V0, V1);
+
+		V0 = VectorPermute(R1, R2, PERMUTE_0Y, PERMUTE_1X, PERMUTE_1Y, PERMUTE_0Z);
+		V1 = VectorPermute(R1, R2, PERMUTE_0X, PERMUTE_1Z, PERMUTE_0X, PERMUTE_1Z);
+
+
+		FVector4D Row0 = VectorPermute(R0, V0, PERMUTE_0X, PERMUTE_1X, PERMUTE_1Y, PERMUTE_0W);
+		FVector4D Row1 = VectorPermute(R0, V0, PERMUTE_1Z, PERMUTE_0Y, PERMUTE_1W, PERMUTE_0W);
+		FVector4D Row2 = VectorPermute(R0, V1, PERMUTE_1X, PERMUTE_1Y, PERMUTE_0Z, PERMUTE_0W);
+		FVector4D Row3 = FVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+
+		FMatrix Ret(Row0, Row1, Row2, Row3);
+
+		return Ret;
+	}
+
+
+	//construct matrix from translation, rotate and scale
+	// M = MScaling * Inverse(MRotationOrigin) * MRotation * MRotationOrigin * MTranslation;
+	static FMatrix MatrixAffineTransformation(FVector4D Scaling, FVector4D RotationOrigin, 
+										FVector4D RotationQuaternion, FVector4D Translation)
+	{
+		//
+
+		FMatrix MScaling = MatrixScalingFromVector(Scaling);
+		FVector4D VRotationOrigin = FVector4D(RotationOrigin.X, RotationOrigin.Y, RotationOrigin.Z, 0.0f);
+		FMatrix MRotation = MatrixxRotationQuaternion(RotationQuaternion);
+		FVector4D MTranslation = FVector4D(Translation.X, Translation.Y, Translation.Z, 0.0f);
+
+		FMatrix Ret = MScaling;
+		FVector4D Row3 = Ret.GetRow3();
+		Row3 = VectorSubtract(Row3, VRotationOrigin);
+		Ret.SetRow3(Row3);
+		
+		//multiply rotation
+		Ret = Ret * MRotation;
+
+		//reset row3
+		Row3 = Ret.GetRow3();
+		Row3 = VectorAdd(Row3, VRotationOrigin);
+		Row3 = VectorAdd(Row3, MTranslation);
+
+		Ret.SetRow3(Row3);
+
+		return Ret;
 	}
 }
 

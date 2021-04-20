@@ -7,10 +7,11 @@
 
 using namespace std;
 
+template<typename T>
 class FGeometry
 {
 public:
-	FGeometry(std::vector<FVertex>& InVertices, std::vector<uint32_t> InIndices)
+	FGeometry(std::vector<T>& InVertices, std::vector<uint32_t> InIndices)
 	:Vertices(InVertices),
 	Indices(InIndices)
 	{
@@ -33,13 +34,13 @@ public:
 		}
 	}
 
-	std::vector<FVertex>& GetVertices(){return Vertices;}
+	std::vector<T>& GetVertices(){return Vertices;}
 	std::vector<uint32_t>& GetIndices(){return Indices;}
 
 public:
 
 private:
-	std::vector<FVertex> Vertices;
+	std::vector<T> Vertices;
 	std::vector<uint32_t> Indices;
 
 };

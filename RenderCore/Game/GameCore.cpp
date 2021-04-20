@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameCore.h"
-#include <fstream>
+
+#include "ModelLoader.h"
 
 FGameCore::FGameCore(int ViewWidth, int ViewHeigt)
 {
@@ -73,12 +74,12 @@ void FGameCore::Initialize()
 
 	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
 	{
-		LoadAsset(AssetPaths[Index]);
+		LoadActor(AssetPaths[Index]);
 
 		//test modify 
 		if (Index == 0)
 		{
-			Geometries[0]->SetLocation(FVector(0.0f, 0.0f, -20.0f));
+			StaticActors[0]->InitiallySetLocation(FVector(0.0f, 0.0f, -20.0f));
 		}
 	}
 	
@@ -137,28 +138,22 @@ void FGameCore::Tick(float DeltaTime)
 	}
 }
 
-void FGameCore::LoadAsset(std::string& Path)
+void FGameCore::LoadActor(std::string& Path, bool bSkinedActor)
 {
-	//load asset
-	std::vector<FVertex> Vertices;
-	std::ifstream Fin(Path, std::ios::in | std::ios::binary);
+	if (bSkinedActor)
+	{
+		std::unique_ptr<ASkinMeshActor> SkinedActor = std::make_unique<ASkinMeshActor>();
+		std::unique_ptr<FGeometry<FSkinVertex>> SkinGeo = FModelLoader::LoadSkinedMeshAndAnimation(Path, SkinedActor->GetSkinedData());
+		SkinedActor->SetSkinGeometry(SkinGeo);
+		SkinedActors.push_back(std::move(SkinedActor));
+	}
+	else
+	{
+		std::unique_ptr<FGeometry<FVertex>> Geo = FModelLoader::LoadStaticMesh(Path);
+		std::unique_ptr<AMeshActor> GeoActor = std::make_unique<AMeshActor>();
+		GeoActor->SetGeometry(Geo);
+		StaticActors.push_back(std::move(GeoActor));
+	}
+	
 
-	int VertexNum;
-	Fin.read((char*)&VertexNum, sizeof(int));
-	Vertices.resize(VertexNum);
-	Fin.read((char*)Vertices.data(), sizeof(FVertex) * VertexNum);
-
-	std::vector<uint32_t> Indices;
-	int IndexNum;
-	Fin.read((char*)&IndexNum, sizeof(int));
-	Indices.resize(IndexNum);
-	Fin.read((char*)Indices.data(), sizeof(int) * IndexNum);
-
-	Fin.close();
-
-	//create resource
-	std::unique_ptr<FGeometry> Geo = std::make_unique<FGeometry>(Vertices, Indices);
-	std::unique_ptr<AMeshActor> GeoActor = std::make_unique<AMeshActor>();
-	GeoActor->SetGeometry(Geo);
-	Geometries.push_back(std::move(GeoActor));
 }

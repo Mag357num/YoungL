@@ -79,7 +79,11 @@ public:
 	}
 
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context){}
+
 	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices){}
+
+	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices){}
+	
 	virtual void BuildIndexBuffer(std::vector<uint32_t>& InIndices){}
 
 	IRHIVertexBuffer* GetVertexBuffer(){return VertexBuffer;}
