@@ -119,7 +119,7 @@ void FWinApp::InitGame()
 	//init game core
 	if (!GameCore)
 	{
-		GameCore = new FGameCore();
+		GameCore = new FGameCore(ClientWidth, ClientHeight);
 		GameCore->Initialize();
 	}
 

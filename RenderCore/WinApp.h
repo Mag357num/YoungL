@@ -18,8 +18,8 @@ class FWinApp
 {
 public:
 	FWinApp(HINSTANCE Instance) :AppInstan(Instance) {
-		ClientWidth = 800;
-		ClientHeight = 600;
+		ClientWidth = 1280;
+		ClientHeight = 720;
 	}
 
 	~FWinApp(){

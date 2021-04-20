@@ -4,7 +4,9 @@
 class FCamera
 {
 public:
-	FCamera();
+	FCamera(int ViewWidth, int ViewHeigt);
+
+	FCamera(){}
 
 	~FCamera();
 

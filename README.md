@@ -6,32 +6,39 @@
 
 - RenderCore
   - WinApp
-  - GameCore
-  - GameTimer
-  - Camera
-  - MeshActor
+  - pch
+  - Utilities
+  - Game
+    - Camera
+    - GameCore
+    - GameTimer
+    - MeshActor
+  - Math
+    - Math
   - Render
-  - ShadowMap
-  - RenderThread
-  - RenderThreadManager
-  - RHIDepthResource
-    - RHIContext
-    - RHIResource
-    - RHIResourceHandle
+    - Render
+    - RenderThread
+    - RenderThreadManager
+    - ShadowMap
     - RHI
-    - D3D12
-      - d3dx12.h
-      - RHIResource_D3D12
-      - RHIDepthResource_D3D12
-      - RHIContext_D3D12
-      - RHIVertextBuffer_D3D12
-      - RHIIndexBuffer_D3D12
-      - RHIShaderResource_D3D12
-      - RHIConstantBuffer_D3D12
-      - RHIResourceHandle_D3D12
-      - RHIUploadBuffer_D3D12
-      - RHIRenderingItem_D3D12
-      - RHIGraphicsPipelineState_D3D12
+      - RHIContext
+      - RHIResource
+      - RHIDepthResource
+      - RHIColorResource
+      - RHIResourceHandle
+      - D3D12
+        - d3dx12.h
+        - RHIResource_D3D12
+        - RHIDepthResource_D3D12
+        - RHIContext_D3D12
+        - RHIVertextBuffer_D3D12
+        - RHIIndexBuffer_D3D12
+        - RHIShaderResource_D3D12
+        - RHIConstantBuffer_D3D12
+        - RHIResourceHandle_D3D12
+        - RHIUploadBuffer_D3D12
+        - RHIRenderingItem_D3D12
+        - RHIGraphicsPipelineState_D3D12
   - Shaders
     - Common.hlsli
     - BasepassRS.hlsli

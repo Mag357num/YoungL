@@ -3,7 +3,7 @@
 
 #define  CAMERAPI 3.1416f
 
-FCamera::FCamera()
+FCamera::FCamera(int ViewWidth, int ViewHeigt)
 	:CamPos(FVector4D(800.0f, 0.0f, 150.0f, 0.0f)),
 	CamTarget(FVector(0.0f, 0.0f, 150.0f)),
 	CamUp(FVector(0.0f, 0.0f, 1.0f)),
@@ -13,6 +13,8 @@ FCamera::FCamera()
 	AspectRatio(1.333f)//800x600
 
 {
+	AspectRatio = 1.0f*ViewWidth / ViewHeigt;
+
 	FVector4D TempCameraTarget = FVector4D(CamTarget.X, CamTarget.Y, CamTarget.Z, 0.0f);
 	FVector4D TempCameraLoc = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
 	FVector4D TempUp = FVector4D(CamUp.X, CamUp.Y, CamUp.Z, 0.0f);

@@ -13,8 +13,10 @@
 class FGameCore
 {
 public:
-	FGameCore();
+	FGameCore(int ViewWidth, int ViewHeigt);
 	~FGameCore();
+
+	FGameCore(){}
 
 	virtual void Initialize();
 	virtual void ShutDown()

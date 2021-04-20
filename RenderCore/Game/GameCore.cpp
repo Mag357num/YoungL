@@ -2,9 +2,9 @@
 #include "GameCore.h"
 #include <fstream>
 
-FGameCore::FGameCore()
+FGameCore::FGameCore(int ViewWidth, int ViewHeigt)
 {
-	Camera = std::make_unique<FCamera>();
+	Camera = std::make_unique<FCamera>(ViewWidth, ViewHeigt);
 
 	bMouseButtonDown = false;
 	MousePosition = FVector2D(0.0f, 0.0f);
