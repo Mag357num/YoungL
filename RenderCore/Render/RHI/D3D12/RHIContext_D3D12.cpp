@@ -4,6 +4,9 @@
 #include "RHIGraphicsPipelineState_D3D12.h"
 #include "RHIShaderResource_D3D12.h"
 
+#include "CompiledShaders/SkinnedMeshVS.h"
+#include "CompiledShaders/SkinnedMeshPS.h"
+
 #include <DirectXColors.h>
 
 #include <D3Dcompiler.h>
@@ -317,33 +320,23 @@ void FRHIContext_D3D12::BuildDepthRootSignature()
 
 void FRHIContext_D3D12::BuildShadersInputLayout()
 {
-	UINT CompileFlags = 0;
-
-#if defined(DEBUG) || defined(_DEBUG)  
-	CompileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-	ComPtr<ID3DBlob> CompileError;
-	D3DCompileFromFile(ShaderPathVS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", CompileFlags, 0, &M_Vs, &CompileError);
-
-	if (CompileError != nullptr)
-	{
-		OutputDebugStringA((char*)CompileError->GetBufferPointer());
-	}
-
-	D3DCompileFromFile(ShaderPathPS, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", CompileFlags, 0, &M_Ps, &CompileError);
-	if (CompileError != nullptr)
-	{
-		OutputDebugStringA((char*)CompileError->GetBufferPointer());
-	}
-
-	M_ShadersInputDesc =
+	ShadersInputDesc_Static =
 	{
 		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
+	ShadersInputDesc_Skinned = 
+	{
+		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
+		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
+		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//8
+
+		 { "TAGANT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
+		 { "BONEINDEX", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//8
+		 { "BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 52, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }//16
+	};
 }
 
 IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
@@ -354,7 +347,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
 	Desc.pRootSignature = M_RootSignaure.Get();
-	Desc.InputLayout = { M_ShadersInputDesc.data(), (UINT)M_ShadersInputDesc.size() };
+	Desc.InputLayout = { ShadersInputDesc_Static.data(), (UINT)ShadersInputDesc_Static.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
@@ -412,7 +405,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsDepthPSO()
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
 	Desc.pRootSignature = Depth_RootSignature.Get();
-	Desc.InputLayout = { M_ShadersInputDesc.data(), (UINT)M_ShadersInputDesc.size() };
+	Desc.InputLayout = { ShadersInputDesc_Static.data(), (UINT)ShadersInputDesc_Static.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
@@ -463,6 +456,64 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsDepthPSO()
 	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsDepthPSO->PSO));
 
 	return D3D12GraphicsDepthPSO;
+}
+
+IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
+{
+	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+
+	//
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
+	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	Desc.pRootSignature = M_RootSignaure.Get();
+	Desc.InputLayout = { ShadersInputDesc_Skinned.data(), (UINT)ShadersInputDesc_Skinned.size() };
+	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+
+	D3D12_DEPTH_STENCIL_DESC DSDesc;
+	DSDesc.DepthEnable = TRUE;
+	DSDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	DSDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	DSDesc.StencilEnable = FALSE;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	DSDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	DSDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	//Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	Desc.DepthStencilState = DSDesc;
+
+	Desc.VS =
+	{
+		g_SkinnedMeshVS,
+		sizeof(g_SkinnedMeshVS)
+	};
+	Desc.PS =
+	{
+		g_SkinnedMeshPS,
+		sizeof(g_SkinnedMeshPS)
+	};
+
+	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	Desc.NumRenderTargets = 1;
+	Desc.RTVFormats[0] = M_BackBufferFormat;
+	Desc.DSVFormat = M_DepthStencilFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.SampleMask = UINT_MAX;
+
+	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsPSO->PSO));
+
+	return D3D12GraphicsPSO;
 }
 
 void FRHIContext_D3D12::BeginDraw(const wchar_t* Label)

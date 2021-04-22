@@ -11,6 +11,8 @@ public:
 
 	FSkinedData* GetSkinedData(){return SkinedData;}
 
+	virtual void Tick(float DeltaTime)override;
+
 	void SetSkinGeometry(std::unique_ptr<FGeometry<FSkinVertex>>& InGeometry) { Geometry = std::move(InGeometry); };
 	FGeometry<FSkinVertex>* GetSkinGeometry() { return Geometry.get(); }
 

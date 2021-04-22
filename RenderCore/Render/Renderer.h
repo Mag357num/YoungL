@@ -2,6 +2,7 @@
 
 #include "RHI/RHIContext.h"
 #include "../Game/MeshActor.h"
+#include "../Game/SkinMeshActor.h"
 #include "ShadowMap.h"
 
 class FRenderer
@@ -23,6 +24,7 @@ public:
 
 	//
 	void CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
+	void CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries);
 
 protected:
 private:
@@ -32,6 +34,7 @@ private:
 	std::map<std::string, IRHIGraphicsPipelineState*> GraphicsPSOs;
 
 	std::vector<IRHIRenderingMesh*> RenderingMeshes;
+	std::vector<IRHIRenderingMesh*> SkinnedRenderingMeshes;
 
 	//
 	FViewport Viewport;

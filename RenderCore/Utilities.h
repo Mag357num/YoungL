@@ -11,7 +11,7 @@ template<typename T>
 class FGeometry
 {
 public:
-	FGeometry(std::vector<T>& InVertices, std::vector<uint32_t> InIndices)
+	FGeometry(std::vector<T>& InVertices, std::vector<uint16_t> InIndices)
 	:Vertices(InVertices),
 	Indices(InIndices)
 	{
@@ -35,13 +35,13 @@ public:
 	}
 
 	std::vector<T>& GetVertices(){return Vertices;}
-	std::vector<uint32_t>& GetIndices(){return Indices;}
+	std::vector<uint16_t>& GetIndices(){return Indices;}
 
 public:
 
 private:
 	std::vector<T> Vertices;
-	std::vector<uint32_t> Indices;
+	std::vector<uint16_t> Indices;
 
 };
 
@@ -62,6 +62,20 @@ struct FObjectConstants
 	FVector Fresnel0 = FVector(0.9f, 0.9f, 0.9f);
 	float Shiness = 0.1f;
 	FVector AmbientLight = FVector(0.2f, 0.2f, 0.2f);
+};
+
+struct FMaterial
+{
+	std::string Name;
+
+	FVector FresnelR0 = {0.1f, 0.1f, 0.1f};
+	FVector4D DiffuseAlbedo = {1.0f, 1.0f, 1.0f, 1.0f};
+	float Roughness = 0.8f;
+	bool AlphaClip = false;
+
+	std::string MaterialTypeName;
+	std::string DiffuseMapName;
+	std::string NormalMapName;
 };
 
 struct FSceneConstant

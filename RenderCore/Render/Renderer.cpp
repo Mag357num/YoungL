@@ -30,6 +30,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	IRHIGraphicsPipelineState* BasePassPSO = RHIContext->CreateGraphicsPSO();
 	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
+	IRHIGraphicsPipelineState* SkinPassPSO = RHIContext->CreateSkinnedGraphicsPSO();
+	GraphicsPSOs.insert(std::make_pair("SkinPass", SkinPassPSO));
+
 	//initialize scene constant
 	float AspectRatio = 1.0f * Viewport.Width / Viewport.Height;
 	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.25f * 3.1416f, AspectRatio, 1.0f, 1000.0f);
@@ -112,6 +115,18 @@ void FRenderer::DestroyRHIContext()
 	{
 		printf("Empty Error!");
 	}
+
+	//release skinned rendering mesh
+	for (int ItemIndex = 0; ItemIndex < SkinnedRenderingMeshes.size(); ItemIndex++)
+	{
+		SkinnedRenderingMeshes[ItemIndex]->Release();
+		delete SkinnedRenderingMeshes[ItemIndex];
+	}
+
+	if (!SkinnedRenderingMeshes.empty())
+	{
+		printf("Empty Error!");
+	}
 	
 	//shadowmap
 	if (ShadowMap)
@@ -156,8 +171,24 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 
 		RenderingMeshes.push_back(Item);
 	}
+}
 
-	//buil scene constant buffer
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries)
+{
+	for (int Index = 0; Index < Geometries.size(); ++Index)
+	{
+		//create an empty rendering item
+
+		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
+
+		Item->BuildConstantBuffer(Geometries[Index]->GetObjectConstants(), RHIContext);
+		Item->BuildVertexBuffer(Geometries[Index]->GetSkinGeometry()->GetVertices());
+		Item->BuildIndexBuffer(Geometries[Index]->GetSkinGeometry()->GetIndices());
+
+		//todo: create BoneTransform Constant Buffer
+
+		SkinnedRenderingMeshes.push_back(Item);
+	}
 }
 
 void FRenderer::RenderObjects()
@@ -192,6 +223,12 @@ void FRenderer::RenderObjects()
 
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+
+
+	//draw skined Mesh
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
+	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
+
 
 	//change back buffer state to present
 	RHIContext->TransitionBackBufferStateToPresent();

@@ -22,7 +22,7 @@ public:
 
 
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)override;
-	virtual void BuildIndexBuffer(std::vector<uint32_t>& InIndices)override;
+	virtual void BuildIndexBuffer(std::vector<uint16_t>& InIndices)override;
 	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices)override;
 	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices)override;
 private:
@@ -51,13 +51,13 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
-void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)
+void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint16_t>& InIndices)
 {
 	IndexBuffer = new FRHIIndexBuffer_D3D12();
 	FRHIIndexBuffer_D3D12* Buffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
 	
 	//create index buffer view
-	IndexBufferSize = sizeof(uint32_t) * InIndices.size();
+	IndexBufferSize = sizeof(uint16_t) * InIndices.size();
 	CD3DX12_RESOURCE_DESC IxResDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,

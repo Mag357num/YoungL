@@ -5,6 +5,9 @@
 #include "CompiledShaders/DepthVS.h"//depth pass vs
 #include "CompiledShaders/DepthPS.h"// depth pass ps
 
+#include "CompiledShaders/SkinedMeshVS.h"// skinnedMeshVS
+#include "CompiledShaders/SkinedMeshPS.h"// SkinnedMeshPs
+
 class FRHIShaderResource_D3D12
 {
 public:

@@ -14,6 +14,7 @@ public:
 	void NotifyRenderThreadJob();
 
 	static void CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
+	static void CreateRenderingItems(std::vector<std::unique_ptr<ASkinMeshActor>>& SkinedActors);
 	static void UpdateSceneConstantBuffer(FSceneConstant* SceneConstant);
 
 	void PushRenderCommand(FRenderThreadCommand InCommand);

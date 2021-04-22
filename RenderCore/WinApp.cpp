@@ -162,6 +162,7 @@ void FWinApp::DestroyApp()
 static void CreateRenderingItem_RenderThread(FGameCore* InGame)
 {
 	FRenderThreadManager::CreateRenderingItems(InGame->GetStaticActors());
+	FRenderThreadManager::CreateRenderingItems(InGame->GetSkinedActors());
 }
 
 void FWinApp::InitEngine()

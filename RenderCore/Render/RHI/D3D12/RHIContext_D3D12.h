@@ -34,6 +34,7 @@ public:
 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
+	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO()override;
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
@@ -144,9 +145,8 @@ private:
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
 
-	//vs, ps
-	ComPtr<ID3DBlob> M_Vs;
-	ComPtr<ID3DBlob> M_Ps;
-	std::vector<D3D12_INPUT_ELEMENT_DESC> M_ShadersInputDesc;
+	//ShadersInput Layout
+	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Static;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Skinned;
 
 };

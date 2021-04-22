@@ -14,3 +14,8 @@ ASkinMeshActor::~ASkinMeshActor()
 		SkinedData = nullptr;
 	}
 }
+
+void ASkinMeshActor::Tick(float DeltaTime)
+{
+
+}

@@ -9,7 +9,7 @@ using namespace std;
 
 #include "RHIResource.h"
 #include "RHIDepthResource.h"
-#include "../Utilities.h"
+#include "../../Utilities.h"
 
 class IRHIGraphicsPipelineState
 {
@@ -84,7 +84,7 @@ public:
 
 	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices){}
 	
-	virtual void BuildIndexBuffer(std::vector<uint32_t>& InIndices){}
+	virtual void BuildIndexBuffer(std::vector<uint16_t>& InIndices){}
 
 	IRHIVertexBuffer* GetVertexBuffer(){return VertexBuffer;}
 	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer; }
@@ -151,6 +151,7 @@ public:
 	virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
+	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO(){return nullptr;}
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
 	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth){}

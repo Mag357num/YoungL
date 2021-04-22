@@ -44,6 +44,11 @@ void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AMes
 	Renderer->CreateRenderingItem(Geometries);
 }
 
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries)
+{
+	Renderer->CreateRenderingItem(Geometries);
+}
+
 void FRenderThreadManager::UpdateSceneConstantBuffer(FSceneConstant* SceneConstant)
 {
 	Renderer->UpdateSceneConstantsBuffer(SceneConstant);

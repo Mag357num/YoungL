@@ -82,7 +82,20 @@ void FGameCore::Initialize()
 			StaticActors[0]->InitiallySetLocation(FVector(0.0f, 0.0f, -20.0f));
 		}
 	}
-	
+
+	SkinedPaths.push_back("Models/soldier.m3d");
+	for (size_t Index = 0; Index < SkinedPaths.size(); ++Index)
+	{
+		LoadActor(SkinedPaths[Index], true);
+
+		//test modify 
+		if (Index == 0)
+		{
+			SkinedActors[0]->InitiallySetLocation(FVector(200.0f, 0.0f, 0.0f));
+			SkinedActors[0]->InitiallySetScaling(FVector(3.0f, 3.0f, 3.0f));
+			SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
+		}
+	}
 }
 
 
@@ -135,6 +148,18 @@ void FGameCore::Tick(float DeltaTime)
 		}
 
 		Camera->ResetDirtyFlat();
+	}
+
+	//Tick Actors 
+	//todo: TickGroup
+	for (int StaticIndex = 0; StaticIndex < StaticActors.size(); ++StaticIndex)
+	{
+		StaticActors[StaticIndex]->Tick(DeltaTime);
+	}
+
+	for (int SkinIndex = 0; SkinIndex < SkinedActors.size(); ++SkinIndex)
+	{
+		SkinedActors[SkinIndex]->Tick(DeltaTime);
 	}
 }
 

@@ -131,6 +131,27 @@ struct FMatrix
 	FVector4D GetRow1() { return FVector4D(Content[1][0], Content[1][1], Content[1][2], Content[1][3]); }
 	FVector4D GetRow0() { return FVector4D(Content[0][0], Content[0][1], Content[0][2], Content[0][3]); }
 
+	void SetRow0(FVector4D InRow)
+	{
+		Content[0][0] = InRow.X;
+		Content[0][1] = InRow.Y;
+		Content[0][2] = InRow.Z;
+		Content[0][3] = InRow.W;
+	}
+	void SetRow1(FVector4D InRow)
+	{
+		Content[1][0] = InRow.X;
+		Content[1][1] = InRow.Y;
+		Content[1][2] = InRow.Z;
+		Content[1][3] = InRow.W;
+	}
+	void SetRow2(FVector4D InRow)
+	{
+		Content[2][0] = InRow.X;
+		Content[2][1] = InRow.Y;
+		Content[2][2] = InRow.Z;
+		Content[2][3] = InRow.W;
+	}
 	void SetRow3(FVector4D InRow)
 	{
 		Content[3][0] = InRow.X;
@@ -213,7 +234,9 @@ struct FSkinVertex
 	FVector Normal;
 	FVector2D Uv;
 
-	uint8_t BoneIndex[4];
+	FVector TangentU;
+
+	int BoneIndex[4];
 	float BoneWights[4];
 };
 
@@ -372,7 +395,7 @@ namespace FMath
 	}
 
 	//replicate the w componnet of the vector
-	FVector4D VectorSplatW(FVector4D V)
+	static FVector4D VectorSplatW(FVector4D V)
 	{
 		FVector4D Ret;
 
@@ -381,7 +404,7 @@ namespace FMath
 		return Ret;
 	}
 
-	FVector4D VectorPermute(FVector4D V1, FVector4D V2, uint32_t PermuteX, 
+	static FVector4D VectorPermute(FVector4D V1, FVector4D V2, uint32_t PermuteX,
 						uint32_t PermuteY, uint32_t PermuteZ, uint32_t PermuteW)
 	{
 		FVector4D Ret;
@@ -389,26 +412,26 @@ namespace FMath
 		float Content[2][4] = {{V1.X, V1.Y,V1.Z, V1.W},
 								{V2.X, V2.Y,V2.Z, V2.W}};
 
-		const uint32_t i0 = PermuteX && 3;
+		const uint32_t i0 = PermuteX & 3;
 		const uint32_t vi0 = PermuteX >> 2;
 		Ret.X = Content[vi0][i0];
 
-		const uint32_t i1 = PermuteY && 3;
+		const uint32_t i1 = PermuteY & 3;
 		const uint32_t vi1 = PermuteY >> 2;
 		Ret.Y = Content[vi1][i1];
 
-		const uint32_t i2 = PermuteZ && 3;
+		const uint32_t i2 = PermuteZ & 3;
 		const uint32_t vi2 = PermuteZ >> 2;
 		Ret.Z = Content[vi2][i2];
 
-		const uint32_t i3 = PermuteW && 3;
+		const uint32_t i3 = PermuteW & 3;
 		const uint32_t vi3 = PermuteW >> 2;
 		Ret.W = Content[vi3][i3];
 
 		return Ret;
 	}
 
-	FVector4D VectorSwizzle(FVector4D V, uint32_t E0, uint32_t E1, uint32_t E2, uint32_t E3)
+	static FVector4D VectorSwizzle(FVector4D V, uint32_t E0, uint32_t E1, uint32_t E2, uint32_t E3)
 	{
 		FVector4D Ret;
 
@@ -638,25 +661,25 @@ namespace FMath
 		Ret.Content[0][2] = 0.0f;
 		Ret.Content[0][3] = 0.0f;
 
-		Ret.Content[0][0] = 0.0f;
-		Ret.Content[0][1] = InScale.Y;
-		Ret.Content[0][2] = 0.0f;
-		Ret.Content[0][3] = 0.0f;
+		Ret.Content[1][0] = 0.0f;
+		Ret.Content[1][1] = InScale.Y;
+		Ret.Content[1][2] = 0.0f;
+		Ret.Content[1][3] = 0.0f;
 
-		Ret.Content[0][0] = 0.0f;
-		Ret.Content[0][1] = 0.0f;
-		Ret.Content[0][2] = InScale.Z;
-		Ret.Content[0][3] = 0.0f;
+		Ret.Content[2][0] = 0.0f;
+		Ret.Content[2][1] = 0.0f;
+		Ret.Content[2][2] = InScale.Z;
+		Ret.Content[2][3] = 0.0f;
 
-		Ret.Content[0][0] = 0.0f;
-		Ret.Content[0][1] = 0.0f;
-		Ret.Content[0][2] = 0.0f;
-		Ret.Content[0][3] = 1.0f;
+		Ret.Content[3][0] = 0.0f;
+		Ret.Content[3][1] = 0.0f;
+		Ret.Content[3][2] = 0.0f;
+		Ret.Content[3][3] = 1.0f;
 
 		return Ret;
 	}
 
-	static FMatrix MatrixxRotationQuaternion(FVector4D InRotation)
+	static FMatrix MatrixRotationQuaternion(FVector4D InRotation)
 	{
 		static const FVector4D Constant1110 = { 1.0f, 1.0f, 1.0f, 0.0f };
 
@@ -693,17 +716,60 @@ namespace FMath
 		return Ret;
 	}
 
+	static void VectorSinCos(FVector4D* Sin, FVector4D* Cos, FVector4D Rotation)
+	{
+		Sin->X = sinf(Rotation.X);
+		Sin->Y = sinf(Rotation.Y);
+		Sin->Z = sinf(Rotation.Z);
+		Sin->W = sinf(Rotation.W);
+
+		Cos->X = cosf(Rotation.X);
+		Cos->Y = cosf(Rotation.Y);
+		Cos->Z = cosf(Rotation.Z);
+		Cos->W = cosf(Rotation.W);
+	}
+
+	static FVector4D QuaternionFromRotation(FVector4D Rotation)//create quad from rotation(pitch, roll, yaw)
+	{
+		FVector4D Sign = FVector4D(1.0f, -1.0f, -1.0f, 1.0f);
+		FVector4D HalfVector = FVector4D(0.5f, 0.5f, 0.5f, 0.5f);
+
+		FVector4D SinAngles, CosAngles;
+		VectorSinCos(&SinAngles, &CosAngles, Rotation * HalfVector);
+
+		FVector4D P0 = VectorPermute(SinAngles, CosAngles, PERMUTE_0X, PERMUTE_1X, PERMUTE_1X, PERMUTE_1X);
+		FVector4D Y0 = VectorPermute(SinAngles, CosAngles, PERMUTE_1Y, PERMUTE_0Y, PERMUTE_1Y, PERMUTE_1Y);
+		FVector4D R0 = VectorPermute(SinAngles, CosAngles, PERMUTE_1Z, PERMUTE_1Z, PERMUTE_0Z, PERMUTE_1Z);
+		FVector4D P1 = VectorPermute(CosAngles, SinAngles, PERMUTE_0X, PERMUTE_1X, PERMUTE_1X, PERMUTE_1X);
+		FVector4D Y1 = VectorPermute(CosAngles, SinAngles, PERMUTE_1Y, PERMUTE_0Y, PERMUTE_1Y, PERMUTE_1Y);
+		FVector4D R1 = VectorPermute(CosAngles, SinAngles, PERMUTE_1Z, PERMUTE_1Z, PERMUTE_0Z, PERMUTE_1Z);
+
+		FVector4D Q1 = VectorMultiply(P1, Sign);
+		FVector4D Q0 = VectorMultiply(P0, Y0);
+
+		Q1 = VectorMultiply(Q1, Y1);
+		Q0 = VectorMultiply(Q0, R0);
+
+		FVector4D Q = VectorMultiply(Q1, R1);
+		Q = VectorAdd(Q, Q0);
+
+		return Q;
+	}
 
 	//construct matrix from translation, rotate and scale
 	// M = MScaling * Inverse(MRotationOrigin) * MRotation * MRotationOrigin * MTranslation;
-	static FMatrix MatrixAffineTransformation(FVector4D Scaling, FVector4D RotationOrigin, 
-										FVector4D RotationQuaternion, FVector4D Translation)
+	static FMatrix MatrixAffineTransformation(FVector4D Scaling, 
+										FVector4D Rotation, FVector4D Translation)
 	{
 		//
 
+		FVector4D  RotationOrigin = FVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+
+		FVector4D RotationQuaternion = FMath::QuaternionFromRotation(Rotation);
+
 		FMatrix MScaling = MatrixScalingFromVector(Scaling);
-		FVector4D VRotationOrigin = FVector4D(RotationOrigin.X, RotationOrigin.Y, RotationOrigin.Z, 0.0f);
-		FMatrix MRotation = MatrixxRotationQuaternion(RotationQuaternion);
+		FVector4D VRotationOrigin = RotationOrigin;
+		FMatrix MRotation = MatrixRotationQuaternion(RotationQuaternion);
 		FVector4D MTranslation = FVector4D(Translation.X, Translation.Y, Translation.Z, 0.0f);
 
 		FMatrix Ret = MScaling;

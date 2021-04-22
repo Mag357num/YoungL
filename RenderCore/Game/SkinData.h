@@ -6,6 +6,8 @@
 
 struct FBoneKeyFrame
 {
+
+	float TimePos;
 	int FrameIndex;
 	//save transform of one bone point in a key frame
 	FVector4D Translation;
@@ -30,8 +32,17 @@ public:
 	FSkinedData(){}
 	~FSkinedData(){}
 
+
+	void SetData(std::vector<int>& InHierarchy, std::vector<FMatrix> InBoneOffset,
+		::unordered_map<std::string, FAnimationClip>& InAnimations)
+	{
+		BoneHierarchy = InHierarchy;
+		BoneOffset = InBoneOffset;
+		Animations = InAnimations;
+	}
+
 private:
-	std::vector<uint8_t> BoneHierarchy;
+	std::vector<int> BoneHierarchy;
 	std::vector<FMatrix> BoneOffset;
 
 	std::vector<std::string> BoneNames;
