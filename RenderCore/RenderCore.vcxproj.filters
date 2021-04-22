@@ -147,6 +147,9 @@
     <ClInclude Include="Game\ModelLoader.h">
       <Filter>头文件\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -190,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="Game\ModelLoader.cpp">
       <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
