@@ -122,6 +122,8 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	BuildRootSignature();
 	//for depth root signature
 	BuildDepthRootSignature();
+	//for skinned mesh
+	BuildSkinnedRootSignature();
 
 	BuildDescriptorHeap();
 	BuildShadersInputLayout();
@@ -317,6 +319,40 @@ void FRHIContext_D3D12::BuildDepthRootSignature()
 		IID_PPV_ARGS(&Depth_RootSignature));
 }
 
+void FRHIContext_D3D12::BuildSkinnedRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
+
+	// Create a single descriptor table of CBVs.
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+	slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+	slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
+	slotRootParameter[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+	// A root signature is an array of root parameters.
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, 0, nullptr,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+	if (errorBlob != nullptr)
+	{
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+
+	M_Device->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		IID_PPV_ARGS(&Skinned_RootSignature));
+}
+
 
 void FRHIContext_D3D12::BuildShadersInputLayout()
 {
@@ -331,11 +367,11 @@ void FRHIContext_D3D12::BuildShadersInputLayout()
 	{
 		 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
 		 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
-		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//8
+		 { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//8
 
 		 { "TAGANT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//12
-		 { "BONEINDEX", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//8
-		 { "BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 52, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }//16
+		 { "BONEINDEX", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },//16
+		 { "BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 60, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }//16
 	};
 }
 
@@ -466,7 +502,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	Desc.pRootSignature = M_RootSignaure.Get();
+	Desc.pRootSignature = Skinned_RootSignature.Get();
 	Desc.InputLayout = { ShadersInputDesc_Skinned.data(), (UINT)ShadersInputDesc_Skinned.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -694,6 +730,11 @@ void FRHIContext_D3D12::PrepareDepthShaderParameter()
 	M_CommandList->SetGraphicsRootSignature(Depth_RootSignature.Get());
 }
 
+void FRHIContext_D3D12::PrepareSkinnedShaderParameter()
+{
+	M_CommandList->SetGraphicsRootSignature(Skinned_RootSignature.Get());
+}
+
 void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
@@ -709,23 +750,33 @@ void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
 	}
 }
 
-void FRHIContext_D3D12::DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)
+void FRHIContext_D3D12::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)
 {
-	for (int Index = 0; Index < Items.size(); ++Index)
+	for (auto It = Items.begin(); It != Items.end(); ++It)
 	{
-		FRHIVertexBuffer_D3D12* VertexBuffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(Items[Index]->GetVertexBuffer());
+		FRHIVertexBuffer_D3D12* VertexBuffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(It->second->GetVertexBuffer());
 		D3D12_VERTEX_BUFFER_VIEW VbView = VertexBuffer->GetVBView();
 		M_CommandList->IASetVertexBuffers(0, 1, &VbView);
-		
-		FRHIIndexBuffer_D3D12* IndexBuffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(Items[Index]->GetIndexBuffer());
+
+		FRHIIndexBuffer_D3D12* IndexBuffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(It->second->GetIndexBuffer());
 		D3D12_INDEX_BUFFER_VIEW IbView = IndexBuffer->GetIBView();
 		M_CommandList->IASetIndexBuffer(&IbView);
 		M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		 
-		FRHIConstantBuffer_D3D12<FObjectConstants>* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(Items[Index]->GetConstantBuffer());
-		M_CommandList->SetGraphicsRootConstantBufferView(0, ConstantBuffer->GetGpuAddress());
-		M_CommandList->DrawIndexedInstanced((UINT)Items[Index]->GetIndexCount(), 1, 0, 0, 0);
+
+		FRHIConstantBuffer_D3D12<FObjectConstants>* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(It->second->GetConstantBuffer());
+		M_CommandList->SetGraphicsRootConstantBufferView(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuAddress());
+		
+		if (It->second->GetIsSkinned())
+		{
+			FRHIConstantBuffer_D3D12<FBoneTransforms>* BoneTransformsBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FBoneTransforms>*>(It->second->GetBoneTransformsBuffer());
+			M_CommandList->SetGraphicsRootConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer->GetGpuAddress());//root signature parameter: slot 3
+		}
+		
+		M_CommandList->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), 1, 0, 0, 0);
+
+		
 	}
+	
 }
 
 void FRHIContext_D3D12::FlushCommandQueue()
@@ -769,7 +820,7 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(ConstantBuffer->UploadBuffer->GetResource());
 	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
 
-	ConstantBuffer->SetRootParameterIndex(1);//1 for descriptor table 
+	ConstantBuffer->SetRootParameterIndex(1);//0 for Object constants 
 	ConstantBuffer->SetGpuVirtualAddress(GpuAddress);
 
 	return ConstantBuffer;

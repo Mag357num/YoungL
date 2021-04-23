@@ -20,6 +20,8 @@ public:
 
 	void UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant);
 
+	void UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTransforms* InBoneTrans);
+
 	void Resize(int InWidth, int InHeight);
 
 	//
@@ -29,12 +31,14 @@ public:
 protected:
 private:
 	void RenderDepth();
+	void RenderSkinnedMesh();
+
 	IRHIContext* RHIContext;
 
 	std::map<std::string, IRHIGraphicsPipelineState*> GraphicsPSOs;
 
-	std::vector<IRHIRenderingMesh*> RenderingMeshes;
-	std::vector<IRHIRenderingMesh*> SkinnedRenderingMeshes;
+	std::unordered_map<std::string, IRHIRenderingMesh*> RenderingMeshes;
+	std::unordered_map<std::string, IRHIRenderingMesh*> SkinnedRenderingMeshes;
 
 	//
 	FViewport Viewport;

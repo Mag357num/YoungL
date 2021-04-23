@@ -10,7 +10,7 @@ cbuffer cbPerObject : register(b0)
 	float3 AmbientLight;
 };
 
-cbuffer manPassObject : register(b1)
+cbuffer mainPassObject : register(b1)
 {
 	float4x4 ViewProj;
 	float4x4 LightViewProj;

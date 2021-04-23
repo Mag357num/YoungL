@@ -17,6 +17,8 @@ public:
 	static void CreateRenderingItems(std::vector<std::unique_ptr<ASkinMeshActor>>& SkinedActors);
 	static void UpdateSceneConstantBuffer(FSceneConstant* SceneConstant);
 
+	static void UpdateSkinnedMeshBoneTransform(std::string* ActorName, FBoneTransforms* InBoneTrans);
+
 	void PushRenderCommand(FRenderThreadCommand InCommand);
 private:
 	FRenderThread* RenderThread;

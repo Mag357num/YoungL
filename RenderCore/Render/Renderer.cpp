@@ -105,24 +105,22 @@ void FRenderer::DestroyRHIContext()
 		SceneConstantBuffer = nullptr;
 	}
 
-	for (int ItemIndex = 0; ItemIndex < RenderingMeshes.size(); ItemIndex++)
+	for (auto It = RenderingMeshes.begin(); It != RenderingMeshes.end(); ++It)
 	{
-		RenderingMeshes[ItemIndex]->Release();
-		delete RenderingMeshes[ItemIndex];
+		It->second->Release();
+		delete It->second;
 	}
-
 	if (!RenderingMeshes.empty())
 	{
 		printf("Empty Error!");
 	}
 
 	//release skinned rendering mesh
-	for (int ItemIndex = 0; ItemIndex < SkinnedRenderingMeshes.size(); ItemIndex++)
+	for (auto It = SkinnedRenderingMeshes.begin(); It != SkinnedRenderingMeshes.end(); ++It)
 	{
-		SkinnedRenderingMeshes[ItemIndex]->Release();
-		delete SkinnedRenderingMeshes[ItemIndex];
+		It->second->Release();
+		delete It->second;
 	}
-
 	if (!SkinnedRenderingMeshes.empty())
 	{
 		printf("Empty Error!");
@@ -169,7 +167,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 		Item->BuildVertexBuffer(Geometries[Index]->GetGeometry()->GetVertices());
 		Item->BuildIndexBuffer(Geometries[Index]->GetGeometry()->GetIndices());
 
-		RenderingMeshes.push_back(Item);
+		RenderingMeshes[*Geometries[Index]->GetName()] = Item;
 	}
 }
 
@@ -186,8 +184,9 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>
 		Item->BuildIndexBuffer(Geometries[Index]->GetSkinGeometry()->GetIndices());
 
 		//todo: create BoneTransform Constant Buffer
+		Item->BuildSkinnedBoneTransBuffer(Geometries[Index]->GetBoneTransfroms(), RHIContext);
 
-		SkinnedRenderingMeshes.push_back(Item);
+		SkinnedRenderingMeshes[*Geometries[Index]->GetName()] = Item;
 	}
 }
 
@@ -224,11 +223,7 @@ void FRenderer::RenderObjects()
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingMeshes(RenderingMeshes);
 
-
-	//draw skined Mesh
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
-	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
-
+	RenderSkinnedMesh();
 
 	//change back buffer state to present
 	RHIContext->TransitionBackBufferStateToPresent();
@@ -262,8 +257,24 @@ void FRenderer::RenderDepth()
 	RHIContext->SetSceneConstantBuffer(ShadowMap->GetSceneConstantBuffer());
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+
+
+	//draw skinned mesh
+	// 	   todo:
+	//RenderSkinnedMesh();
+
 	RHIContext->TransitionResource(RHIResource, ERHIResourceState::State_DepthWrite, ERHIResourceState::State_DepthRead);
 
+}
+
+void FRenderer::RenderSkinnedMesh()
+{
+	//draw skined Mesh
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
+	RHIContext->PrepareSkinnedShaderParameter();
+	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
+	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
 }
 
 void FRenderer::UpdateConstantBuffer()
@@ -314,4 +325,10 @@ void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 
 	//update buffer
 	SceneConstantBuffer->CopyData(0, SceneConstant);
+}
+
+void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTransforms* InBoneTrans)
+{
+	FBoneTransforms BufferData = *InBoneTrans;
+	SkinnedRenderingMeshes[ActorName]->GetBoneTransformsBuffer()->CopyData(0, BufferData);
 }

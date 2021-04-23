@@ -61,7 +61,11 @@ class IRHIContext;
 class IRHIRenderingMesh
 {
 public:
-	IRHIRenderingMesh(){}
+	IRHIRenderingMesh()
+	{
+		IsSkined = false;
+	}
+
 	virtual ~IRHIRenderingMesh(){
 
 	}
@@ -76,9 +80,14 @@ public:
 
 		delete IndexBuffer;
 		IndexBuffer = nullptr;
+
+		delete BoneTransformsBuffer;
+		BoneTransformsBuffer = nullptr;
 	}
 
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context){}
+
+	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context){}
 
 	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices){}
 
@@ -89,10 +98,19 @@ public:
 	IRHIVertexBuffer* GetVertexBuffer(){return VertexBuffer;}
 	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer; }
 	IRHIConstantBuffer<FObjectConstants>* GetConstantBuffer(){return ConstantBuffer;}
+	
+	IRHIConstantBuffer<FBoneTransforms>* GetBoneTransformsBuffer() { return BoneTransformsBuffer; }
+	bool GetIsSkinned(){return IsSkined;}
+
 	size_t GetIndexCount(){return IndexCount;}
 
 protected:
 	IRHIConstantBuffer<FObjectConstants>* ConstantBuffer;
+
+	//used for skinned mesh
+	bool IsSkined;
+	IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer;
+
 	IRHIVertexBuffer* VertexBuffer;
 	IRHIIndexBuffer* IndexBuffer;
 
@@ -164,6 +182,8 @@ public:
 	//set graphic pso
 	virtual void PrepareShaderParameter(){}
 	virtual void PrepareDepthShaderParameter(){}
+	virtual void PrepareSkinnedShaderParameter(){}
+
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
 
 
@@ -173,7 +193,7 @@ public:
 
 	virtual void SetPrimitiveTopology(){}
 
-	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items){}
+	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items){}
 	virtual void DrawIndexedInstanced(){}
 
 	virtual void FlushCommandQueue(){}

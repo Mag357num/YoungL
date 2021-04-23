@@ -5,7 +5,7 @@
 class ASkinMeshActor : public AMeshActor
 {
 public:
-	ASkinMeshActor();
+	ASkinMeshActor(std::string InName = "");
 
 	virtual ~ASkinMeshActor();
 
@@ -16,9 +16,18 @@ public:
 	void SetSkinGeometry(std::unique_ptr<FGeometry<FSkinVertex>>& InGeometry) { Geometry = std::move(InGeometry); };
 	FGeometry<FSkinVertex>* GetSkinGeometry() { return Geometry.get(); }
 
+	FBoneTransforms* GetBoneTransfroms(){return BoneTransforms;}
+
+	void TestPlayAnimation();
+
+	void PlayAnimationClip(std::string ClipName);
+	void StopAnimationClip();
 private:
 	FSkinedData* SkinedData;
 
 private:
 	std::unique_ptr<FGeometry<FSkinVertex>> Geometry;
+
+	FAnimationPlayInfo* PlayInfo;
+	FBoneTransforms* BoneTransforms;
 };

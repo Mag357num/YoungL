@@ -71,8 +71,9 @@ public:
 
 	virtual void PrepareShaderParameter()override;
 	virtual void PrepareDepthShaderParameter()override;
+	virtual void PrepareSkinnedShaderParameter()override;
 
-	virtual void DrawRenderingMeshes(std::vector<IRHIRenderingMesh*>& Items)override;
+	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)override;
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
@@ -95,6 +96,8 @@ private:
 	void OnResize();
 	void BuildRootSignature();
 	void BuildDepthRootSignature();
+	void BuildSkinnedRootSignature();
+
 	void BuildDescriptorHeap();
 
 	void BuildShadersInputLayout();
@@ -137,6 +140,7 @@ private:
 	//signature
 	ComPtr<ID3D12RootSignature> M_RootSignaure;
 	ComPtr<ID3D12RootSignature> Depth_RootSignature;
+	ComPtr<ID3D12RootSignature> Skinned_RootSignature;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,

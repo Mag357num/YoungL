@@ -1,6 +1,7 @@
 #pragma once
 #include "../RHIContext.h"
 #include "RHIResource_D3D12.h"
+#include "d3dx12.h"
 
 namespace D3D12RHI
 {

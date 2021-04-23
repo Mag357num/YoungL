@@ -7,8 +7,15 @@
 class AMeshActor
 {
 public:
-	AMeshActor() {
+	AMeshActor(std::string InName = "") {
 		
+		if (InName == "")
+		{
+			Utilities::Print(L"Error!! Actor should have a name!!\n");
+		}
+
+		ActorName = new std::string(InName);
+
 		ObjectConstants = std::make_unique<FObjectConstants>();
 
 		Translation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
@@ -19,6 +26,8 @@ public:
 	virtual ~AMeshActor() { ObjectConstants.reset(); Geometry.reset(); }
 
 	virtual void Tick(float DeltaTime){}
+
+	std::string* GetName(){return ActorName;}
 
 	void SetGeometry(std::unique_ptr<FGeometry<FVertex>>& InGeometry) { Geometry = std::move(InGeometry); };
 	FGeometry<FVertex>* GetGeometry(){ return Geometry.get(); }
@@ -59,6 +68,7 @@ protected:
 	FVector4D Rotation;
 	FVector4D Scaling;
 
+	std::string* ActorName;
 	std::unique_ptr<FObjectConstants> ObjectConstants;
 
 private:

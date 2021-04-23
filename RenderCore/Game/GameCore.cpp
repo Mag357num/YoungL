@@ -165,17 +165,26 @@ void FGameCore::Tick(float DeltaTime)
 
 void FGameCore::LoadActor(std::string& Path, bool bSkinedActor)
 {
+	int RandomInt = rand();
+
 	if (bSkinedActor)
 	{
-		std::unique_ptr<ASkinMeshActor> SkinedActor = std::make_unique<ASkinMeshActor>();
+		std::string Name = "SkinnedMeshActor";
+		Name += to_string(RandomInt);
+		std::unique_ptr<ASkinMeshActor> SkinedActor = std::make_unique<ASkinMeshActor>(Name);
 		std::unique_ptr<FGeometry<FSkinVertex>> SkinGeo = FModelLoader::LoadSkinedMeshAndAnimation(Path, SkinedActor->GetSkinedData());
 		SkinedActor->SetSkinGeometry(SkinGeo);
+		SkinedActor->TestPlayAnimation();//test play
 		SkinedActors.push_back(std::move(SkinedActor));
+
 	}
 	else
 	{
 		std::unique_ptr<FGeometry<FVertex>> Geo = FModelLoader::LoadStaticMesh(Path);
-		std::unique_ptr<AMeshActor> GeoActor = std::make_unique<AMeshActor>();
+		
+		std::string Name = "StaticMeshActor";
+		Name += to_string(RandomInt);
+		std::unique_ptr<AMeshActor> GeoActor = std::make_unique<AMeshActor>(Name);
 		GeoActor->SetGeometry(Geo);
 		StaticActors.push_back(std::move(GeoActor));
 	}

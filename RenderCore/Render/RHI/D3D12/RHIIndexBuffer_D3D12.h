@@ -1,6 +1,9 @@
 #pragma once
 
 #include "../RHIContext.h"
+#include <d3d12.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
 
 class FRHIIndexBuffer_D3D12 : public IRHIIndexBuffer
 {

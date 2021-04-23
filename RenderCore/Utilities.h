@@ -64,6 +64,12 @@ struct FObjectConstants
 	FVector AmbientLight = FVector(0.2f, 0.2f, 0.2f);
 };
 
+struct FBoneTransforms
+{
+	FBoneTransforms(){}
+	FMatrix BoneTransforms[96];
+};
+
 struct FMaterial
 {
 	std::string Name;

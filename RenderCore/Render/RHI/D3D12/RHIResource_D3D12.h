@@ -1,6 +1,9 @@
 #pragma once
 
 #include "../RHIResource.h"
+#include <d3d12.h>
+#include <wrl.h>
+using namespace Microsoft::WRL;
 
 class FRHIResource_D3D12 : public IRHIResource
 {
@@ -23,18 +26,3 @@ private:
 
 };
 
-void FRHIResource_D3D12::Map(UINT SubResource, const D3D12_RANGE* ReadRange, void** Data)
-{
-	if (Resource)
-	{
-		Resource->Map(SubResource, ReadRange, Data);
-	}
-}
-
-void FRHIResource_D3D12::UnMap(UINT SubResource, const D3D12_RANGE* WriteRange)
-{
-	if (Resource)
-	{
-		Resource->Unmap(SubResource, WriteRange);
-	}
-}

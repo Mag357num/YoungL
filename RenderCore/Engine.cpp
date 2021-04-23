@@ -86,7 +86,7 @@ void FEngine::DestroyAllEngineContent()
 	}
 }
 
-void FEngine::Run()
+void FEngine::Tick()
 {
 	//wait for render thread processed
 	RenderThreadManager->WaitForRenderThreadSingal();

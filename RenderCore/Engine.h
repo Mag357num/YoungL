@@ -1,4 +1,7 @@
 #pragma once
+#include "Game/GameCore.h"
+#include "Game/GameTimer.h"
+
 class FEngine
 {
 public:
@@ -12,16 +15,16 @@ public:
 
 	void InitGame(int InWidth, int InHeight);
 	void InitRenderer(int InWidth, int InHeight);
-	virtual void Run();
+	virtual void Tick();
 
 	FGameCore* GetGameCore(){return GameCore;}
+	FRenderThreadManager* GetRenderThreadManager(){return RenderThreadManager.get();}
 	
 private:
 	static FEngine* Instance;
 
 private:
 
-	
 	void DestroyAllEngineContent();
 
 

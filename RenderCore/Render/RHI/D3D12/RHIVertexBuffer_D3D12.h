@@ -1,5 +1,6 @@
 #pragma once
 #include "../RHIContext.h"
+#include <d3d12.h>
 
 class FRHIVertexBuffer_D3D12 : public IRHIVertexBuffer
 {

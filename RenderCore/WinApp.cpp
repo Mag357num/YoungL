@@ -121,8 +121,7 @@ void FWinApp::DestroyApp()
 	FEngine::DestroyEngine();
 }
 
-
 void FWinApp::Update()
 {
-	FEngine::GetEngine()->Run();
+	FEngine::GetEngine()->Tick();
 }

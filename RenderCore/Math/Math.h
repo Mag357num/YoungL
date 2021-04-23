@@ -124,7 +124,13 @@ struct FMatrix
 		Content[3][0] = Row3.X; Content[3][1] = Row3.Y; Content[3][2] = Row3.Z; Content[3][3] = Row3.W;
 	}
 
-	FMatrix() {}
+	FMatrix() {
+
+		Content[0][0] = 1.0f; Content[0][1] = 0.0f; Content[0][2] = 0.0f; Content[0][3] = 0.0f;
+		Content[1][0] = 0.0f; Content[1][1] = 1.0f; Content[1][2] = 0.0f; Content[1][3] = 0.0f;
+		Content[2][0] = 0.0f; Content[2][1] = 0.0f; Content[2][2] = 1.0f; Content[2][3] = 0.0f;
+		Content[3][0] = 0.0f; Content[3][1] = 0.0f; Content[3][2] = 0.0f; Content[3][3] = 1.0f;
+	}
 
 	FVector4D GetRow3() { return FVector4D(Content[3][0], Content[3][1], Content[3][2], Content[3][3]); }
 	FVector4D GetRow2() { return FVector4D(Content[2][0], Content[2][1], Content[2][2], Content[2][3]); }
@@ -402,6 +408,15 @@ namespace FMath
 		Ret.X = Ret.Y = Ret.Z = Ret.W = V.W;
 
 		return Ret;
+	}
+
+	static FVector4D VectorLerp(FVector4D V1, FVector4D V2, float Lerp)
+	{
+		FVector4D Subtract = V2 - V1;
+		FVector4D Add = Subtract * Lerp;
+
+		return V1 + Add;
+
 	}
 
 	static FVector4D VectorPermute(FVector4D V1, FVector4D V2, uint32_t PermuteX,
@@ -777,6 +792,38 @@ namespace FMath
 		Row3 = VectorSubtract(Row3, VRotationOrigin);
 		Ret.SetRow3(Row3);
 		
+		//multiply rotation
+		Ret = Ret * MRotation;
+
+		//reset row3
+		Row3 = Ret.GetRow3();
+		Row3 = VectorAdd(Row3, VRotationOrigin);
+		Row3 = VectorAdd(Row3, MTranslation);
+
+		Ret.SetRow3(Row3);
+
+		return Ret;
+	}
+
+	//construct matrix from translation, rotate and scale
+	// M = MScaling * Inverse(MRotationOrigin) * MRotation * MRotationOrigin * MTranslation;
+	static FMatrix MatrixAffineTransformation_QuadRot(FVector4D Scaling,
+		FVector4D RotationQuaternion, FVector4D Translation)
+	{
+		//
+
+		FVector4D  RotationOrigin = FVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+
+		FMatrix MScaling = MatrixScalingFromVector(Scaling);
+		FVector4D VRotationOrigin = RotationOrigin;
+		FMatrix MRotation = MatrixRotationQuaternion(RotationQuaternion);
+		FVector4D MTranslation = FVector4D(Translation.X, Translation.Y, Translation.Z, 0.0f);
+
+		FMatrix Ret = MScaling;
+		FVector4D Row3 = Ret.GetRow3();
+		Row3 = VectorSubtract(Row3, VRotationOrigin);
+		Ret.SetRow3(Row3);
+
 		//multiply rotation
 		Ret = Ret * MRotation;
 

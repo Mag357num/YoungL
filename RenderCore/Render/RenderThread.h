@@ -71,9 +71,14 @@ public:
 
 			while (RenderThreadTask::CommandQueue.size() > 0)
 			{
-				FRenderThreadCommand Command = RenderThreadTask::CommandQueue.front();
-				Command.Excute();
+				FRenderThreadCommand* Command = &RenderThreadTask::CommandQueue.front();
+				Command->Excute();
 				RenderThreadTask::CommandQueue.pop();
+			}
+
+			if (!RenderThreadTask::CommandQueue.empty())
+			{
+				Utilities::Print("Empty Error");
 			}
 
 			Renderer->RenderObjects();

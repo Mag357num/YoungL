@@ -11,6 +11,11 @@ cbuffer cbPerObject : register(b0)
 	float3 AmbientLight;
 };
 
+cbuffer cbBoneTranforms : register(b2)
+{
+	float4x4 BoneTransforms[96];
+}
+
 cbuffer mainPassObject : register(b1)
 {
 	float4x4 ViewProj;

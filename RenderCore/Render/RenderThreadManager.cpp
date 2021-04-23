@@ -53,3 +53,8 @@ void FRenderThreadManager::UpdateSceneConstantBuffer(FSceneConstant* SceneConsta
 {
 	Renderer->UpdateSceneConstantsBuffer(SceneConstant);
 }
+
+void FRenderThreadManager::UpdateSkinnedMeshBoneTransform(std::string* ActorName, FBoneTransforms* InBoneTrans)
+{
+	Renderer->UpdateSkinnedMeshBoneTransform(*ActorName, InBoneTrans);
+}
