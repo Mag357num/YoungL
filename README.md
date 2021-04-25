@@ -8,11 +8,16 @@
   - WinApp
   - pch
   - Utilities
+  - Engine
+  - RenderCore
   - Game
     - Camera
     - GameCore
     - GameTimer
     - MeshActor
+    - ModelLoader
+    - SkinData
+    - SkinMeshActor
   - Math
     - Math
   - Render
@@ -22,10 +27,16 @@
     - ShadowMap
     - RHI
       - RHIContext
+      - Formats
       - RHIResource
       - RHIDepthResource
       - RHIColorResource
       - RHIResourceHandle
+      - RHIIndexBuffer
+      - RHIVertexBuffer
+      - RHIConstantBuffer
+      - RHIRenderingMesh
+      - RHIGraphicsPipelineState
       - D3D12
         - d3dx12.h
         - RHIResource_D3D12
@@ -48,9 +59,16 @@
     - DepthRS.hlsli
     - DepthVS.hlsl
     - DepthPS.hlsl
+    - ScreenVS.hlsl
+    - ScreenPS.hlsl
+    - ScreenRS.hlsli
+    - SkinnedMeshVS.hlsl
+    - SkinnedMeshPS.hlsl
+    - SkinnedMeshRS.hlsli
   - Models
     - ModelSave.Bin
     - ModelFloor.Bin
+    - soldier.m3d
 
 ## RenderCore: DX12 Course work
 - version 0.0: basic process for drawing objects
@@ -61,7 +79,9 @@
 - version 0.5: Add Camera Control
 - version 0.6: Memory Release
 - version 0.7: Realtime Shadow
+- version 0.8: Skinned Mesh
 
+## RoadMap https://trello.com/b/ALEt8eJB/youngl-engine
 
 ## EngineCore:Expermental framework for rhi
 - version 0: application interface(WINAPI relative)

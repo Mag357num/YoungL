@@ -91,8 +91,6 @@ public:
 
 	//set graphic pso
 	virtual void PrepareShaderParameter(){}
-	virtual void PrepareDepthShaderParameter(){}
-	virtual void PrepareSkinnedShaderParameter(){}
 	virtual void PreparePresentShaderParameter(){}
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}

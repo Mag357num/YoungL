@@ -72,8 +72,6 @@ public:
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter)override;
 
 	virtual void PrepareShaderParameter()override;
-	virtual void PrepareDepthShaderParameter()override;
-	virtual void PrepareSkinnedShaderParameter()override;
 	virtual void PreparePresentShaderParameter()override;
 
 	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)override;

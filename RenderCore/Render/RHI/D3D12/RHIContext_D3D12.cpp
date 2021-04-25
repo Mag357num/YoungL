@@ -888,16 +888,6 @@ void FRHIContext_D3D12::PrepareShaderParameter()
 	//M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
 }
 
-void FRHIContext_D3D12::PrepareDepthShaderParameter()
-{
-	//M_CommandList->SetGraphicsRootSignature(Depth_RootSignature.Get());
-}
-
-void FRHIContext_D3D12::PrepareSkinnedShaderParameter()
-{
-	//M_CommandList->SetGraphicsRootSignature(Skinned_RootSignature.Get());
-}
-
 void FRHIContext_D3D12::PreparePresentShaderParameter()
 {
 	ID3D12DescriptorHeap* DescriporHeaps[] = { Present_CbvSrvUavHeap.Get() };

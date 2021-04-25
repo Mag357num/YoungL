@@ -271,9 +271,6 @@ void FRenderer::RenderDepth()
 	RHIContext->SetRenderTarget(nullptr, RHIResource);
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["DepthPass"]);
 
-	//prepare shader parameters
-	RHIContext->PrepareDepthShaderParameter();
-
 	//pass sceen constant buffer
 	RHIContext->SetSceneConstantBuffer(ShadowMap->GetSceneConstantBuffer());
 	//Draw Rendering items in scene
@@ -295,7 +292,6 @@ void FRenderer::RenderSkinnedMesh()
 
 	//draw skined Mesh
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
-	RHIContext->PrepareSkinnedShaderParameter();
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
 	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
 	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
