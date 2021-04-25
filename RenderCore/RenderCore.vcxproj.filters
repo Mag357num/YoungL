@@ -242,7 +242,10 @@
     <FxCompile Include="Shaders\SkinnedMeshVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Render\RHI\D3D12\ScreenVS.hlsl">
+    <FxCompile Include="Shaders\ScreenPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ScreenVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -260,6 +263,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\SkinnedMeshRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ScreenRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

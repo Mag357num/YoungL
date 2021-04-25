@@ -20,9 +20,6 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
-#define  ShaderPathVS L"Shaders\\TestVS.hlsl"
-#define  ShaderPathPS L"Shaders\\TestPS.hlsl"
-
 class FRHIContext_D3D12 : public IRHIContext
 {
 public:
@@ -103,8 +100,11 @@ private:
 	void BuildRootSignature();
 	void BuildDepthRootSignature();
 	void BuildSkinnedRootSignature();
+	void BuildPostProcessRootSignature();
+
 
 	void BuildDescriptorHeap();
+	void PostProcess_BuildDescriptorHeap();
 
 	void BuildShadersInputLayout();
 
@@ -144,10 +144,14 @@ private:
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
 
+	//heap for postprocess
+	ComPtr<ID3D12DescriptorHeap> PostProcess_CbvSrvUavHeap;
+
 	//signature
 	ComPtr<ID3D12RootSignature> M_RootSignaure;
 	ComPtr<ID3D12RootSignature> Depth_RootSignature;
 	ComPtr<ID3D12RootSignature> Skinned_RootSignature;
+	ComPtr<ID3D12RootSignature> PostProcess_RootSignature;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,

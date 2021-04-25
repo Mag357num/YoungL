@@ -81,6 +81,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 		GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
 	}
 
+	//create Scene Color
+	CreateSceneColor();
+
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 }
@@ -133,6 +136,12 @@ void FRenderer::DestroyRHIContext()
 		ShadowMap = nullptr;
 	}
 
+	if (SceneColor)
+	{
+		delete SceneColor;
+		SceneColor = nullptr;
+	}
+
 #ifdef _WIN32
 	delete RHIContext;
 	RHIContext = nullptr;
@@ -151,6 +160,9 @@ void FRenderer::Resize(int InWidth, int InHeight)
 {
 	if (RHIContext)
 	{
+		Viewport.Width = InWidth;
+		Viewport.Height = InHeight;
+
 		RHIContext->Resize(InWidth, InHeight);
 	}
 }
@@ -286,20 +298,6 @@ void FRenderer::RenderSkinnedMesh()
 
 void FRenderer::UpdateConstantBuffer()
 {
-	//do with dynamic objects
-	//for (int Index = 0 ; Index < RenderingMeshes.size(); ++Index)
-	//{
-	//	FMatrix World = Utilities::IdentityMatrix;
-
-	//	// Update the constant buffer with the latest worldViewProj matrix.
-	//	FObjectConstants ObjectConstant;
-	//	ObjectConstant.ObjectWorld = World;
-	//	ObjectConstant.Fresnel0 = FVector(0.04f, 0.04f, 0.04f);
-	//	ObjectConstant.Shiness = 0.7f;
-	//	ObjectConstant.AmbientLight = FVector(0.1f, 0.1f, 0.1f);
-
-	//	RenderingMeshes[Index]->GetConstantBuffer()->CopyData(0, ObjectConstant);
-	//}
 
 }
 
@@ -338,4 +336,11 @@ void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTrans
 {
 	FBoneTransforms BufferData = *InBoneTrans;
 	SkinnedRenderingMeshes[ActorName]->GetBoneTransformsBuffer()->CopyData(0, BufferData);
+}
+
+void FRenderer::CreateSceneColor()
+{
+	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, PixelFormat_R8G8B8A8_Unorm);
+	//create srv and rtv for color resource
+	RHIContext->CreateSrvRtvForColorResource(SceneColor);
 }

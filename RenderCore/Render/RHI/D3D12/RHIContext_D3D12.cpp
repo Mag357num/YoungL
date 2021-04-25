@@ -119,15 +119,27 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 	//initialize back buffer
 	OnResize();
+	
+	//temperarily
+	//todo:seperate rootsignature & shader Binding;
+	//todo: seperate DescriptorHeap management;
+	{
 
-	BuildRootSignature();
-	//for depth root signature
-	BuildDepthRootSignature();
-	//for skinned mesh
-	BuildSkinnedRootSignature();
+		BuildRootSignature();
+		//for depth root signature
+		BuildDepthRootSignature();
+		//for skinned mesh
+		BuildSkinnedRootSignature();
+		//for post process
+		BuildPostProcessRootSignature();
 
-	BuildDescriptorHeap();
-	BuildShadersInputLayout();
+		BuildDescriptorHeap();
+
+		//for postprocess heap
+		PostProcess_BuildDescriptorHeap();
+
+		BuildShadersInputLayout();
+	}
 }
 
 FRHIContext_D3D12::~FRHIContext_D3D12()
@@ -256,6 +268,14 @@ void FRHIContext_D3D12::BuildDescriptorHeap()
 	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&M_CbvSrvUavHeap));
 }
 
+void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
+	HeapDesc.NumDescriptors = 1;
+	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&PostProcess_CbvSrvUavHeap));
+}
 
 void FRHIContext_D3D12::BuildRootSignature()
 {
@@ -354,6 +374,36 @@ void FRHIContext_D3D12::BuildSkinnedRootSignature()
 		IID_PPV_ARGS(&Skinned_RootSignature));
 }
 
+void FRHIContext_D3D12::BuildPostProcessRootSignature()
+{
+	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+	// Create a single descriptor table of CBVs.
+	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	// A root signature is an array of root parameters.
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
+	ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+	if (errorBlob != nullptr)
+	{
+		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+	}
+
+	M_Device->CreateRootSignature(
+		0,
+		serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(),
+		IID_PPV_ARGS(&PostProcess_RootSignature));
+}
 
 void FRHIContext_D3D12::BuildShadersInputLayout()
 {
@@ -981,7 +1031,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 {
 	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(PostProcess_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -994,7 +1044,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 
 	M_Device->CreateShaderResourceView(ColorResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(PostProcess_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
 
 	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
 	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
@@ -1011,7 +1061,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 
 	FRHIResourceHandle_D3D12* RtvHandle = new FRHIResourceHandle_D3D12();
 	RtvHandle->SetCpuhandle(RtvCpuDescriptorStart);
-	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(M_DsvHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(M_RtvHeap->GetGPUDescriptorHandleForHeapStart());
 	RtvGpuDescriptorStart.ptr += (M_SwapchainBackbufferCount * M_DsvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
 	RtvHandle->SetGpuhandle(RtvGpuDescriptorStart);
 	ColorResource_D3D12->SetRtvHandle(RtvHandle);

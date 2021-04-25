@@ -30,6 +30,9 @@ public:
 
 protected:
 private:
+	
+	void CreateSceneColor();
+
 	void RenderDepth();
 	void RenderSkinnedMesh();
 
@@ -48,4 +51,7 @@ private:
 	IRHIConstantBuffer<FSceneConstant>* SceneConstantBuffer;
 
 	FShadowMap* ShadowMap;
+
+	//scene color
+	FRHIColorResource* SceneColor;
 };
