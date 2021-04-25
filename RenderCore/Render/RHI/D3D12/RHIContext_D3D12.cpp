@@ -274,7 +274,7 @@ void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
 	HeapDesc.NumDescriptors = 1;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&PostProcess_CbvSrvUavHeap));
+	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&Present_CbvSrvUavHeap));
 }
 
 void FRHIContext_D3D12::BuildRootSignature()
@@ -402,7 +402,7 @@ void FRHIContext_D3D12::BuildPostProcessRootSignature()
 		0,
 		serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&PostProcess_RootSignature));
+		IID_PPV_ARGS(&Present_RootSignature));
 }
 
 void FRHIContext_D3D12::BuildShadersInputLayout()
@@ -603,6 +603,67 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 	return D3D12GraphicsPSO;
 }
 
+IRHIGraphicsPipelineState* FRHIContext_D3D12::CreatePresentPipelineState()
+{
+	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPresentPSO = new FRHIGraphicsPipelineState_D3D12();
+
+	//
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
+	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	Desc.pRootSignature = Present_RootSignature.Get();
+	//draw rect dont't need input layout
+	Desc.InputLayout.NumElements = 0;
+	Desc.InputLayout.pInputElementDescs = nullptr;
+
+	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+
+	D3D12_DEPTH_STENCIL_DESC DSDesc;
+	DSDesc.DepthEnable = TRUE;
+	DSDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	DSDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	DSDesc.StencilEnable = FALSE;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	DSDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	DSDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	DSDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	DSDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+
+	//Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	Desc.DepthStencilState = DSDesc;
+
+	Desc.VS =
+	{
+		g_ScreenVS,
+		sizeof(g_ScreenVS)
+	};
+	Desc.PS =
+	{
+		g_ScreenPS,
+		sizeof(g_ScreenPS)
+	};
+
+	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	Desc.NumRenderTargets = 1;
+	Desc.RTVFormats[0] = M_BackBufferFormat;
+	Desc.DSVFormat = M_DepthStencilFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.SampleMask = UINT_MAX;
+
+	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsPresentPSO->PSO));
+
+	return D3D12GraphicsPresentPSO;
+}
+
 void FRHIContext_D3D12::BeginDraw(const wchar_t* Label)
 {
 	M_CommandAllocator->Reset();
@@ -664,7 +725,7 @@ void FRHIContext_D3D12::SetBackBufferAsRt()
 {
 
 	//clear target view
-	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::Black, 0, nullptr);
+	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::LightBlue, 0, nullptr);
 	M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE BackBufferHandle = GetCurrentBackBufferView();
@@ -687,8 +748,8 @@ D3D12_RESOURCE_STATES FRHIContext_D3D12::TranslateResourceState(ERHIResourceStat
 	case State_RenderTarget:
 		Ret = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		break;
-	case State_Srv:
-		Ret = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	case State_GenerateRead:
+		Ret = D3D12_RESOURCE_STATE_GENERIC_READ;
 		break;
 	case State_Uav:
 		Ret = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -742,23 +803,50 @@ void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InD
 		}
 	}
 	
-	//bool bHasRtv = false;
-	//D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
+	bool bHasRtv = false;
+	D3D12_CPU_DESCRIPTOR_HANDLE* Rtv = nullptr;
+	if (InColor && reinterpret_cast<FRHIColorResource_D3D12*>(InColor))
+	{
+		FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColor);
+		if (ColorResource_D3D12 && reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle()))
+		{
+			bHasRtv = true;
+			FRHIResourceHandle_D3D12* RtvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle());
+			Rtv = RtvHandle->GetCpuHandle();
+			M_CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), Colors::LightBlue, 0, nullptr);
+		}
+	}
 
-	//if (InColor && reinterpret_cast<FRHIResource_D3D12*>(InColor))
-	//{
-	//	FRHIResource_D3D12* ColorResource = reinterpret_cast<FRHIResource_D3D12*>(InColor);
-	//	if (reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource->))
-	//	{
-	//		FRHIResourceHandle_D3D12* DsvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(DepthResource->GetDsvHandle());
-	//		Dsv = DsvHandle->GetCpuHandle();
-	//		M_CommandList->ClearDepthStencilView(*DsvHandle->GetCpuHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-	//	}
-	//}
-
+	if (!bHasRtv)
+	{
+		M_CommandList->OMSetRenderTargets(0, nullptr, false, Dsv);
+	}
+	else
+	{
+		M_CommandList->OMSetRenderTargets(1, Rtv, true, Dsv);
+	}
 	
-	M_CommandList->OMSetRenderTargets(0, nullptr, false, Dsv);
+}
+
+void FRHIContext_D3D12::SetColorTarget(IRHIResource* InColor)
+{
+	//todl:output warning if nullptr
+
+	if (InColor && reinterpret_cast<FRHIColorResource_D3D12*>(InColor))
+	{
+		FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColor);
+		if (ColorResource_D3D12 && reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle()))
+		{
+			FRHIResourceHandle_D3D12* RtvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle());
+
+			M_CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), ColorResource_D3D12->GetClearValue().Color, 0, nullptr);
+
+			M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+			D3D12_CPU_DESCRIPTOR_HANDLE DsvrHandle = GetCurrentDepthStencilView();
+			M_CommandList->OMSetRenderTargets(1, RtvHandle->GetCpuHandle(), true, &DsvrHandle);
+		}
+	}
 }
 
 void FRHIContext_D3D12::TransitionBackBufferStateToRT()
@@ -816,6 +904,14 @@ void FRHIContext_D3D12::PrepareSkinnedShaderParameter()
 	M_CommandList->SetGraphicsRootSignature(Skinned_RootSignature.Get());
 }
 
+void FRHIContext_D3D12::PreparePresentShaderParameter()
+{
+	ID3D12DescriptorHeap* DescriporHeaps[] = { Present_CbvSrvUavHeap.Get() };
+	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
+
+	M_CommandList->SetGraphicsRootSignature(Present_RootSignature.Get());
+}
+
 void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
@@ -828,6 +924,15 @@ void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
 	{
 		FRHIResourceHandle_D3D12*  SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InDepthResource->GetSrvHandle());
 		M_CommandList->SetGraphicsRootDescriptorTable(2, *SrvHandle->GetGpuHandle());//root parameter index is 2
+	}
+}
+
+void FRHIContext_D3D12::SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)
+{
+	if (InColorResource && InColorResource->GetSrvHandle())
+	{
+		FRHIResourceHandle_D3D12* SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InColorResource->GetSrvHandle());
+		M_CommandList->SetGraphicsRootDescriptorTable(ParaIndex, *SrvHandle->GetGpuHandle());
 	}
 }
 
@@ -858,6 +963,11 @@ void FRHIContext_D3D12::DrawRenderingMeshes(std::unordered_map<std::string, IRHI
 		
 	}
 	
+}
+
+void FRHIContext_D3D12::Draw(UINT VertexCount, UINT VertexStartOffset)
+{
+	M_CommandList->DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
 }
 
 void FRHIContext_D3D12::FlushCommandQueue()
@@ -1014,13 +1124,15 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 	D3D12_CLEAR_VALUE ClearValue;
 	ClearValue.Format = TranslateFormat(ColorResource->GetFormat());
 	//ClearValue.Color = ClearColor;
-	ClearValue.Color[0] = 0.0f;
-	ClearValue.Color[1] = 0.0f;
-	ClearValue.Color[2] = 0.0f;
-	ClearValue.Color[3] = 0.0f;
+	ClearValue.Color[0] = 0.678431392f;
+	ClearValue.Color[1] = 0.847058892f;
+	ClearValue.Color[2] = 0.901960850f;
+	ClearValue.Color[3] = 1.0f;//0.678431392f, 0.847058892f, 0.901960850f
+
+	ColorResource->SetClearValue(ClearValue);
 
 	M_Device->CreateCommittedResource(&HeapProperties,
-		D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COMMON,
+		D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 		&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
 
 
@@ -1031,7 +1143,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 {
 	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(PostProcess_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(Present_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -1044,7 +1156,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 
 	M_Device->CreateShaderResourceView(ColorResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(PostProcess_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(Present_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
 
 	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
 	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);

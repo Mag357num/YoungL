@@ -1,6 +1,6 @@
 #pragma once
 
-class FRHIColorResource
+class FRHIColorResource: public IRHIResource
 {
 public:
 	FRHIColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)

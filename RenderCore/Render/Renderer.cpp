@@ -33,6 +33,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	IRHIGraphicsPipelineState* SkinPassPSO = RHIContext->CreateSkinnedGraphicsPSO();
 	GraphicsPSOs.insert(std::make_pair("SkinPass", SkinPassPSO));
 
+	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreatePresentPipelineState();
+	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+
 	//initialize scene constant
 	float AspectRatio = 1.0f * Viewport.Width / Viewport.Height;
 	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.25f * 3.1416f, AspectRatio, 1.0f, 1000.0f);
@@ -202,7 +205,8 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>
 	}
 }
 
-void FRenderer::RenderObjects()
+
+void FRenderer::RenderScene()
 {
 	//reset command list and command allocator here
 	RHIContext->BeginDraw(L"BasePass");
@@ -214,11 +218,11 @@ void FRenderer::RenderObjects()
 	RHIContext->SetViewport(Viewport);
 	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
 
-	//change back buffer state to rendertarget
-	RHIContext->TransitionBackBufferStateToRT();
+	//use scene color as render target
+	RHIContext->TransitionResource(SceneColor, State_GenerateRead, State_RenderTarget);
 
-	//set backbuffer as rendertarget
-	RHIContext->SetBackBufferAsRt();
+	//use specified color target && default depth stencil target
+	RHIContext->SetColorTarget(SceneColor);
 
 	//set pipeline state
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["BasePass"]);
@@ -238,7 +242,10 @@ void FRenderer::RenderObjects()
 	RenderSkinnedMesh();
 
 	//change back buffer state to present
-	RHIContext->TransitionBackBufferStateToPresent();
+	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);
+
+	//draw scene color to back buffer; may present hdr using tonemap
+	PresentLDR();
 
 	//excute command list
 	RHIContext->EndDraw();
@@ -249,6 +256,56 @@ void FRenderer::RenderObjects()
 	//flush commands
 	RHIContext->FlushCommandQueue();
 }
+
+
+//
+//void FRenderer::RenderScene()
+//{
+//	//reset command list and command allocator here
+//	RHIContext->BeginDraw(L"BasePass");
+//
+//	//render depth map first
+//	//for realtime shadow
+//	RenderDepth();
+//
+//	RHIContext->SetViewport(Viewport);
+//	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
+//
+//	//change back buffer state to rendertarget
+//	RHIContext->TransitionBackBufferStateToRT();
+//
+//	//set backbuffer as rendertarget
+//	RHIContext->SetBackBufferAsRt();
+//
+//	//set pipeline state
+//	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["BasePass"]);
+//
+//	//prepare shader parameters
+//	RHIContext->PrepareShaderParameter();
+//
+//	//pass sceen constant buffer
+//	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+//
+//	//apply shadow map
+//	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
+//
+//	//Draw Rendering items in scene
+//	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+//
+//	RenderSkinnedMesh();
+//
+//	//change back buffer state to present
+//	RHIContext->TransitionBackBufferStateToPresent();
+//
+//	//excute command list
+//	RHIContext->EndDraw();
+//
+//	//present backbuffer
+//	RHIContext->Present();
+//
+//	//flush commands
+//	RHIContext->FlushCommandQueue();
+//}
 
 void FRenderer::RenderDepth()
 {
@@ -292,6 +349,32 @@ void FRenderer::RenderSkinnedMesh()
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
 	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
 	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
+
+	RHIContext->EndEvent();
+}
+
+//todo: present LDR or HDR
+void FRenderer::PresentLDR()
+{
+	RHIContext->BeginEvent(L"Present");
+
+	//change back buffer state to rendertarget
+	RHIContext->TransitionBackBufferStateToRT();
+
+	//set backbuffer as rendertarget
+	RHIContext->SetBackBufferAsRt();
+
+	//set pipeline state
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["PresentPass"]);
+
+	//prepare shader parameters
+	RHIContext->PreparePresentShaderParameter();
+
+	RHIContext->SetColorSRV(0, SceneColor);
+	RHIContext->Draw(3);
+
+	//	//change back buffer state to present
+	RHIContext->TransitionBackBufferStateToPresent();
 
 	RHIContext->EndEvent();
 }

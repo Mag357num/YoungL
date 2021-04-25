@@ -81,8 +81,8 @@ public:
 				Utilities::Print("Empty Error");
 			}
 
-			Renderer->RenderObjects();
-			Renderer->UpdateConstantBuffer();
+			Renderer->RenderScene();
+			//Renderer->UpdateConstantBuffer();
 
 			//notify reander thread is completed
 			NotifyGameThreadjob(RenderLock);

@@ -5,7 +5,7 @@ enum ERHIResourceState
 	State_None = 0,
 	State_Present,
 	State_RenderTarget,
-	State_Srv,
+	State_GenerateRead,
 	State_Uav,
 	State_DepthRead,
 	State_DepthWrite

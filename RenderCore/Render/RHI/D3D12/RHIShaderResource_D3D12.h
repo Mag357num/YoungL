@@ -8,6 +8,9 @@
 #include "CompiledShaders/SkinedMeshVS.h"// skinnedMeshVS
 #include "CompiledShaders/SkinedMeshPS.h"// SkinnedMeshPs
 
+#include "CompiledShaders/ScreenVS.h"
+#include "CompiledShaders/ScreenPS.h"
+
 class FRHIShaderResource_D3D12
 {
 public:

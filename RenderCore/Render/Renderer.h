@@ -14,7 +14,7 @@ public:
 	void CreateRHIContext(int InWidth, int Inheight);
 	void DestroyRHIContext();
 
-	void RenderObjects();
+	void RenderScene();
 
 	void UpdateConstantBuffer();
 
@@ -35,6 +35,8 @@ private:
 
 	void RenderDepth();
 	void RenderSkinnedMesh();
+
+	void PresentLDR();
 
 	IRHIContext* RHIContext;
 

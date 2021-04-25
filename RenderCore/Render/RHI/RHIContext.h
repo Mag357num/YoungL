@@ -171,12 +171,16 @@ public:
 	virtual IRHIResource* GetBackBufferResource(){return nullptr;}
 	virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
 	virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
+
+
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO(){return nullptr;}
+	virtual IRHIGraphicsPipelineState* CreatePresentPipelineState(){return nullptr;}
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
 	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth){}
+	virtual void SetColorTarget(IRHIResource* InColor){}
 	
 	//use back buffer as rt
 	virtual void SetBackBufferAsRt(){}
@@ -187,6 +191,7 @@ public:
 	virtual void PrepareShaderParameter(){}
 	virtual void PrepareDepthShaderParameter(){}
 	virtual void PrepareSkinnedShaderParameter(){}
+	virtual void PreparePresentShaderParameter(){}
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
 
@@ -194,11 +199,13 @@ public:
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer){}
 	virtual void SetShaderResourceView(){}
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource){}
+	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){};
 
 	virtual void SetPrimitiveTopology(){}
 
 	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items){}
 	virtual void DrawIndexedInstanced(){}
+	virtual void Draw(UINT VertexCount, UINT VertexStartOffset = 0){}
 
 	virtual void FlushCommandQueue(){}
 

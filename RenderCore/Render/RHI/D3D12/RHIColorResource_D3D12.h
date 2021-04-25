@@ -12,6 +12,8 @@ public:
 
 	virtual ~FRHIColorResource_D3D12() {}
 
+	void SetClearValue(D3D12_CLEAR_VALUE InValue){ClearValue = InValue;}
+	D3D12_CLEAR_VALUE GetClearValue(){return ClearValue;}
 private:
-
+	D3D12_CLEAR_VALUE ClearValue;
 };

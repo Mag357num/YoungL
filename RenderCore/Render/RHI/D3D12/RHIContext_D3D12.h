@@ -32,6 +32,7 @@ public:
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO()override;
+	virtual IRHIGraphicsPipelineState* CreatePresentPipelineState()override;
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
@@ -64,6 +65,7 @@ public:
 
 	virtual void SetBackBufferAsRt()override;
 	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth)override;
+	virtual void SetColorTarget(IRHIResource* InColor)override;
 
 	virtual void TransitionBackBufferStateToRT()override;
 	virtual void TransitionBackBufferStateToPresent()override;
@@ -72,11 +74,14 @@ public:
 	virtual void PrepareShaderParameter()override;
 	virtual void PrepareDepthShaderParameter()override;
 	virtual void PrepareSkinnedShaderParameter()override;
+	virtual void PreparePresentShaderParameter()override;
 
 	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)override;
+	virtual void Draw(UINT VertexCount, UINT VertexStartOffset /* = 0 */)override;
 
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
+	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
 
 	virtual void FlushCommandQueue()override;
 	virtual void Present()override;
@@ -145,13 +150,13 @@ private:
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
 
 	//heap for postprocess
-	ComPtr<ID3D12DescriptorHeap> PostProcess_CbvSrvUavHeap;
+	ComPtr<ID3D12DescriptorHeap> Present_CbvSrvUavHeap;
 
 	//signature
 	ComPtr<ID3D12RootSignature> M_RootSignaure;
 	ComPtr<ID3D12RootSignature> Depth_RootSignature;
 	ComPtr<ID3D12RootSignature> Skinned_RootSignature;
-	ComPtr<ID3D12RootSignature> PostProcess_RootSignature;
+	ComPtr<ID3D12RootSignature> Present_RootSignature;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,
