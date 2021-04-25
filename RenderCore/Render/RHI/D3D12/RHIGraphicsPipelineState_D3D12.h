@@ -3,7 +3,7 @@
 
 using namespace Microsoft::WRL;
 
-#include "../RHIContext.h"
+#include "../RHIGraphicsPipelineState.h"
 
 class FRHIGraphicsPipelineState_D3D12 : public IRHIGraphicsPipelineState
 {

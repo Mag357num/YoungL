@@ -156,6 +156,21 @@
     <ClInclude Include="Render\RHI\D3D12\RHIColorResource_D3D12.h">
       <Filter>头文件\Render\RHI\D3D12</Filter>
     </ClInclude>
+    <ClInclude Include="Render\RHI\RHIGraphicsPipelineState.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIRenderingMesh.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIVertexBuffer.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIIndexBuffer.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIConstantBuffer.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">

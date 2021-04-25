@@ -228,10 +228,15 @@
     <ClInclude Include="Render\RHI\D3D12\RHIVertexBuffer_D3D12.h" />
     <ClInclude Include="Render\RHI\Formats.h" />
     <ClInclude Include="Render\RHI\RHIColorResource.h" />
+    <ClInclude Include="Render\RHI\RHIConstantBuffer.h" />
     <ClInclude Include="Render\RHI\RHIContext.h" />
     <ClInclude Include="Render\RHI\RHIDepthResource.h" />
+    <ClInclude Include="Render\RHI\RHIGraphicsPipelineState.h" />
+    <ClInclude Include="Render\RHI\RHIIndexBuffer.h" />
+    <ClInclude Include="Render\RHI\RHIRenderingMesh.h" />
     <ClInclude Include="Render\RHI\RHIResource.h" />
     <ClInclude Include="Render\RHI\RHIResourceHandle.h" />
+    <ClInclude Include="Render\RHI\RHIVertexBuffer.h" />
     <ClInclude Include="Render\ShadowMap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />

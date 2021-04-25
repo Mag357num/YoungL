@@ -1,5 +1,5 @@
 #pragma once
-#include "../RHIContext.h"
+#include "../RHIRenderingMesh.h"
 #include "../../../Utilities.h"
 
 class FRHIRenderingMesh_D3D12 : public IRHIRenderingMesh

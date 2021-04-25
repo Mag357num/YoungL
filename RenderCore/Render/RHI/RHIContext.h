@@ -11,15 +11,9 @@ using namespace std;
 #include "RHIDepthResource.h"
 #include "RHIColorResource.h"
 #include "../../Utilities.h"
-
-class IRHIGraphicsPipelineState
-{
-public:
-	IRHIGraphicsPipelineState() {}
-	virtual ~IRHIGraphicsPipelineState() {}
-protected:
-private:
-};
+#include "RHIGraphicsPipelineState.h"
+#include "RHIConstantBuffer.h"
+#include "RHIRenderingMesh.h"
 
 class IRHIShaderResource
 {
@@ -31,98 +25,6 @@ public:
 	}
 protected:
 	IRHIResourceHandle* Handle;
-};
-
-class IRHIVertexBuffer
-{
-public:
-	IRHIVertexBuffer() {}
-	virtual ~IRHIVertexBuffer() {}
-};
-
-class IRHIIndexBuffer
-{
-public:
-	IRHIIndexBuffer() {}
-	virtual ~IRHIIndexBuffer() {}
-};
-
-template<typename T>
-class IRHIConstantBuffer
-{
-public:
-	IRHIConstantBuffer() {}
-	virtual ~IRHIConstantBuffer() {}
-
-	virtual void CopyData(int ElementIndex, const T& Data){}
-protected:
-};
-
-class IRHIContext;
-class IRHIRenderingMesh
-{
-public:
-	IRHIRenderingMesh()
-	{
-		IsSkined = false;
-	}
-
-	virtual ~IRHIRenderingMesh(){
-
-	}
-
-	virtual void Release()
-	{
-		delete ConstantBuffer;
-		ConstantBuffer = nullptr;
-
-		delete VertexBuffer;
-		VertexBuffer = nullptr;
-
-		delete IndexBuffer;
-		IndexBuffer = nullptr;
-
-		delete BoneTransformsBuffer;
-		BoneTransformsBuffer = nullptr;
-	}
-
-	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context){}
-
-	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context){}
-
-	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices){}
-
-	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices){}
-	
-	virtual void BuildIndexBuffer(std::vector<uint16_t>& InIndices){}
-
-	IRHIVertexBuffer* GetVertexBuffer(){return VertexBuffer;}
-	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer; }
-	IRHIConstantBuffer<FObjectConstants>* GetConstantBuffer(){return ConstantBuffer;}
-	
-	IRHIConstantBuffer<FBoneTransforms>* GetBoneTransformsBuffer() { return BoneTransformsBuffer; }
-	bool GetIsSkinned(){return IsSkined;}
-
-	size_t GetIndexCount(){return IndexCount;}
-
-protected:
-	IRHIConstantBuffer<FObjectConstants>* ConstantBuffer;
-
-	//used for skinned mesh
-	bool IsSkined;
-	IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer;
-
-	IRHIVertexBuffer* VertexBuffer;
-	IRHIIndexBuffer* IndexBuffer;
-
-	int VertexStrideSize = 0;
-	size_t VertexBufferSize = 0;
-	size_t IndexBufferSize = 0;
-	size_t IndexCount = 0;
-	int InstanceCount = 0;
-	int VertexBaseLocation = 0;
-	int StartInstanceLocation = 0;
-	//reserved for material
 };
 
 struct FViewport
@@ -169,8 +71,8 @@ public:
 	virtual IRHIShaderResource* CreateShaderResource(){ return nullptr; }
 	virtual IRHIResource* CreateResource(){ return nullptr; }
 	virtual IRHIResource* GetBackBufferResource(){return nullptr;}
-	virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
-	virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
+	//virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
+	//virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
 
 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}

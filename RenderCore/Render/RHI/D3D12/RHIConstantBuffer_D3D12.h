@@ -1,5 +1,5 @@
 #pragma once
-#include "../RHIContext.h"
+#include "../RHIConstantBuffer.h"
 #include "RHIUploadBuffer_D3D12.h"
 
 template<typename T>
