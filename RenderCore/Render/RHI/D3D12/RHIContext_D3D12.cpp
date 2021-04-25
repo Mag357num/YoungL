@@ -1123,7 +1123,7 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 
 	D3D12_CLEAR_VALUE ClearValue;
 	ClearValue.Format = TranslateFormat(ColorResource->GetFormat());
-	//ClearValue.Color = ClearColor;
+	//ClearValue light blue
 	ClearValue.Color[0] = 0.678431392f;
 	ClearValue.Color[1] = 0.847058892f;
 	ClearValue.Color[2] = 0.901960850f;

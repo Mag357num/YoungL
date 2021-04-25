@@ -257,56 +257,6 @@ void FRenderer::RenderScene()
 	RHIContext->FlushCommandQueue();
 }
 
-
-//
-//void FRenderer::RenderScene()
-//{
-//	//reset command list and command allocator here
-//	RHIContext->BeginDraw(L"BasePass");
-//
-//	//render depth map first
-//	//for realtime shadow
-//	RenderDepth();
-//
-//	RHIContext->SetViewport(Viewport);
-//	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
-//
-//	//change back buffer state to rendertarget
-//	RHIContext->TransitionBackBufferStateToRT();
-//
-//	//set backbuffer as rendertarget
-//	RHIContext->SetBackBufferAsRt();
-//
-//	//set pipeline state
-//	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["BasePass"]);
-//
-//	//prepare shader parameters
-//	RHIContext->PrepareShaderParameter();
-//
-//	//pass sceen constant buffer
-//	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
-//
-//	//apply shadow map
-//	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
-//
-//	//Draw Rendering items in scene
-//	RHIContext->DrawRenderingMeshes(RenderingMeshes);
-//
-//	RenderSkinnedMesh();
-//
-//	//change back buffer state to present
-//	RHIContext->TransitionBackBufferStateToPresent();
-//
-//	//excute command list
-//	RHIContext->EndDraw();
-//
-//	//present backbuffer
-//	RHIContext->Present();
-//
-//	//flush commands
-//	RHIContext->FlushCommandQueue();
-//}
-
 void FRenderer::RenderDepth()
 {
 	RHIContext->BeginEvent(L"Depth Pass");
