@@ -102,11 +102,6 @@ public:
 
 private:
 	void OnResize();
-	void BuildRootSignature();
-	void BuildDepthRootSignature();
-	void BuildSkinnedRootSignature();
-	void BuildPostProcessRootSignature();
-
 
 	void BuildDescriptorHeap();
 	void PostProcess_BuildDescriptorHeap();
@@ -148,15 +143,9 @@ private:
 
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
-
 	//heap for postprocess
 	ComPtr<ID3D12DescriptorHeap> Present_CbvSrvUavHeap;
 
-	//signature
-	ComPtr<ID3D12RootSignature> M_RootSignaure;
-	ComPtr<ID3D12RootSignature> Depth_RootSignature;
-	ComPtr<ID3D12RootSignature> Skinned_RootSignature;
-	ComPtr<ID3D12RootSignature> Present_RootSignature;
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
 		1.0f, 0.0f, 0.0f, 0.0f,

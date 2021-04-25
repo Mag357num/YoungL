@@ -125,16 +125,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	//todo: seperate DescriptorHeap management;
 	{
 
-		BuildRootSignature();
-		//for depth root signature
-		BuildDepthRootSignature();
-		//for skinned mesh
-		BuildSkinnedRootSignature();
-		//for post process
-		BuildPostProcessRootSignature();
-
 		BuildDescriptorHeap();
-
 		//for postprocess heap
 		PostProcess_BuildDescriptorHeap();
 
@@ -277,134 +268,6 @@ void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
 	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&Present_CbvSrvUavHeap));
 }
 
-void FRHIContext_D3D12::BuildRootSignature()
-{
-	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
-
-	// Create a single descriptor table of CBVs.
-	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
-
-	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr,
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
-	if (errorBlob != nullptr)
-	{
-		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	}
-
-	M_Device->CreateRootSignature(
-		0,
-		serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&M_RootSignaure));
-}
-
-void FRHIContext_D3D12::BuildDepthRootSignature()
-{
-	CD3DX12_ROOT_PARAMETER slotRootParameter[2];
-
-	// Create a single descriptor table of CBVs.
-	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
-
-	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
-	if (errorBlob != nullptr)
-	{
-		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	}
-
-	M_Device->CreateRootSignature(
-		0,
-		serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&Depth_RootSignature));
-}
-
-void FRHIContext_D3D12::BuildSkinnedRootSignature()
-{
-	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
-
-	// Create a single descriptor table of CBVs.
-	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-	slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
-	slotRootParameter[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
-
-	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, 0, nullptr,
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
-	if (errorBlob != nullptr)
-	{
-		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	}
-
-	M_Device->CreateRootSignature(
-		0,
-		serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&Skinned_RootSignature));
-}
-
-void FRHIContext_D3D12::BuildPostProcessRootSignature()
-{
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
-
-	// Create a single descriptor table of CBVs.
-	CD3DX12_DESCRIPTOR_RANGE cbvTable;
-	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
-	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
-	if (errorBlob != nullptr)
-	{
-		::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-	}
-
-	M_Device->CreateRootSignature(
-		0,
-		serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(),
-		IID_PPV_ARGS(&Present_RootSignature));
-}
-
 void FRHIContext_D3D12::BuildShadersInputLayout()
 {
 	ShadersInputDesc_Static =
@@ -429,11 +292,45 @@ void FRHIContext_D3D12::BuildShadersInputLayout()
 IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+	
+	//create Root Signature
+	{
+		CD3DX12_ROOT_PARAMETER slotRootParameter[3];
+
+		// Create a single descriptor table of CBVs.
+		CD3DX12_DESCRIPTOR_RANGE cbvTable;
+		cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
+
+		// A root signature is an array of root parameters.
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr,
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+		ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		ComPtr<ID3DBlob> errorBlob = nullptr;
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+		if (errorBlob != nullptr)
+		{
+			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+
+		M_Device->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(&D3D12GraphicsPSO->RootSignature));
+	}
+	
 	//
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	Desc.pRootSignature = M_RootSignaure.Get();
+	Desc.pRootSignature = D3D12GraphicsPSO->RootSignature.Get();
 	Desc.InputLayout = { ShadersInputDesc_Static.data(), (UINT)ShadersInputDesc_Static.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -487,11 +384,42 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsDepthPSO()
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsDepthPSO = new FRHIGraphicsPipelineState_D3D12();
 
+	//create Root Signature
+	{
+		CD3DX12_ROOT_PARAMETER slotRootParameter[2];
+
+		// Create a single descriptor table of CBVs.
+		slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+		// A root signature is an array of root parameters.
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(2, slotRootParameter, 0, nullptr,
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+		ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		ComPtr<ID3DBlob> errorBlob = nullptr;
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+		if (errorBlob != nullptr)
+		{
+			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+
+		M_Device->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(&D3D12GraphicsDepthPSO->RootSignature));
+	}
+	
+
 	//
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	Desc.pRootSignature = Depth_RootSignature.Get();
+	Desc.pRootSignature = D3D12GraphicsDepthPSO->RootSignature.Get();
 	Desc.InputLayout = { ShadersInputDesc_Static.data(), (UINT)ShadersInputDesc_Static.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -547,13 +475,47 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsDepthPSO()
 
 IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 {
-	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+	FRHIGraphicsPipelineState_D3D12* D3D12SkinGraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+
+	//create root signature
+	{
+		CD3DX12_ROOT_PARAMETER slotRootParameter[4];
+
+		// Create a single descriptor table of CBVs.
+		CD3DX12_DESCRIPTOR_RANGE cbvTable;
+		cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		slotRootParameter[0].InitAsConstantBufferView(0, 0, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[1].InitAsConstantBufferView(1, 0, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[2].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_ALL);
+		slotRootParameter[3].InitAsConstantBufferView(2, 0, D3D12_SHADER_VISIBILITY_ALL);
+
+		// A root signature is an array of root parameters.
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, 0, nullptr,
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+		ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		ComPtr<ID3DBlob> errorBlob = nullptr;
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+		if (errorBlob != nullptr)
+		{
+			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+
+		M_Device->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(&D3D12SkinGraphicsPSO->RootSignature));
+	}
 
 	//
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	Desc.pRootSignature = Skinned_RootSignature.Get();
+	Desc.pRootSignature = D3D12SkinGraphicsPSO->RootSignature.Get();
 	Desc.InputLayout = { ShadersInputDesc_Skinned.data(), (UINT)ShadersInputDesc_Skinned.size() };
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -598,20 +560,51 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 	Desc.SampleDesc.Quality = 0;
 	Desc.SampleMask = UINT_MAX;
 
-	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsPSO->PSO));
+	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12SkinGraphicsPSO->PSO));
 
-	return D3D12GraphicsPSO;
+	return D3D12SkinGraphicsPSO;
 }
 
 IRHIGraphicsPipelineState* FRHIContext_D3D12::CreatePresentPipelineState()
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPresentPSO = new FRHIGraphicsPipelineState_D3D12();
 
+	//create root signature
+	{
+		CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+		// Create a single descriptor table of CBVs.
+		CD3DX12_DESCRIPTOR_RANGE cbvTable;
+		cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_PIXEL);
+
+		// A root signature is an array of root parameters.
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+		ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		ComPtr<ID3DBlob> errorBlob = nullptr;
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+		if (errorBlob != nullptr)
+		{
+			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+
+		M_Device->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(&D3D12GraphicsPresentPSO->RootSignature));
+	}
+
 	//
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
-	Desc.pRootSignature = Present_RootSignature.Get();
+	Desc.pRootSignature = D3D12GraphicsPresentPSO->RootSignature.Get();
 	//draw rect dont't need input layout
 	Desc.InputLayout.NumElements = 0;
 	Desc.InputLayout.pInputElementDescs = nullptr;
@@ -695,6 +688,7 @@ void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPS
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
 	M_CommandList->SetPipelineState(D3D12PSO->PSO.Get());
+	M_CommandList->SetGraphicsRootSignature(D3D12PSO->RootSignature.Get());
 }
 
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
@@ -891,17 +885,17 @@ void FRHIContext_D3D12::PrepareShaderParameter()
 {
 	ID3D12DescriptorHeap* DescriporHeaps[] = { M_CbvSrvUavHeap.Get() };
 	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
-	M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
+	//M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
 }
 
 void FRHIContext_D3D12::PrepareDepthShaderParameter()
 {
-	M_CommandList->SetGraphicsRootSignature(Depth_RootSignature.Get());
+	//M_CommandList->SetGraphicsRootSignature(Depth_RootSignature.Get());
 }
 
 void FRHIContext_D3D12::PrepareSkinnedShaderParameter()
 {
-	M_CommandList->SetGraphicsRootSignature(Skinned_RootSignature.Get());
+	//M_CommandList->SetGraphicsRootSignature(Skinned_RootSignature.Get());
 }
 
 void FRHIContext_D3D12::PreparePresentShaderParameter()
@@ -909,7 +903,7 @@ void FRHIContext_D3D12::PreparePresentShaderParameter()
 	ID3D12DescriptorHeap* DescriporHeaps[] = { Present_CbvSrvUavHeap.Get() };
 	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
 
-	M_CommandList->SetGraphicsRootSignature(Present_RootSignature.Get());
+	//M_CommandList->SetGraphicsRootSignature(Present_RootSignature.Get());
 }
 
 void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
