@@ -150,6 +150,12 @@
     <ClInclude Include="Engine.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Render\RHI\Formats.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIColorResource_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -234,6 +240,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\SkinnedMeshVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Render\RHI\D3D12\ScreenVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

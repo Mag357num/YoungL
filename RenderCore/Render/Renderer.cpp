@@ -240,6 +240,8 @@ void FRenderer::RenderObjects()
 
 void FRenderer::RenderDepth()
 {
+	RHIContext->BeginEvent(L"Depth Pass");
+
 	RHIContext->SetViewport(*ShadowMap->GetViewport());
 	RHIContext->SetScissor(0, 0, (long)ShadowMap->GetViewport()->Width, (long)ShadowMap->GetViewport()->Height);
 
@@ -260,21 +262,26 @@ void FRenderer::RenderDepth()
 
 
 	//draw skinned mesh
-	// 	   todo:
+	// 	   todo: draw skinned mesh in depth pass
 	//RenderSkinnedMesh();
 
 	RHIContext->TransitionResource(RHIResource, ERHIResourceState::State_DepthWrite, ERHIResourceState::State_DepthRead);
 
+	RHIContext->EndEvent();
 }
 
 void FRenderer::RenderSkinnedMesh()
 {
+	RHIContext->BeginEvent(L"Skinned");
+
 	//draw skined Mesh
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
 	RHIContext->PrepareSkinnedShaderParameter();
 	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
 	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
 	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
+
+	RHIContext->EndEvent();
 }
 
 void FRenderer::UpdateConstantBuffer()

@@ -57,6 +57,9 @@ public:
 	virtual void BeginDraw(const wchar_t* Label)override;
 	virtual void EndDraw()override;
 
+	virtual void BeginEvent(const wchar_t* Label)override;
+	virtual void EndEvent()override;
+
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)override;
 
 	virtual void SetViewport(const FViewport& Viewport)override;
@@ -92,6 +95,9 @@ public:
 	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)override;
 
+	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
+	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)override;
+
 private:
 	void OnResize();
 	void BuildRootSignature();
@@ -103,6 +109,7 @@ private:
 	void BuildShadersInputLayout();
 
 	D3D12_RESOURCE_STATES TranslateResourceState(ERHIResourceState InState);
+	DXGI_FORMAT TranslateFormat(EPixelBufferFormat InFormat);
 
 	//for graphics
 	int ClientWidth = 800;

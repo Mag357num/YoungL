@@ -4,7 +4,13 @@
 class FRHIDepthResource
 {
 public:
-	FRHIDepthResource(){}
+	FRHIDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
+		:Width(InWidth),
+		Height(InHeight),
+		Format(InFormat)
+	{
+	}
+
 	virtual ~FRHIDepthResource(){
 		if (SRVHandle)
 		{
@@ -19,6 +25,11 @@ public:
 		}
 	}
 
+
+	int GetWidth(){return Width;}
+	int GetHeight(){return Height;}
+	EPixelBufferFormat GetFormat(){return Format;}
+
 	void SetSrvHandle(IRHIResourceHandle* InHandle){ SRVHandle = InHandle;}
 	void SetDsvHandle(IRHIResourceHandle* InHandle){ DSVHandle = InHandle; }
 
@@ -28,4 +39,9 @@ public:
 protected:
 	IRHIResourceHandle* SRVHandle;
 	IRHIResourceHandle* DSVHandle;
+
+	int Width;
+	int Height;
+
+	EPixelBufferFormat Format;
 };

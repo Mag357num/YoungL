@@ -70,8 +70,8 @@ float4 main(VertexOut Pin) : SV_Target
 
 	//construct material and light
 	Material Mat;
-	//Mat.DiffuseAlbedo=float4(0.4f, 0.4f, 0.4f, 1.0f);
-	Mat.DiffuseAlbedo = Pin.Color;
+	Mat.DiffuseAlbedo=float4(0.4f, 0.4f, 0.4f, 1.0f);
+	//Mat.DiffuseAlbedo = Pin.Color;
 	Mat.Fresnel0 = Fresnel0;
 	Mat.Shiness = Shiness;
 	Mat.AmbientLight = AmbientLight;

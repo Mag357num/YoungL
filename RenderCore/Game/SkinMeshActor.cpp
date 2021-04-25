@@ -11,7 +11,6 @@ ASkinMeshActor::ASkinMeshActor(std::string InName)
 	PlayInfo = new FAnimationPlayInfo();
 
 	BoneTransforms = new FBoneTransforms();
-	//BoneTransforms.BoneTransforms = FMath::IdentityMatrix;
 }
 
 ASkinMeshActor::~ASkinMeshActor()

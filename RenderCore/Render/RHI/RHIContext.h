@@ -9,6 +9,7 @@ using namespace std;
 
 #include "RHIResource.h"
 #include "RHIDepthResource.h"
+#include "RHIColorResource.h"
 #include "../../Utilities.h"
 
 class IRHIGraphicsPipelineState
@@ -159,6 +160,9 @@ public:
 	virtual void BeginDraw(const wchar_t* Label){}
 	virtual void EndDraw() {}
 
+	virtual void BeginEvent(const wchar_t* Label){}
+	virtual void EndEvent(){}
+
 	virtual void SetViewport(const FViewport& Viewport){}
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight){}
 
@@ -206,6 +210,9 @@ public:
 
 	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
+
+	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
 
 protected:
 

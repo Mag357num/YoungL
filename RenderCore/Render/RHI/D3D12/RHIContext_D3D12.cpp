@@ -20,6 +20,7 @@
 #include "RHIRenderingItem_D3D12.h"
 #include "RHIDepthResource_D3D12.h"
 #include "RHIResourceHandle_D3D12.h"
+#include "RHIColorResource_D3D12.h"
 
 namespace WinApp
 {
@@ -103,7 +104,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	//create discriptor heap
 	D3D12_DESCRIPTOR_HEAP_DESC RtvHeapDesc;
 	RtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	RtvHeapDesc.NumDescriptors = M_SwapchainBackbufferCount;
+	RtvHeapDesc.NumDescriptors = M_SwapchainBackbufferCount + 1;//swapchain count for back buffer; another is for scenecolor(postprocess)
 	RtvHeapDesc.NodeMask = 0;
 	RtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	M_Device->CreateDescriptorHeap(&RtvHeapDesc, IID_PPV_ARGS(&M_RtvHeap));
@@ -569,6 +570,16 @@ void FRHIContext_D3D12::EndDraw()
 	M_CommandQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);
 }
 
+void FRHIContext_D3D12::BeginEvent(const wchar_t* Label)
+{
+	::PIXBeginEvent(M_CommandList.Get(), PIX_COLOR_DEFAULT, Label);
+}
+
+void FRHIContext_D3D12::EndEvent()
+{
+	::PIXEndEvent(M_CommandList.Get());
+}
+
 void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
@@ -643,6 +654,26 @@ D3D12_RESOURCE_STATES FRHIContext_D3D12::TranslateResourceState(ERHIResourceStat
 	}
 
 	return Ret;
+}
+
+DXGI_FORMAT FRHIContext_D3D12::TranslateFormat(EPixelBufferFormat InFormat)
+{
+	switch (InFormat)
+	{
+	case PixelFormat_None:
+		return DXGI_FORMAT_UNKNOWN;
+		break;
+	case PixelFormat_R24G8_Typeless:
+		return DXGI_FORMAT_R24G8_TYPELESS;
+		break;
+	case PixelFormat_R8G8B8A8_Unorm:
+		return DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+	default:
+		break;
+	}
+
+	return DXGI_FORMAT_UNKNOWN;
 }
 
 void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth)
@@ -830,7 +861,7 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
 {
 
-	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12();
+	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12(InWidth, InHeight, InFormat);
 
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 
@@ -845,9 +876,9 @@ FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int InWidth, int
 	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
 	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
 	// we need to create the depth buffer resource with a typeless format. 
-	ResourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	ResourceDesc.Height = InHeight;
-	ResourceDesc.Width = InWidth;
+	ResourceDesc.Format = TranslateFormat(DepthResource->GetFormat());;
+	ResourceDesc.Height = DepthResource->GetHeight();
+	ResourceDesc.Width = DepthResource->GetWidth();
 	ResourceDesc.MipLevels = 1;
 	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 	ResourceDesc.SampleDesc.Count = 1;
@@ -907,4 +938,81 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 	DsvGpuDescriptorStart.ptr += M_DsvDescriptorSize;//0 reserved for base pass depth
 	DsvHandle->SetGpuhandle(DsvGpuDescriptorStart);
 	DepthResource_D3D12->SetDsvHandle(DsvHandle);
+}
+
+FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
+{
+	FRHIColorResource_D3D12* ColorResource = new FRHIColorResource_D3D12(InWidth, InHeight, InFormat);
+
+	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+
+	D3D12_RESOURCE_DESC ResourceDesc;
+	ZeroMemory(&ResourceDesc, sizeof(D3D12_RESOURCE_DESC));
+	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	ResourceDesc.Alignment = 0;
+	ResourceDesc.DepthOrArraySize = 1;
+	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+	ResourceDesc.Format = TranslateFormat(ColorResource->GetFormat());
+	ResourceDesc.Height = ColorResource->GetHeight();
+	ResourceDesc.Width = ColorResource->GetWidth();
+	ResourceDesc.MipLevels = 1;
+	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	ResourceDesc.SampleDesc.Count = 1;
+	ResourceDesc.SampleDesc.Quality = 0;
+
+	D3D12_CLEAR_VALUE ClearValue;
+	ClearValue.Format = TranslateFormat(ColorResource->GetFormat());
+	//ClearValue.Color = ClearColor;
+	ClearValue.Color[0] = 0.0f;
+	ClearValue.Color[1] = 0.0f;
+	ClearValue.Color[2] = 0.0f;
+	ClearValue.Color[3] = 0.0f;
+
+	M_Device->CreateCommittedResource(&HeapProperties,
+		D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COMMON,
+		&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
+
+
+	return ColorResource;
+}
+
+void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)
+{
+	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SrvDesc.Texture2D.MipLevels = 1;
+	SrvDesc.Texture2D.MostDetailedMip = 0;
+	SrvDesc.Texture2D.PlaneSlice = 0;
+	SrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	M_Device->CreateShaderResourceView(ColorResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
+
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+
+	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
+	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
+	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
+	ColorResource_D3D12->SetSrvHandle(SrvHandle);
+
+
+	D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuDescriptorStart(M_RtvHeap->GetCPUDescriptorHandleForHeapStart());
+	RtvCpuDescriptorStart.ptr += (M_SwapchainBackbufferCount * M_RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
+
+
+	M_Device->CreateRenderTargetView(ColorResource_D3D12->Resource.Get(), nullptr, RtvCpuDescriptorStart);
+
+
+	FRHIResourceHandle_D3D12* RtvHandle = new FRHIResourceHandle_D3D12();
+	RtvHandle->SetCpuhandle(RtvCpuDescriptorStart);
+	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(M_DsvHeap->GetGPUDescriptorHandleForHeapStart());
+	RtvGpuDescriptorStart.ptr += (M_SwapchainBackbufferCount * M_DsvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
+	RtvHandle->SetGpuhandle(RtvGpuDescriptorStart);
+	ColorResource_D3D12->SetRtvHandle(RtvHandle);
 }
