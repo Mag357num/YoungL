@@ -14,18 +14,7 @@ using namespace std;
 #include "RHIGraphicsPipelineState.h"
 #include "RHIConstantBuffer.h"
 #include "RHIRenderingMesh.h"
-
-class IRHIShaderResource
-{
-public:
-	IRHIShaderResource() {}
-	virtual ~IRHIShaderResource() {
-		delete Handle;
-		Handle = nullptr;
-	}
-protected:
-	IRHIResourceHandle* Handle;
-};
+#include "RHIShader.h"
 
 struct FViewport
 {
@@ -68,7 +57,7 @@ public:
 	virtual void SetViewport(const FViewport& Viewport){}
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight){}
 
-	virtual IRHIShaderResource* CreateShaderResource(){ return nullptr; }
+	virtual IRHIShader* CreateShaderResource(){ return nullptr; }
 	virtual IRHIResource* CreateResource(){ return nullptr; }
 	virtual IRHIResource* GetBackBufferResource(){return nullptr;}
 	//virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }

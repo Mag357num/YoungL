@@ -171,6 +171,21 @@
     <ClInclude Include="Render\RHI\RHIConstantBuffer.h">
       <Filter>头文件\Render\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Render\RHI\RHISamplerState.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIShaderParameter.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIShader.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIBlendState.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIDepthStencilState.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
