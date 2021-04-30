@@ -186,6 +186,9 @@
     <ClInclude Include="Render\RHI\RHIDepthStencilState.h">
       <Filter>头文件\Render\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\FRHIShader_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -237,6 +240,15 @@
       <Filter>源文件\Render\RHI\D3D12</Filter>
     </ClCompile>
     <ClCompile Include="Render\RHI\D3D12\RHIResource_D3D12.cpp">
+      <Filter>源文件\Render\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\D3D12\RHIGraphicsPipelineState_D3D12.cpp">
+      <Filter>源文件\Render\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\RHIGraphicsPipelineState.cpp">
+      <Filter>源文件\Render\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\D3D12\RHIShader_D3D12.cpp">
       <Filter>源文件\Render\RHI\D3D12</Filter>
     </ClCompile>
   </ItemGroup>

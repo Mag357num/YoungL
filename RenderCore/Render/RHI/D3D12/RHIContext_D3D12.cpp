@@ -9,8 +9,6 @@
 
 #include <DirectXColors.h>
 
-#include <D3Dcompiler.h>
-#pragma comment(lib, "D3DCompiler.lib")
 #include <pix.h>
 #include <dxgidebug.h>
 
@@ -289,6 +287,12 @@ void FRHIContext_D3D12::BuildShadersInputLayout()
 	};
 }
 
+IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateEmpltyGraphicsPSO()
+{
+	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
+	return D3D12GraphicsPSO;
+}
+
 IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
@@ -369,7 +373,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;
-	Desc.RTVFormats[0] = M_BackBufferFormat;
+	Desc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
 	Desc.DSVFormat = M_DepthStencilFormat;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
@@ -554,7 +558,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;
-	Desc.RTVFormats[0] = M_BackBufferFormat;
+	Desc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
 	Desc.DSVFormat = M_DepthStencilFormat;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
@@ -773,6 +777,10 @@ DXGI_FORMAT FRHIContext_D3D12::TranslateFormat(EPixelBufferFormat InFormat)
 		break;
 	case PixelFormat_R8G8B8A8_Unorm:
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+
+	case PixelFormat_R10G10B10A2_UNorm:
+		return DXGI_FORMAT_R10G10B10A2_UNORM;
 		break;
 	default:
 		break;
@@ -1131,7 +1139,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	SrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	SrvDesc.Format = TranslateFormat(InColorResource->GetFormat());
 	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	SrvDesc.Texture2D.MipLevels = 1;
 	SrvDesc.Texture2D.MostDetailedMip = 0;

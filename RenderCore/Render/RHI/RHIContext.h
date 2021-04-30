@@ -15,6 +15,7 @@ using namespace std;
 #include "RHIConstantBuffer.h"
 #include "RHIRenderingMesh.h"
 #include "RHIShader.h"
+#include "Formats.h"
 
 struct FViewport
 {
@@ -41,7 +42,10 @@ struct FViewport
 class IRHIContext
 {
 public:
-	IRHIContext(){}
+	IRHIContext(){
+		BackBufferFormat = PixelFormat_R8G8B8A8_Unorm;
+		SceneColorFormat = PixelFormat_R10G10B10A2_UNorm;
+	}
 	virtual ~IRHIContext(){}
 
 	virtual void InitializeRHI(int InWidth, int InHeight){}
@@ -63,7 +67,7 @@ public:
 	//virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
 	//virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
 
-
+	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO(){return nullptr;}
@@ -111,7 +115,8 @@ public:
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
 
 protected:
-
+	EPixelBufferFormat BackBufferFormat;
+	EPixelBufferFormat SceneColorFormat;
 
 };
 

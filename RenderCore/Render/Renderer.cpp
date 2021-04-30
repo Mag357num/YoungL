@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "RHI/D3D12/RHIContext_D3D12.h"
+#include "RHI/RHIShaderParameter.h"
 
 #define MAX_LOADSTRING 100
 
@@ -35,6 +36,10 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreatePresentPipelineState();
 	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+
+	//test
+	//CreatePresentPSO();
+
 
 	//initialize scene constant
 	float AspectRatio = 1.0f * Viewport.Width / Viewport.Height;
@@ -369,7 +374,28 @@ void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTrans
 
 void FRenderer::CreateSceneColor()
 {
-	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, PixelFormat_R8G8B8A8_Unorm);
+	SceneColorFormat=EPixelBufferFormat::PixelFormat_R10G10B10A2_UNorm;
+
+	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, SceneColorFormat);
 	//create srv and rtv for color resource
 	RHIContext->CreateSrvRtvForColorResource(SceneColor);
+}
+
+void FRenderer::CreatePresentPSO()
+{
+	//create present pass
+	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
+	ShaderParam.AddRangeTable(ParamRange);
+	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmpltyGraphicsPSO();
+	
+	PresentPSO->SetCorlorTargetFormat(PixelFormat_R10G10B10A2_UNorm);
+
+	PresentPSO->AddShaderParameter(&ShaderParam);
+
+	FRHISamplerState SampleState(0, 0, Filter_MIN_MAG_LINEAR_MIP_POINT, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP);
+	PresentPSO->AddSampleState(&SampleState);
+	PresentPSO->CreateGraphicsPSOInternal();
+
+	//GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
 }

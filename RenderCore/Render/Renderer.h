@@ -31,6 +31,8 @@ public:
 protected:
 private:
 	
+	void CreatePresentPSO();
+	
 	void CreateSceneColor();
 
 	void RenderDepth();
@@ -56,4 +58,5 @@ private:
 
 	//scene color
 	FRHIColorResource* SceneColor;
+	EPixelBufferFormat SceneColorFormat;
 };

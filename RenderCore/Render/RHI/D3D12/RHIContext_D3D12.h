@@ -29,6 +29,7 @@ public:
 	virtual void InitializeRHI(int InWidth, int InHeight)override;
 	virtual void Resize(int InWidth, int InHeight)override;
 
+	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO()override;
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO()override;

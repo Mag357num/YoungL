@@ -30,22 +30,45 @@ enum EParameterRangeType
 struct FParameterRange
 {
 
-	FParameterRange(){}
+	FParameterRange(EParameterRangeType InType, UINT InNumParameters, UINT InShaderRegister, 
+		UINT InShaderRegisterSpace)
+		:RangeType(InType),
+		NumParameters(InNumParameters),
+		ShaderRegister(InShaderRegister),
+		ShaderRegisterSpace(InShaderRegisterSpace)
+		{}
 
 	EParameterRangeType RangeType;
 
 	UINT NumParameters;
 	UINT ShaderRegister;
 	UINT ShaderRegisterSpace;
-	UINT RangeTableStart;
 };
 
 class FRHIShaderParameter
 {
 public:
-	FRHIShaderParameter(){}
+	FRHIShaderParameter(EShaderParaType InParameterType, UINT InShaderRegister, 
+	UINT InRegisterSpace, EShaderParaVisibility InShaderVisibility)
+		:ShaderRegister(InShaderRegister),
+		RegisterSpace(InRegisterSpace),
+		ShaderVisibility(InShaderVisibility),
+		ParameterType(InParameterType)
+	{}
 	~FRHIShaderParameter(){}
 	
+	void AddRangeTable(FParameterRange InRange)
+	{
+		RangeTables.push_back(InRange);
+	}
+
+	std::vector<FParameterRange>* GetRangeTables(){return &RangeTables;}
+
+	EShaderParaType GetParameterType(){return ParameterType;}
+	EShaderParaVisibility GetShaderVisibility() { return ShaderVisibility; }
+	UINT GetShaderRegister() { return ShaderRegister; }
+	UINT GetShaderRegisterSpace() { return RegisterSpace; }
+
 private:
 
 protected:

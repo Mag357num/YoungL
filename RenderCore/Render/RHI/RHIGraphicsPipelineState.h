@@ -1,7 +1,7 @@
 #pragma once
 #include "RHISamplerState.h"
 #include "RHIShaderParameter.h"
-
+#include "RHIShader.h"
 //#include <vector>
 //#include <memory>
 
@@ -11,12 +11,12 @@ public:
 	IRHIGraphicsPipelineState() {}
 	virtual ~IRHIGraphicsPipelineState() {
 	
-		for (int SIndex = 0; SIndex < SampleStates.size(); SIndex++)
+		for (int SIndex = 0; SIndex < SamplerStates.size(); SIndex++)
 		{
-			SampleStates[SIndex].reset();
+			SamplerStates[SIndex].reset();
 		}
 
-		if (!SampleStates.empty())
+		if (!SamplerStates.empty())
 		{
 		}
 
@@ -28,11 +28,42 @@ public:
 		if (!ShaderParameters.empty())
 		{
 		}
+
+		if (VS)
+		{
+			VS.reset();
+		}
+
+		if (PS)
+		{
+			PS.reset();
+		}
 	
 	}
+
+	void SetVS(IRHIShader* InShader);
+	void SetPS(IRHIShader* InShader);
+
+	void SetCorlorTargetFormat(EPixelBufferFormat InFormat);
+	void SetDepthTargetFormat(EPixelBufferFormat InFormat);
+
+	void AddSampleState(FRHISamplerState* InSampleState);
+	void AddShaderParameter(FRHIShaderParameter* InShaderParameter);
+
+	std::vector<std::unique_ptr<FRHISamplerState>>* GetSampleSates(){return &SamplerStates;}
+
+	virtual void CreateGraphicsPSOInternal() = 0;
+
 protected:
 
-	std::vector<std::unique_ptr<FRHISamplerState>> SampleStates;
+	std::vector<std::unique_ptr<FRHISamplerState>> SamplerStates;
 	std::vector<std::unique_ptr<FRHIShaderParameter>> ShaderParameters;
+
+	EPixelBufferFormat ColorTargetFormat;
+	EPixelBufferFormat DepthTargetFormat;
+
+	std::unique_ptr<IRHIShader> VS;
+	std::unique_ptr<IRHIShader> PS;
+
 private:
 };
