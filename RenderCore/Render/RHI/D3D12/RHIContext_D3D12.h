@@ -78,6 +78,8 @@ public:
 	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)override;
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset /* = 0 */)override;
 
+
+	virtual void SetGraphicConstants(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)override;
 	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)override;

@@ -68,6 +68,8 @@ public:
 	EShaderParaVisibility GetShaderVisibility() { return ShaderVisibility; }
 	UINT GetShaderRegister() { return ShaderRegister; }
 	UINT GetShaderRegisterSpace() { return RegisterSpace; }
+	void SetNum32BitValues(UINT InNum){ Num32BitValues = InNum;}
+	UINT GetNum32BitValues(){return Num32BitValues;}
 
 private:
 

@@ -43,7 +43,7 @@ public:
 	ComPtr<ID3D12RootSignature> RootSignature;
 	//std::vector<ComPtr<ID3D12DescriptorHeap>> Descriptors;
 private:
-	void ParseShaderParameter(std::vector<CD3DX12_ROOT_PARAMETER>& InShaderParameters);
+	void ParseShaderParameter(std::vector<CD3DX12_ROOT_PARAMETER>& InShaderParameters, std::vector<CD3DX12_DESCRIPTOR_RANGE>& D3D12Ranges);
 	void ParseSamplerState(std::vector<CD3DX12_STATIC_SAMPLER_DESC>& InStaticSamplers);
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc;

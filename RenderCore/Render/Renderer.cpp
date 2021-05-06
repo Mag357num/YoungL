@@ -34,11 +34,11 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	IRHIGraphicsPipelineState* SkinPassPSO = RHIContext->CreateSkinnedGraphicsPSO();
 	GraphicsPSOs.insert(std::make_pair("SkinPass", SkinPassPSO));
 
-	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreatePresentPipelineState();
-	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+	//IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreatePresentPipelineState();
+	//GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
 
 	//test
-	//CreatePresentPSO();
+	CreatePresentPSO();
 
 
 	//initialize scene constant
@@ -321,6 +321,11 @@ void FRenderer::PresentLDR()
 	//prepare shader parameters
 	RHIContext->PreparePresentShaderParameter();
 
+	//set root constant
+	RHIContext->SetGraphicConstants(1, 1280, 0);
+	//set root constant
+	RHIContext->SetGraphicConstants(1, 720, 1);
+
 	RHIContext->SetColorSRV(0, SceneColor);
 	RHIContext->Draw(3);
 
@@ -384,18 +389,22 @@ void FRenderer::CreateSceneColor()
 void FRenderer::CreatePresentPSO()
 {
 	//create present pass
+	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmpltyGraphicsPSO();
+
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
 	ShaderParam.AddRangeTable(ParamRange);
-	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmpltyGraphicsPSO();
-	
-	PresentPSO->SetCorlorTargetFormat(PixelFormat_R10G10B10A2_UNorm);
-
 	PresentPSO->AddShaderParameter(&ShaderParam);
+
+	FRHIShaderParameter ConstantPara(ParaType_Constant, 0, 0, Visibility_PS);
+	ConstantPara.SetNum32BitValues(2);
+	PresentPSO->AddShaderParameter(&ConstantPara);
+
+	PresentPSO->SetCorlorTargetFormat(PixelFormat_R8G8B8A8_Unorm);
 
 	FRHISamplerState SampleState(0, 0, Filter_MIN_MAG_LINEAR_MIP_POINT, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP);
 	PresentPSO->AddSampleState(&SampleState);
 	PresentPSO->CreateGraphicsPSOInternal();
 
-	//GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
 }

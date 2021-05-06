@@ -801,7 +801,7 @@ void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InD
 			FRHIResourceHandle_D3D12* DsvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(DepthResource->GetDsvHandle());
 			Dsv = DsvHandle->GetCpuHandle();
 			M_CommandList->ClearDepthStencilView(*DsvHandle->GetCpuHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
+			
 		}
 	}
 	
@@ -904,12 +904,17 @@ void FRHIContext_D3D12::PreparePresentShaderParameter()
 	//M_CommandList->SetGraphicsRootSignature(Present_RootSignature.Get());
 }
 
+
+void FRHIContext_D3D12::SetGraphicConstants(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
+{
+	M_CommandList->SetGraphicsRoot32BitConstant(SlotParaIndex, SrcData, DestOffsetIn32BitValues);
+}
+
 void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
 	M_CommandList->SetGraphicsRootConstantBufferView(Buffer_D3D12->GetRootParameterIndex(), Buffer_D3D12->GetGpuAddress());
 }
-
 void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
 {
 	if (InDepthResource && InDepthResource->GetSrvHandle())
