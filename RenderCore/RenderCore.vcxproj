@@ -210,6 +210,7 @@
     <ClInclude Include="Game\SkinMeshActor.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Render\PostProcessing.h" />
     <ClInclude Include="Render\Renderer.h" />
     <ClInclude Include="Render\RenderThread.h" />
     <ClInclude Include="Render\RenderThreadManager.h" />
@@ -262,12 +263,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RenderCore.cpp" />
+    <ClCompile Include="Render\PostProcessing.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\RenderThreadManager.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIContext_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIGraphicsPipelineState_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIRenderingItem_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIResource_D3D12.cpp" />
+    <ClCompile Include="Render\RHI\D3D12\RHIShaderResource_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIShader_D3D12.cpp" />
     <ClCompile Include="Render\RHI\RHIContext.cpp" />
     <ClCompile Include="Render\RHI\RHIGraphicsPipelineState.cpp" />
@@ -293,6 +296,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\BloomSetUpPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders\DepthPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

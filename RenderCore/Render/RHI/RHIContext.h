@@ -17,6 +17,7 @@ using namespace std;
 #include "RHIShader.h"
 #include "Formats.h"
 
+
 struct FViewport
 {
 	FViewport(int InX, int InY, int InWidth, int InHeight)
@@ -71,7 +72,6 @@ public:
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO(){return nullptr;}
-	virtual IRHIGraphicsPipelineState* CreatePresentPipelineState(){return nullptr;}
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
 	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth){}
@@ -108,7 +108,7 @@ public:
 
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant){return nullptr;}
 
-	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }

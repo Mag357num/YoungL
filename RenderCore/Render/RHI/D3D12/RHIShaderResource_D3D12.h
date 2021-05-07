@@ -1,4 +1,5 @@
 #pragma once
+
 #include "CompiledShaders/BasePassVS.h"//g_BasePassVS
 #include "CompiledShaders/BasePassPS.h"//g_BasePassPS
 
@@ -10,14 +11,23 @@
 
 #include "CompiledShaders/ScreenVS.h"
 #include "CompiledShaders/ScreenPS.h"
+#include "CompiledShaders/BloomSetUpPS.h"
+
+
+#include <d3d12.h>
+#include <map>
+
+
 
 class FRHIShaderResource_D3D12
 {
 public:
-	FRHIShaderResource_D3D12(){}
-	virtual ~FRHIShaderResource_D3D12(){}
+	FRHIShaderResource_D3D12();
+
+
+	virtual ~FRHIShaderResource_D3D12();
+
 
 private:
-
 };
 

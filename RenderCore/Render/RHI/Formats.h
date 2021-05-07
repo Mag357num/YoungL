@@ -18,5 +18,8 @@ enum EPixelBufferFormat
 	//depth
 	PixelFormat_R24G8_Typeless,
 	PixelFormat_R8G8B8A8_Unorm,
-	PixelFormat_R10G10B10A2_UNorm
+	PixelFormat_R8G8B8A8_TypeLess,
+	PixelFormat_R10G10B10A2_UNorm,
+	PixelFormat_R16G16B16A16_Float,
+	PixelFormat_R11G11B10_Float
 };

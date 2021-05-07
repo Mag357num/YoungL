@@ -73,7 +73,7 @@ void FShadowMap::AutomateRotateLight(const FBoundSphere& InBound)
 
 void FShadowMap::CreateDepthResource(IRHIContext* InContext)
 {
-	DepthResource = InContext->CreateShadowDepthResource(512, 512, PixelFormat_R24G8_Typeless);
+	DepthResource = InContext->CreateDepthResource(512, 512, PixelFormat_R24G8_Typeless);
 	//create srv and dsv for depth resource
 	InContext->CreateSrvDsvForDepthResource(DepthResource);
 }

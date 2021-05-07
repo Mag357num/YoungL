@@ -20,6 +20,8 @@ public:
 
 	virtual void CompileShader(){}
 
+	std::wstring GetShaderPath(){return ShaderPath;}
+
 protected:
 
 	EShaderType ShaderType;

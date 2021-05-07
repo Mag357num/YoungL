@@ -4,6 +4,7 @@
 #include "../Game/MeshActor.h"
 #include "../Game/SkinMeshActor.h"
 #include "ShadowMap.h"
+#include "PostProcessing.h"
 
 class FRenderer
 {
@@ -28,17 +29,21 @@ public:
 	void CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
 	void CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries);
 
+	void PostProcess();
+
 protected:
 private:
-	
+	void InitializeSceneConstant();
+
 	void CreatePresentPSO();
+	void CreatePostProcessPSOs();
 	
 	void CreateSceneColor();
 
 	void RenderDepth();
 	void RenderSkinnedMesh();
 
-	void PresentLDR();
+	void DrawToBackBuffer();
 
 	IRHIContext* RHIContext;
 
@@ -59,4 +64,7 @@ private:
 	//scene color
 	FRHIColorResource* SceneColor;
 	EPixelBufferFormat SceneColorFormat;
+
+	//for postprocess
+	FPostProcessing* PostProcessing;
 };

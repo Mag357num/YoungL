@@ -1,5 +1,6 @@
 #pragma once
 #include "../RHIContext.h"
+#include "RHIShaderResource_D3D12.h"
 
 #include <vector>
 
@@ -33,7 +34,6 @@ public:
 	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
 	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
 	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO()override;
-	virtual IRHIGraphicsPipelineState* CreatePresentPipelineState()override;
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
@@ -95,7 +95,7 @@ public:
 		return M_CbvSrvUavHeap.Get();
 	}
 
-	virtual FRHIDepthResource* CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
+	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)override;
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
@@ -125,16 +125,11 @@ private:
 	ComPtr<ID3D12Fence>	M_Fence;
 	UINT64 M_CurrentFenceValue;
 
-	ComPtr<ID3D12DescriptorHeap>	M_RtvHeap;
-	ComPtr<ID3D12DescriptorHeap>	M_DsvHeap;
+
 	static const int M_SwapchainBackbufferCount = 2;
 	ComPtr<ID3D12Resource>	M_BackBuffer[M_SwapchainBackbufferCount];
 	ComPtr<ID3D12Resource> M_DepthStencilBuffer;
 	int M_CurrentBackBuffer = 0;
-
-	UINT M_RtvDescriptorSize;
-	UINT M_DsvDescriptorSize;
-	UINT M_CbvSrvUavDescriptorSize;
 
 	DXGI_FORMAT M_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT M_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -142,10 +137,26 @@ private:
 	D3D12_VIEWPORT M_ScreenViewport;
 	D3D12_RECT M_ScissorRect;
 
+
+	//todo: extract to descriptor heap manager
+	ComPtr<ID3D12DescriptorHeap>	M_RtvHeap;
+	ComPtr<ID3D12DescriptorHeap>	M_DsvHeap;
+
 	//heap for cbv srv uav heap
 	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
 	//heap for postprocess
 	ComPtr<ID3D12DescriptorHeap> Present_CbvSrvUavHeap;
+
+	UINT M_RtvDescriptorSize;
+	UINT M_DsvDescriptorSize;
+	UINT CbvSrvUavDescriptorSize;
+
+
+	//record allocated Descriptor
+	UINT RtvDHAllocatedCount;
+	UINT DsvDHAllocatedCount;
+	UINT CbvDHAllocatedCount;
+	UINT Present_CbvDHAllocatedCount;
 
 
 	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
@@ -159,4 +170,7 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Static;
 	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Skinned;
 
+
+	//shader resource
+	FRHIShaderResource_D3D12* ShaderResource;
 };

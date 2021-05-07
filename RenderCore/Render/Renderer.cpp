@@ -34,34 +34,12 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	IRHIGraphicsPipelineState* SkinPassPSO = RHIContext->CreateSkinnedGraphicsPSO();
 	GraphicsPSOs.insert(std::make_pair("SkinPass", SkinPassPSO));
 
-	//IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreatePresentPipelineState();
-	//GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
-
 	//test
 	CreatePresentPSO();
 
 
 	//initialize scene constant
-	float AspectRatio = 1.0f * Viewport.Width / Viewport.Height;
-	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.25f * 3.1416f, AspectRatio, 1.0f, 1000.0f);
-
-	//// Build the initial view matrix.
-	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);
-	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
-	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
-
-	FMatrix View = FMath::MatrixLookAtLH(CamPos, CamTarget, CamUp);
-
-	SceneConstant.ViewProj = View * Proj;
-
-	//copy to upload buffer transposed???
-	SceneConstant.ViewProj = FMath::MatrixTranspose(SceneConstant.ViewProj);
-	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
-	
-	//create global directional lighting
-	SceneConstant.LightStrength = FVector4D(1.0f, 1.0f, 1.0f, 0.0f);
-	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 0.0f);
-
+	InitializeSceneConstant();
 
 	//create shadow map
 	if (!ShadowMap)
@@ -94,6 +72,11 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
+
+	//for postprocess
+	PostProcessing = new FPostProcessing();
+	PostProcessing->InitRTs(RHIContext, InWidth, Inheight);
+	CreatePostProcessPSOs();
 }
 
 void FRenderer::DestroyRHIContext()
@@ -150,6 +133,14 @@ void FRenderer::DestroyRHIContext()
 		SceneColor = nullptr;
 	}
 
+	//for postprocess
+	if (PostProcessing)
+	{
+		PostProcessing->DestroyRTs();
+		delete PostProcessing;
+		PostProcessing = nullptr;
+	}
+
 #ifdef _WIN32
 	delete RHIContext;
 	RHIContext = nullptr;
@@ -172,6 +163,8 @@ void FRenderer::Resize(int InWidth, int InHeight)
 		Viewport.Height = InHeight;
 
 		RHIContext->Resize(InWidth, InHeight);
+
+		//todo: resize pp
 	}
 }
 
@@ -208,6 +201,16 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>
 
 		SkinnedRenderingMeshes[*Geometries[Index]->GetName()] = Item;
 	}
+}
+
+void FRenderer::PostProcess()
+{
+	if (!PostProcessing)
+	{
+		return;
+	}
+	PostProcessing->BloomSetUp(SceneColor);
+
 }
 
 
@@ -249,8 +252,10 @@ void FRenderer::RenderScene()
 	//change back buffer state to present
 	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);
 
+	//todo: for postprocess
+
 	//draw scene color to back buffer; may present hdr using tonemap
-	PresentLDR();
+	DrawToBackBuffer();
 
 	//excute command list
 	RHIContext->EndDraw();
@@ -305,7 +310,7 @@ void FRenderer::RenderSkinnedMesh()
 }
 
 //todo: present LDR or HDR
-void FRenderer::PresentLDR()
+void FRenderer::DrawToBackBuffer()
 {
 	RHIContext->BeginEvent(L"Present");
 
@@ -334,6 +339,31 @@ void FRenderer::PresentLDR()
 
 	RHIContext->EndEvent();
 }
+
+
+void FRenderer::InitializeSceneConstant()
+{
+	float AspectRatio = 1.0f * Viewport.Width / Viewport.Height;
+	FMatrix Proj = FMath::MatrixPerspectiveFovLH(0.25f * 3.1416f, AspectRatio, 1.0f, 1000.0f);
+
+	//// Build the initial view matrix.
+	FVector4D CamPos = FVector4D(500, 500, 100, 0.0f);
+	FVector4D CamTarget = FVector4D(0, 0, 150, 0.0f);
+	FVector4D CamUp = FVector4D(0.0f, 0.0f, 1.0f, 0.0f);
+
+	FMatrix View = FMath::MatrixLookAtLH(CamPos, CamTarget, CamUp);
+
+	SceneConstant.ViewProj = View * Proj;
+
+	//copy to upload buffer transposed???
+	SceneConstant.ViewProj = FMath::MatrixTranspose(SceneConstant.ViewProj);
+	SceneConstant.CamLocation = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
+
+	//create global directional lighting
+	SceneConstant.LightStrength = FVector4D(1.0f, 1.0f, 1.0f, 0.0f);
+	SceneConstant.LightDirection = FVector4D(-1.0f, -1.0f, -1.0f, 0.0f);
+}
+
 
 void FRenderer::UpdateConstantBuffer()
 {
@@ -379,7 +409,7 @@ void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTrans
 
 void FRenderer::CreateSceneColor()
 {
-	SceneColorFormat=EPixelBufferFormat::PixelFormat_R10G10B10A2_UNorm;
+	SceneColorFormat=EPixelBufferFormat::PixelFormat_R16G16B16A16_Float;
 
 	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, SceneColorFormat);
 	//create srv and rtv for color resource
@@ -404,7 +434,36 @@ void FRenderer::CreatePresentPSO()
 
 	FRHISamplerState SampleState(0, 0, Filter_MIN_MAG_LINEAR_MIP_POINT, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP);
 	PresentPSO->AddSampleState(&SampleState);
+	
+	IRHIShader* VS = new IRHIShader();
+	VS->SetShaderType(ShaderType_VS);
+	VS->SetShaderPath(L"ScreenVS");
+	PresentPSO->SetVS(VS);
+
+	IRHIShader* PS = new IRHIShader();
+	PS->SetShaderType(ShaderType_PS);
+	PS->SetShaderPath(L"ScreenPS");
+	PresentPSO->SetPS(PS);
+	
 	PresentPSO->CreateGraphicsPSOInternal();
 
 	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+}
+
+void FRenderer::CreatePostProcessPSOs()
+{
+	IRHIGraphicsPipelineState* BloomSetUpPSO = PostProcessing->CreateBloomSetUpPSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("BloomSetUp", BloomSetUpPSO));
+
+	IRHIGraphicsPipelineState* BloomDownPSO = PostProcessing->CreateBloomDownPSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("BloomDown", BloomDownPSO));
+
+	IRHIGraphicsPipelineState* BloomUpPSO = PostProcessing->CreateBloomUpPSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("BloomUp", BloomUpPSO));
+
+	IRHIGraphicsPipelineState* CombineLUTsPSO = PostProcessing->CreateCombineLUTsPSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("CombineLUTs", CombineLUTsPSO));
+
+	IRHIGraphicsPipelineState* ToneMapPSO = PostProcessing->CreateToneMapPSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("ToneMap", ToneMapPSO));
 }

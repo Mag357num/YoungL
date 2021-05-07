@@ -189,6 +189,9 @@
     <ClInclude Include="Render\RHI\D3D12\FRHIShader_D3D12.h">
       <Filter>头文件\Render\RHI\D3D12</Filter>
     </ClInclude>
+    <ClInclude Include="Render\PostProcessing.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -251,6 +254,12 @@
     <ClCompile Include="Render\RHI\D3D12\RHIShader_D3D12.cpp">
       <Filter>源文件\Render\RHI\D3D12</Filter>
     </ClCompile>
+    <ClCompile Include="Render\PostProcessing.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\D3D12\RHIShaderResource_D3D12.cpp">
+      <Filter>源文件\Render\RHI\D3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RenderCore.rc">
@@ -288,6 +297,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\ScreenVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\BloomSetUpPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

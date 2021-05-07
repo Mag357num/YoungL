@@ -4,7 +4,6 @@
 #include "RHIResource_D3D12.h"
 #include "RHIShaderResource_D3D12.h"
 
-
 namespace D3D12RHI
 {
 	extern ComPtr<ID3D12Device> M_Device;
@@ -12,6 +11,11 @@ namespace D3D12RHI
 
 using namespace D3D12RHI;
 
+namespace ShaderMap
+{
+	extern std::map<std::wstring, D3D12_SHADER_BYTECODE> GlobalShaderMap;
+}
+using namespace ShaderMap;
 
 
 D3D12_SHADER_VISIBILITY TranslateShaderVisibility(EShaderParaVisibility Invisibility)
@@ -222,16 +226,20 @@ void FRHIGraphicsPipelineState_D3D12::CreateGraphicsPSOInternal()
 
 	Desc.DepthStencilState = DSDesc;
 
-	Desc.VS =
-	{
-		g_ScreenVS,
-		sizeof(g_ScreenVS)
-	};
-	Desc.PS =
-	{
-		g_ScreenPS,
-		sizeof(g_ScreenPS)
-	};
+
+	Desc.VS = GlobalShaderMap[VS->GetShaderPath()];
+	//Desc.VS =
+	//{
+	//	g_ScreenVS,
+	//	sizeof(g_ScreenVS)
+	//};
+	Desc.PS = GlobalShaderMap[PS->GetShaderPath()];
+	//Desc.PS =
+	//{
+	//	g_ScreenPS,
+	//	sizeof(g_ScreenPS)
+	//};
+
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;

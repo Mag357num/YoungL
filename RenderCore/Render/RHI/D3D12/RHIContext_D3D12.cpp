@@ -32,6 +32,8 @@ namespace D3D12RHI
 
 using namespace D3D12RHI;
 
+static const uint32_t NumDescriptorsPerHeap = 256;
+
 void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 {
 	ClientWidth = InWidth;
@@ -61,7 +63,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 	M_RtvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	M_DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-	M_CbvSrvUavDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	CbvSrvUavDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	//create commang objects
 	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&M_CommandAllocator));
@@ -102,7 +104,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	//create discriptor heap
 	D3D12_DESCRIPTOR_HEAP_DESC RtvHeapDesc;
 	RtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	RtvHeapDesc.NumDescriptors = M_SwapchainBackbufferCount + 1;//swapchain count for back buffer; another is for scenecolor(postprocess)
+	RtvHeapDesc.NumDescriptors = NumDescriptorsPerHeap;//swapchain count for back buffer; another is for scenecolor(postprocess)
 	RtvHeapDesc.NodeMask = 0;
 	RtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	M_Device->CreateDescriptorHeap(&RtvHeapDesc, IID_PPV_ARGS(&M_RtvHeap));
@@ -111,7 +113,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	DsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	DsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	DsvHeapDesc.NodeMask = 0;
-	DsvHeapDesc.NumDescriptors = 2;//0: for scene color ;1 :for shadow depth
+	DsvHeapDesc.NumDescriptors = NumDescriptorsPerHeap;//0: for scene color ;1 :for shadow depth
 
 	M_Device->CreateDescriptorHeap(&DsvHeapDesc, IID_PPV_ARGS(&M_DsvHeap));
 
@@ -129,6 +131,15 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 		BuildShadersInputLayout();
 	}
+
+	//initialize dyanmic allocated descriptor heap
+	RtvDHAllocatedCount = 2; //reserved for back buffer target
+	DsvDHAllocatedCount = 1; //reserved for ds view
+	CbvDHAllocatedCount = 0;
+	Present_CbvDHAllocatedCount = 0;
+
+	//init shader Resource 
+	ShaderResource = new FRHIShaderResource_D3D12();
 }
 
 FRHIContext_D3D12::~FRHIContext_D3D12()
@@ -137,6 +148,13 @@ FRHIContext_D3D12::~FRHIContext_D3D12()
 	if (M_Device != nullptr)
 	{
 		FlushCommandQueue();
+	}
+
+
+	if (ShaderResource)
+	{
+		delete ShaderResource;
+		ShaderResource = nullptr;
 	}
 
 //#if defined(DBUG) || defined(_DEBUG)
@@ -185,6 +203,7 @@ void FRHIContext_D3D12::OnResize()
 		M_Device->CreateRenderTargetView(M_BackBuffer[i].Get(), nullptr, Rtvhandle);
 		Rtvhandle.Offset(1, M_RtvDescriptorSize);
 	}
+	//
 
 	//create depth staencil buffer and dsv
 	D3D12_RESOURCE_DESC DRDesc;
@@ -251,7 +270,7 @@ void FRHIContext_D3D12::OnResize()
 void FRHIContext_D3D12::BuildDescriptorHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
-	HeapDesc.NumDescriptors = 1;
+	HeapDesc.NumDescriptors = NumDescriptorsPerHeap;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&M_CbvSrvUavHeap));
@@ -260,7 +279,7 @@ void FRHIContext_D3D12::BuildDescriptorHeap()
 void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
-	HeapDesc.NumDescriptors = 1;
+	HeapDesc.NumDescriptors = NumDescriptorsPerHeap;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&Present_CbvSrvUavHeap));
@@ -373,7 +392,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateGraphicsPSO()
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;
-	Desc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
+	Desc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	Desc.DSVFormat = M_DepthStencilFormat;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
@@ -558,7 +577,7 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	Desc.NumRenderTargets = 1;
-	Desc.RTVFormats[0] = DXGI_FORMAT_R10G10B10A2_UNORM;
+	Desc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	Desc.DSVFormat = M_DepthStencilFormat;
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
@@ -567,98 +586,6 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateSkinnedGraphicsPSO()
 	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12SkinGraphicsPSO->PSO));
 
 	return D3D12SkinGraphicsPSO;
-}
-
-IRHIGraphicsPipelineState* FRHIContext_D3D12::CreatePresentPipelineState()
-{
-	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPresentPSO = new FRHIGraphicsPipelineState_D3D12();
-
-	//create root signature
-	{
-		CD3DX12_ROOT_PARAMETER slotRootParameter[1];
-
-		// Create a single descriptor table of CBVs.
-		CD3DX12_DESCRIPTOR_RANGE cbvTable;
-		cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
-		// A root signature is an array of root parameters.
-		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
-		ComPtr<ID3DBlob> serializedRootSig = nullptr;
-		ComPtr<ID3DBlob> errorBlob = nullptr;
-		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
-
-		if (errorBlob != nullptr)
-		{
-			::OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-		}
-
-		M_Device->CreateRootSignature(
-			0,
-			serializedRootSig->GetBufferPointer(),
-			serializedRootSig->GetBufferSize(),
-			IID_PPV_ARGS(&D3D12GraphicsPresentPSO->RootSignature));
-	}
-
-	//
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
-	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-
-	Desc.pRootSignature = D3D12GraphicsPresentPSO->RootSignature.Get();
-	//draw rect dont't need input layout
-	Desc.InputLayout.NumElements = 0;
-	Desc.InputLayout.pInputElementDescs = nullptr;
-
-	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
-
-	D3D12_DEPTH_STENCIL_DESC DSDesc;
-	DSDesc.DepthEnable = TRUE;
-	DSDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	DSDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	DSDesc.StencilEnable = FALSE;
-	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
-	DSDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
-	DSDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-	DSDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-	DSDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	DSDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-	DSDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-	DSDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
-	DSDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
-	DSDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
-
-	//Desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	Desc.DepthStencilState = DSDesc;
-
-	Desc.VS =
-	{
-		g_ScreenVS,
-		sizeof(g_ScreenVS)
-	};
-	Desc.PS =
-	{
-		g_ScreenPS,
-		sizeof(g_ScreenPS)
-	};
-
-	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	Desc.NumRenderTargets = 1;
-	Desc.RTVFormats[0] = M_BackBufferFormat;
-	Desc.DSVFormat = M_DepthStencilFormat;
-	Desc.SampleDesc.Count = 1;
-	Desc.SampleDesc.Quality = 0;
-	Desc.SampleMask = UINT_MAX;
-
-	M_Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&D3D12GraphicsPresentPSO->PSO));
-
-	return D3D12GraphicsPresentPSO;
 }
 
 void FRHIContext_D3D12::BeginDraw(const wchar_t* Label)
@@ -779,9 +706,22 @@ DXGI_FORMAT FRHIContext_D3D12::TranslateFormat(EPixelBufferFormat InFormat)
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
 		break;
 
+	case PixelFormat_R8G8B8A8_TypeLess:
+		return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+		break;
+
 	case PixelFormat_R10G10B10A2_UNorm:
 		return DXGI_FORMAT_R10G10B10A2_UNORM;
 		break;
+
+	case PixelFormat_R16G16B16A16_Float:
+		return DXGI_FORMAT_R16G16B16A16_FLOAT;
+		break;
+
+	case PixelFormat_R11G11B10_Float:
+		return DXGI_FORMAT_R11G11B10_FLOAT;
+		break;
+		
 	default:
 		break;
 	}
@@ -1015,7 +955,7 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 }
 
 //create depth resoruce
-FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
+FRHIDepthResource* FRHIContext_D3D12::CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
 {
 
 	FRHIDepthResource_D3D12* DepthResource = new FRHIDepthResource_D3D12(InWidth, InHeight, InFormat);
@@ -1056,9 +996,18 @@ FRHIDepthResource* FRHIContext_D3D12::CreateShadowDepthResource(int InWidth, int
 
 void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)
 {
+
+	//TODO: if allocated count is outof descriptor range
+	//if (CbvDHAllocatedCount == NumDescriptorsPerHeap)
+	//{
+	//}
+
+
 	FRHIDepthResource_D3D12* DepthResource_D3D12 = reinterpret_cast<FRHIDepthResource_D3D12*>(InDepthResource);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
+
+	SrvCpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -1073,13 +1022,18 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 
 	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
 
+	SrvGpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
+
 	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
 	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
 	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
 	DepthResource_D3D12->SetSrvHandle(SrvHandle);
 
+	//incre cbv descriptor coupnt
+	CbvDHAllocatedCount ++;
+
 	D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuDescriptorStart(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
-	DsvCpuDescriptorStart.ptr += M_DsvDescriptorSize;//0 reserved for base pass depth
+	DsvCpuDescriptorStart.ptr += DsvDHAllocatedCount * M_DsvDescriptorSize;//0 reserved for base pass depth
 	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
 	DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 	DsvDesc.Format = M_DepthStencilFormat;
@@ -1092,9 +1046,12 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 	FRHIResourceHandle_D3D12* DsvHandle = new FRHIResourceHandle_D3D12();
 	DsvHandle->SetCpuhandle(DsvCpuDescriptorStart);
 	D3D12_GPU_DESCRIPTOR_HANDLE DsvGpuDescriptorStart(M_DsvHeap->GetGPUDescriptorHandleForHeapStart());
-	DsvGpuDescriptorStart.ptr += M_DsvDescriptorSize;//0 reserved for base pass depth
+	DsvGpuDescriptorStart.ptr += DsvDHAllocatedCount * M_DsvDescriptorSize;//0 reserved for base pass depth
 	DsvHandle->SetGpuhandle(DsvGpuDescriptorStart);
 	DepthResource_D3D12->SetDsvHandle(DsvHandle);
+
+	//incre dsv heap
+	DsvDHAllocatedCount ++;
 }
 
 FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
@@ -1138,9 +1095,15 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 
 void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)
 {
+	//TODO: if allocated count is outof descriptor range
+	//if (Present_CbvDHAllocatedCount == NumDescriptorsPerHeap)
+	//{
+	//}
+
 	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(Present_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+	SrvCpuDescriptorStart.ptr += Present_CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -1154,16 +1117,19 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 	M_Device->CreateShaderResourceView(ColorResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(Present_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	SrvGpuDescriptorStart.ptr += Present_CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
 
 	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
 	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
 	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
 	ColorResource_D3D12->SetSrvHandle(SrvHandle);
 
+	//incre Present cbv allocator
+	Present_CbvDHAllocatedCount ++;
+
 
 	D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuDescriptorStart(M_RtvHeap->GetCPUDescriptorHandleForHeapStart());
-	RtvCpuDescriptorStart.ptr += (M_SwapchainBackbufferCount * M_RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
-
+	RtvCpuDescriptorStart.ptr += (RtvDHAllocatedCount * M_RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
 
 	M_Device->CreateRenderTargetView(ColorResource_D3D12->Resource.Get(), nullptr, RtvCpuDescriptorStart);
 
@@ -1171,7 +1137,10 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 	FRHIResourceHandle_D3D12* RtvHandle = new FRHIResourceHandle_D3D12();
 	RtvHandle->SetCpuhandle(RtvCpuDescriptorStart);
 	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(M_RtvHeap->GetGPUDescriptorHandleForHeapStart());
-	RtvGpuDescriptorStart.ptr += (M_SwapchainBackbufferCount * M_DsvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
+	RtvGpuDescriptorStart.ptr += (RtvDHAllocatedCount * M_DsvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
 	RtvHandle->SetGpuhandle(RtvGpuDescriptorStart);
 	ColorResource_D3D12->SetRtvHandle(RtvHandle);
+
+	//incre count
+	RtvDHAllocatedCount++;
 }
