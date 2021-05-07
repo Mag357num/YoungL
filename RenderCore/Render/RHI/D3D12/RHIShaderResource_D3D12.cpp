@@ -25,6 +25,26 @@ FRHIShaderResource_D3D12::FRHIShaderResource_D3D12()
 	BloomSetUpPS.BytecodeLength = sizeof(g_BloomSetUpPS);
 	BloomSetUpPS.pShaderBytecode = g_BloomSetUpPS;
 	GlobalShaderMap.insert(std::make_pair(L"BloomSetUpPS", BloomSetUpPS));
+
+	D3D12_SHADER_BYTECODE BloomDownPS;
+	BloomDownPS.BytecodeLength = sizeof(g_BloomDownPS);
+	BloomDownPS.pShaderBytecode = g_BloomDownPS;
+	GlobalShaderMap.insert(std::make_pair(L"BloomDownPS", BloomDownPS));
+
+	D3D12_SHADER_BYTECODE BloomUpPS;
+	BloomUpPS.BytecodeLength = sizeof(g_BloomUpPS);
+	BloomUpPS.pShaderBytecode = g_BloomUpPS;
+	GlobalShaderMap.insert(std::make_pair(L"BloomUpPS", BloomUpPS));
+
+	D3D12_SHADER_BYTECODE CombineLUTsPS;
+	CombineLUTsPS.BytecodeLength = sizeof(g_CombineLUTsPS);
+	CombineLUTsPS.pShaderBytecode = g_CombineLUTsPS;
+	GlobalShaderMap.insert(std::make_pair(L"CombineLUTsPS", CombineLUTsPS));
+
+	D3D12_SHADER_BYTECODE ToneMapPS;
+	ToneMapPS.BytecodeLength = sizeof(g_ToneMapPS);
+	ToneMapPS.pShaderBytecode = g_ToneMapPS;
+	GlobalShaderMap.insert(std::make_pair(L"ToneMapPS", ToneMapPS));
 }
 
 

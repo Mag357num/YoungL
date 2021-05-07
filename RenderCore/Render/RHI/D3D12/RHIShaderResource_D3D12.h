@@ -12,7 +12,10 @@
 #include "CompiledShaders/ScreenVS.h"
 #include "CompiledShaders/ScreenPS.h"
 #include "CompiledShaders/BloomSetUpPS.h"
-
+#include "CompiledShaders/BloomDownPS.h"
+#include "CompiledShaders/BloomUpPS.h"
+#include "CompiledShaders/CombineLUTsPS.h"
+#include "CompiledShaders/ToneMapPS.h"
 
 #include <d3d12.h>
 #include <map>

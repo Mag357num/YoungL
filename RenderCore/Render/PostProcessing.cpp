@@ -178,7 +178,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomDownPSO(IRHIContext* Cont
 
 	IRHIShader* PS = new IRHIShader();
 	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BloomSetUpPS");
+	PS->SetShaderPath(L"BloomDownPS");
 	BloomDownPSO->SetPS(PS);
 
 	BloomDownPSO->CreateGraphicsPSOInternal();
@@ -210,7 +210,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomUpPSO(IRHIContext* Contex
 
 	IRHIShader* PS = new IRHIShader();
 	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BloomSetUpPS");
+	PS->SetShaderPath(L"BloomUpPS");
 	BloomUpPSO->SetPS(PS);
 
 	BloomUpPSO->CreateGraphicsPSOInternal();
@@ -242,7 +242,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateCombineLUTsPSO(IRHIContext* Co
 
 	IRHIShader* PS = new IRHIShader();
 	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BloomSetUpPS");
+	PS->SetShaderPath(L"CombineLUTsPS");
 	CombineLUTsPSO->SetPS(PS);
 
 	CombineLUTsPSO->CreateGraphicsPSOInternal();
@@ -274,7 +274,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateToneMapPSO(IRHIContext* Contex
 
 	IRHIShader* PS = new IRHIShader();
 	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BloomSetUpPS");
+	PS->SetShaderPath(L"ToneMapPS");
 	ToneMapPSO->SetPS(PS);
 
 	ToneMapPSO->CreateGraphicsPSOInternal();
