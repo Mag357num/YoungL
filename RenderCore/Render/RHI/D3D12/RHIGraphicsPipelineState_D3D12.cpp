@@ -88,7 +88,7 @@ D3D12_TEXTURE_ADDRESS_MODE TranslateAddressMode(ESampleAddress InAddress)
 }
 
 void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_ROOT_PARAMETER>& InShaderParameters, 
-	std::vector<CD3DX12_DESCRIPTOR_RANGE>& D3D12Ranges)
+	std::vector<std::vector<CD3DX12_DESCRIPTOR_RANGE>>& D3D12Ranges)
 {
 
 	for (UINT Index = 0; Index < ShaderParameters.size(); ++Index)
@@ -100,7 +100,8 @@ void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_R
 		{
 		case ParaType_Range:
 		{
-			size_t Start = D3D12Ranges.size();
+			//size_t Start = D3D12Ranges.size();
+			std::vector<CD3DX12_DESCRIPTOR_RANGE> TempD3D12Ranges;
 
 			std::vector<FParameterRange>* Ranges = ShaderParameters[Index]->GetRangeTables();
 			for (size_t RangeIndex = 0; RangeIndex < Ranges->size(); ++RangeIndex)
@@ -131,14 +132,16 @@ void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_R
 				CD3DX12_DESCRIPTOR_RANGE Range;
 				Range.Init(Type, Ranges->at(RangeIndex).NumParameters,
 					Ranges->at(RangeIndex).ShaderRegister, Ranges->at(RangeIndex).ShaderRegisterSpace);
-				D3D12Ranges.push_back(Range);
+				TempD3D12Ranges.push_back(Range);
 
-				
 			}
 
-			Parameter.InitAsDescriptorTable((UINT)Ranges->size(), D3D12Ranges.data() + Start,
+			D3D12Ranges.push_back(TempD3D12Ranges);
+			size_t TotalRangeSize = D3D12Ranges.size(); 
+			Parameter.InitAsDescriptorTable((UINT)Ranges->size(), D3D12Ranges[TotalRangeSize - 1].data(),
 				TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
 			InShaderParameters.push_back(Parameter);
+
 		}
 		break;
 
@@ -163,9 +166,10 @@ void FRHIGraphicsPipelineState_D3D12::CreateGraphicsPSOInternal()
 	//create root signature
 	{
 		std::vector<CD3DX12_ROOT_PARAMETER> DXShaderParameters;
-		std::vector<CD3DX12_DESCRIPTOR_RANGE> D3D12Ranges;
+		std::vector<std::vector<CD3DX12_DESCRIPTOR_RANGE>> D3D12Ranges;
 
 		ParseShaderParameter(DXShaderParameters, D3D12Ranges);
+
 
 		std::vector<CD3DX12_STATIC_SAMPLER_DESC> SamplerSates;
 		ParseSamplerState(SamplerSates);
@@ -228,17 +232,7 @@ void FRHIGraphicsPipelineState_D3D12::CreateGraphicsPSOInternal()
 
 
 	Desc.VS = GlobalShaderMap[VS->GetShaderPath()];
-	//Desc.VS =
-	//{
-	//	g_ScreenVS,
-	//	sizeof(g_ScreenVS)
-	//};
 	Desc.PS = GlobalShaderMap[PS->GetShaderPath()];
-	//Desc.PS =
-	//{
-	//	g_ScreenPS,
-	//	sizeof(g_ScreenPS)
-	//};
 
 
 	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

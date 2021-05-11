@@ -36,6 +36,11 @@ FRHIShaderResource_D3D12::FRHIShaderResource_D3D12()
 	BloomUpPS.pShaderBytecode = g_BloomUpPS;
 	GlobalShaderMap.insert(std::make_pair(L"BloomUpPS", BloomUpPS));
 
+	D3D12_SHADER_BYTECODE BloomSunMergePS;
+	BloomSunMergePS.BytecodeLength = sizeof(g_BloomSunMergePS);
+	BloomSunMergePS.pShaderBytecode = g_BloomSunMergePS;
+	GlobalShaderMap.insert(std::make_pair(L"BloomSunMergePS", BloomSunMergePS));
+
 	D3D12_SHADER_BYTECODE CombineLUTsPS;
 	CombineLUTsPS.BytecodeLength = sizeof(g_CombineLUTsPS);
 	CombineLUTsPS.pShaderBytecode = g_CombineLUTsPS;

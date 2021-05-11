@@ -692,43 +692,6 @@ D3D12_RESOURCE_STATES FRHIContext_D3D12::TranslateResourceState(ERHIResourceStat
 	return Ret;
 }
 
-DXGI_FORMAT FRHIContext_D3D12::TranslateFormat(EPixelBufferFormat InFormat)
-{
-	switch (InFormat)
-	{
-	case PixelFormat_None:
-		return DXGI_FORMAT_UNKNOWN;
-		break;
-	case PixelFormat_R24G8_Typeless:
-		return DXGI_FORMAT_R24G8_TYPELESS;
-		break;
-	case PixelFormat_R8G8B8A8_Unorm:
-		return DXGI_FORMAT_R8G8B8A8_UNORM;
-		break;
-
-	case PixelFormat_R8G8B8A8_TypeLess:
-		return DXGI_FORMAT_R8G8B8A8_TYPELESS;
-		break;
-
-	case PixelFormat_R10G10B10A2_UNorm:
-		return DXGI_FORMAT_R10G10B10A2_UNORM;
-		break;
-
-	case PixelFormat_R16G16B16A16_Float:
-		return DXGI_FORMAT_R16G16B16A16_FLOAT;
-		break;
-
-	case PixelFormat_R11G11B10_Float:
-		return DXGI_FORMAT_R11G11B10_FLOAT;
-		break;
-		
-	default:
-		break;
-	}
-
-	return DXGI_FORMAT_UNKNOWN;
-}
-
 void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth)
 {
 	//deal with depth target
@@ -845,7 +808,7 @@ void FRHIContext_D3D12::PreparePresentShaderParameter()
 }
 
 
-void FRHIContext_D3D12::SetGraphicConstants(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
+void FRHIContext_D3D12::SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
 {
 	M_CommandList->SetGraphicsRoot32BitConstant(SlotParaIndex, SrcData, DestOffsetIn32BitValues);
 }
@@ -973,7 +936,7 @@ FRHIDepthResource* FRHIContext_D3D12::CreateDepthResource(int InWidth, int InHei
 	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
 	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
 	// we need to create the depth buffer resource with a typeless format. 
-	ResourceDesc.Format = TranslateFormat(DepthResource->GetFormat());;
+	ResourceDesc.Format = FRHIResource_D3D12::TranslateFormat(DepthResource->GetFormat());;
 	ResourceDesc.Height = DepthResource->GetHeight();
 	ResourceDesc.Width = DepthResource->GetWidth();
 	ResourceDesc.MipLevels = 1;
@@ -1067,7 +1030,7 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 	ResourceDesc.DepthOrArraySize = 1;
 	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-	ResourceDesc.Format = TranslateFormat(ColorResource->GetFormat());
+	ResourceDesc.Format = FRHIResource_D3D12::TranslateFormat(ColorResource->GetFormat());
 	ResourceDesc.Height = ColorResource->GetHeight();
 	ResourceDesc.Width = ColorResource->GetWidth();
 	ResourceDesc.MipLevels = 1;
@@ -1076,7 +1039,7 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 	ResourceDesc.SampleDesc.Quality = 0;
 
 	D3D12_CLEAR_VALUE ClearValue;
-	ClearValue.Format = TranslateFormat(ColorResource->GetFormat());
+	ClearValue.Format = FRHIResource_D3D12::TranslateFormat(ColorResource->GetFormat());
 	//ClearValue light blue
 	ClearValue.Color[0] = 0.678431392f;
 	ClearValue.Color[1] = 0.847058892f;
@@ -1107,7 +1070,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	SrvDesc.Format = TranslateFormat(InColorResource->GetFormat());
+	SrvDesc.Format = FRHIResource_D3D12::TranslateFormat(InColorResource->GetFormat());
 	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	SrvDesc.Texture2D.MipLevels = 1;
 	SrvDesc.Texture2D.MostDetailedMip = 0;

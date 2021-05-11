@@ -9,6 +9,7 @@ public:
 		PostProcessFormat = PixelFormat_R11G11B10_Float;
 		LUTFormat = PixelFormat_R10G10B10A2_UNorm;
 		TonemapFormat = PixelFormat_R8G8B8A8_Unorm;
+		SunMergeFormat = PixelFormat_R16G16B16A16_Float;
 	}
 
 	~FPostProcessing(){}
@@ -20,12 +21,14 @@ public:
 	IRHIGraphicsPipelineState* CreateBloomSetUpPSO(IRHIContext* Context);
 	IRHIGraphicsPipelineState* CreateBloomDownPSO(IRHIContext* Context);
 	IRHIGraphicsPipelineState* CreateBloomUpPSO(IRHIContext* Context);
+	IRHIGraphicsPipelineState* CreateBloomSunMergePSO(IRHIContext* Context);
 	IRHIGraphicsPipelineState* CreateCombineLUTsPSO(IRHIContext* Context);
 	IRHIGraphicsPipelineState* CreateToneMapPSO(IRHIContext* Context);
 
-	void BloomSetUp(FRHIColorResource* SceneColor);
-	void BloomDown();
-	void BloomUp();
+	void BloomSetUp(IRHIContext* Context, FRHIColorResource* SceneColor, IRHIGraphicsPipelineState* PSO);
+	void BloomDown(IRHIContext* Context, IRHIGraphicsPipelineState* PSO, UINT Stage = 0);
+	void BloomUp(IRHIContext* Context, IRHIGraphicsPipelineState* PSO, UINT Stage = 0);
+	void BloomSunMerge(IRHIContext* Context, IRHIGraphicsPipelineState* PSO);
 	void CombineLUTs();
 	void ToneMap();
 
@@ -33,7 +36,15 @@ public:
 		return ToneMapResult;
 		}
 
+
 private:
+
+	FRHIColorResource* FindBloomTargetByStage(bool IsBloomDown, UINT Stage);
+	FRHIColorResource* FindBloomInputByStage(bool IsBloomDown, UINT Stage);
+	FRHIColorResource* FindBloomUpSecondInputByStage(UINT Stage);
+
+	void GetBloomInputSizeByStage(int& Width, int& Height, bool IsBloomDown, UINT Stage);
+
 	//scene color
 	FRHIColorResource* BloomSetUpResult;
 	FRHIColorResource* BloomDown0;
@@ -51,6 +62,7 @@ private:
 	FRHIColorResource* ToneMapResult;
 
 	EPixelBufferFormat PostProcessFormat;
+	EPixelBufferFormat SunMergeFormat;
 	EPixelBufferFormat LUTFormat;
 	EPixelBufferFormat TonemapFormat;
 

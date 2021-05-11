@@ -307,6 +307,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
+    <FxCompile Include="Shaders\BloomSunMergePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="Shaders\BloomUpPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -361,6 +365,7 @@
     <None Include="Shaders\DepthRS.hlsli" />
     <None Include="Shaders\Lighting.hlsli" />
     <None Include="Shaders\BasePassRS.hlsli" />
+    <None Include="Shaders\PostProcess_BloomUpRS.hlsli" />
     <None Include="Shaders\ScreenRS.hlsli" />
     <None Include="Shaders\SkinnedMeshRS.hlsli" />
   </ItemGroup>

@@ -209,7 +209,19 @@ void FRenderer::PostProcess()
 	{
 		return;
 	}
-	PostProcessing->BloomSetUp(SceneColor);
+
+	PostProcessing->BloomSetUp(RHIContext, SceneColor, GraphicsPSOs["BloomSetUp"]);
+
+	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 0);
+	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 1);
+	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 2);
+	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 3);
+
+	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 0);
+	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 1);
+	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 2);
+
+	PostProcessing->BloomSunMerge(RHIContext, GraphicsPSOs["BloomSunMerge"]);
 
 }
 
@@ -253,6 +265,8 @@ void FRenderer::RenderScene()
 	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);
 
 	//todo: for postprocess
+	PostProcess();
+
 
 	//draw scene color to back buffer; may present hdr using tonemap
 	DrawToBackBuffer();
@@ -314,6 +328,9 @@ void FRenderer::DrawToBackBuffer()
 {
 	RHIContext->BeginEvent(L"Present");
 
+	RHIContext->SetViewport(Viewport);
+	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
+
 	//change back buffer state to rendertarget
 	RHIContext->TransitionBackBufferStateToRT();
 
@@ -327,9 +344,9 @@ void FRenderer::DrawToBackBuffer()
 	RHIContext->PreparePresentShaderParameter();
 
 	//set root constant
-	RHIContext->SetGraphicConstants(1, 1280, 0);
+	RHIContext->SetGraphicRootConstant(1, 1280, 0);
 	//set root constant
-	RHIContext->SetGraphicConstants(1, 720, 1);
+	RHIContext->SetGraphicRootConstant(1, 720, 1);
 
 	RHIContext->SetColorSRV(0, SceneColor);
 	RHIContext->Draw(3);
@@ -460,6 +477,9 @@ void FRenderer::CreatePostProcessPSOs()
 
 	IRHIGraphicsPipelineState* BloomUpPSO = PostProcessing->CreateBloomUpPSO(RHIContext);
 	GraphicsPSOs.insert(std::make_pair("BloomUp", BloomUpPSO));
+
+	IRHIGraphicsPipelineState* BloomSunMergePSO = PostProcessing->CreateBloomSunMergePSO(RHIContext);
+	GraphicsPSOs.insert(std::make_pair("BloomSunMerge", BloomSunMergePSO));
 
 	IRHIGraphicsPipelineState* CombineLUTsPSO = PostProcessing->CreateCombineLUTsPSO(RHIContext);
 	GraphicsPSOs.insert(std::make_pair("CombineLUTs", CombineLUTsPSO));

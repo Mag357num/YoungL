@@ -34,9 +34,22 @@ public:
 			return DXGI_FORMAT_R8G8B8A8_UNORM;
 			break;
 
+		case PixelFormat_R8G8B8A8_TypeLess:
+			return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+			break;
+
 		case PixelFormat_R10G10B10A2_UNorm:
 			return DXGI_FORMAT_R10G10B10A2_UNORM;
 			break;
+
+		case PixelFormat_R16G16B16A16_Float:
+			return DXGI_FORMAT_R16G16B16A16_FLOAT;
+			break;
+
+		case PixelFormat_R11G11B10_Float:
+			return DXGI_FORMAT_R11G11B10_FLOAT;
+			break;
+
 		default:
 			break;
 		}

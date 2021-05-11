@@ -314,6 +314,9 @@
     <FxCompile Include="Shaders\ToneMapPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\BloomSunMergePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Lighting.hlsli">
@@ -332,6 +335,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\ScreenRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PostProcess_BloomUpRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -16,6 +16,7 @@
 #include "CompiledShaders/BloomUpPS.h"
 #include "CompiledShaders/CombineLUTsPS.h"
 #include "CompiledShaders/ToneMapPS.h"
+#include "CompiledShaders/BloomSunMergePS.h"
 
 #include <d3d12.h>
 #include <map>
