@@ -66,5 +66,6 @@ private:
 	EPixelBufferFormat SceneColorFormat;
 
 	//for postprocess
+	bool ShouldRenderPostProcess;
 	FPostProcessing* PostProcessing;
 };

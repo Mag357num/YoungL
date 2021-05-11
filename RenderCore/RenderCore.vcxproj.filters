@@ -340,5 +340,11 @@
     <None Include="Shaders\PostProcess_BloomUpRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\PostProcess_CombineLUTs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ACES.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

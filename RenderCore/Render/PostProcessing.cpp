@@ -267,19 +267,12 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateCombineLUTsPSO(IRHIContext* Co
 {
 	IRHIGraphicsPipelineState* CombineLUTsPSO = Context->CreateEmpltyGraphicsPSO();
 
-	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
-	ShaderParam.AddRangeTable(ParamRange);
-	CombineLUTsPSO->AddShaderParameter(&ShaderParam);
 
 	FRHIShaderParameter ConstantPara(ParaType_Constant, 0, 0, Visibility_PS);
 	ConstantPara.SetNum32BitValues(2);
 	CombineLUTsPSO->AddShaderParameter(&ConstantPara);
 
 	CombineLUTsPSO->SetCorlorTargetFormat(LUTFormat);
-
-	FRHISamplerState SampleState(0, 0, Filter_MIN_MAG_LINEAR_MIP_POINT, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP);
-	CombineLUTsPSO->AddSampleState(&SampleState);
 
 	IRHIShader* VS = new IRHIShader();
 	VS->SetShaderType(ShaderType_VS);
@@ -304,8 +297,14 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateToneMapPSO(IRHIContext* Contex
 	ShaderParam.AddRangeTable(ParamRange);
 	ToneMapPSO->AddShaderParameter(&ShaderParam);
 
+
+	FParameterRange ParamRange1(RangeType_SRV, 1, 1, 0);
+	FRHIShaderParameter ShaderParam1(ParaType_Range, 0, 0, Visibility_PS);
+	ShaderParam1.AddRangeTable(ParamRange1);
+	ToneMapPSO->AddShaderParameter(&ShaderParam1);
+
 	FRHIShaderParameter ConstantPara(ParaType_Constant, 0, 0, Visibility_PS);
-	ConstantPara.SetNum32BitValues(2);
+	ConstantPara.SetNum32BitValues(4);
 	ToneMapPSO->AddShaderParameter(&ConstantPara);
 
 	ToneMapPSO->SetCorlorTargetFormat(TonemapFormat);
@@ -389,8 +388,6 @@ void FPostProcessing::BloomDown(IRHIContext* Context, IRHIGraphicsPipelineState*
 	
 	Context->SetGraphicsPipilineState(PSO);
 	Context->PreparePresentShaderParameter();
-
-
 
 	//set root constant
 	Context->SetGraphicRootConstant(1, InputWidth, 0);
@@ -527,14 +524,80 @@ void FPostProcessing::BloomSunMerge(IRHIContext* Context, IRHIGraphicsPipelineSt
 	Context->EndEvent();
 }
 
-void FPostProcessing::CombineLUTs()
+void FPostProcessing::CombineLUTs(IRHIContext* Context, IRHIGraphicsPipelineState* PSO)
 {
+	Context->BeginEvent(L"Combine LUTs");
 
+
+	FViewport Viewport;
+	Viewport.X = 0;
+	Viewport.Y = 0;
+	Viewport.Width = 1024;
+	Viewport.Height = 32;
+	Viewport.MinDepth = 0.0f;
+	Viewport.MaxDepth = 1.0f;
+
+	Context->SetViewport(Viewport);
+	Context->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
+
+	//change back buffer state to rendertarget
+	Context->TransitionResource(LUTs, State_GenerateRead, State_RenderTarget);
+	Context->SetColorTarget(LUTs);
+
+
+	Context->SetGraphicsPipilineState(PSO);
+	Context->PreparePresentShaderParameter();
+
+	//set root constant
+	Context->SetGraphicRootConstant(0, 1024, 0);
+	Context->SetGraphicRootConstant(0, 32, 1);
+
+
+	Context->Draw(3);
+
+	//	//change back buffer state to present
+	Context->TransitionResource(LUTs, State_RenderTarget, State_GenerateRead);
+
+	Context->EndEvent();
 }
 
-void FPostProcessing::ToneMap()
+void FPostProcessing::ToneMap(IRHIContext* Context, FRHIColorResource* SceneColor, IRHIGraphicsPipelineState* PSO)
 {
+	Context->BeginEvent(L"ToneMap");
 
+	FViewport Viewport;
+	Viewport.X = 0;
+	Viewport.Y = 0;
+	Viewport.Width = ViewWidth;
+	Viewport.Height = ViewHeight;
+	Viewport.MinDepth = 0.0f;
+	Viewport.MaxDepth = 1.0f;
+
+	Context->SetViewport(Viewport);
+	Context->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
+
+	//change back buffer state to rendertarget
+	Context->TransitionBackBufferStateToRT();
+	//set backbuffer as rendertarget
+	Context->SetBackBufferAsRt();
+
+
+	Context->SetGraphicsPipilineState(PSO);
+	Context->PreparePresentShaderParameter();
+
+	//set root constant
+	Context->SetGraphicRootConstant(2, ViewWidth, 0);
+	Context->SetGraphicRootConstant(2, ViewHeight, 1);
+
+	Context->SetColorSRV(0, SceneColor);
+	Context->SetColorSRV(1, SunMerge);
+
+	Context->Draw(3);
+
+	//	//change back buffer state to present
+	Context->TransitionBackBufferStateToPresent();
+
+	Context->EndEvent();
 }
 
 FRHIColorResource* FPostProcessing::FindBloomTargetByStage(bool IsBloomDown, UINT Stage)

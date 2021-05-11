@@ -74,9 +74,14 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 
 	//for postprocess
-	PostProcessing = new FPostProcessing();
-	PostProcessing->InitRTs(RHIContext, InWidth, Inheight);
-	CreatePostProcessPSOs();
+	ShouldRenderPostProcess = false;
+	if (ShouldRenderPostProcess)
+	{
+		PostProcessing = new FPostProcessing();
+		PostProcessing->InitRTs(RHIContext, InWidth, Inheight);
+		CreatePostProcessPSOs();
+	}
+
 }
 
 void FRenderer::DestroyRHIContext()
@@ -223,6 +228,8 @@ void FRenderer::PostProcess()
 
 	PostProcessing->BloomSunMerge(RHIContext, GraphicsPSOs["BloomSunMerge"]);
 
+	//PostProcessing->CombineLUTs(RHIContext, GraphicsPSOs["CombineLUTs"]);
+	PostProcessing->ToneMap(RHIContext, SceneColor, GraphicsPSOs["ToneMap"]);
 }
 
 
@@ -265,11 +272,19 @@ void FRenderer::RenderScene()
 	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);
 
 	//todo: for postprocess
-	PostProcess();
+	if (PostProcessing)
+	{
+		PostProcess();
+	}
 
 
 	//draw scene color to back buffer; may present hdr using tonemap
-	DrawToBackBuffer();
+	if (!PostProcessing)
+	{
+		//replaced by tone map
+		DrawToBackBuffer();
+	}
+	
 
 	//excute command list
 	RHIContext->EndDraw();

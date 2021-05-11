@@ -29,8 +29,8 @@ public:
 	void BloomDown(IRHIContext* Context, IRHIGraphicsPipelineState* PSO, UINT Stage = 0);
 	void BloomUp(IRHIContext* Context, IRHIGraphicsPipelineState* PSO, UINT Stage = 0);
 	void BloomSunMerge(IRHIContext* Context, IRHIGraphicsPipelineState* PSO);
-	void CombineLUTs();
-	void ToneMap();
+	void CombineLUTs(IRHIContext* Context, IRHIGraphicsPipelineState* PSO);
+	void ToneMap(IRHIContext* Context, FRHIColorResource* SceneColor, IRHIGraphicsPipelineState* PSO);
 
 	FRHIColorResource* GetToneMapResult() {
 		return ToneMapResult;
