@@ -22,11 +22,11 @@ public:
 		delete ConstantBuffer;
 		ConstantBuffer = nullptr;
 
-		delete VertexBuffer;
-		VertexBuffer = nullptr;
+		//delete VertexBuffer;
+		//VertexBuffer = nullptr;
 
-		delete IndexBuffer;
-		IndexBuffer = nullptr;
+		//delete IndexBuffer;
+		//IndexBuffer = nullptr;
 
 		delete BoneTransformsBuffer;
 		BoneTransformsBuffer = nullptr;
@@ -36,14 +36,16 @@ public:
 
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context) {}
 
-	virtual void BuildVertexBuffer(std::vector<FVertex>& InVertices) {}
+	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices) { return nullptr; }
+	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FSkinVertex>& InVertices) {return nullptr;}
+	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint16_t>& InIndices) { return nullptr; }
 
-	virtual void BuildVertexBuffer(std::vector<FSkinVertex>& InVertices) {}
+	IRHIVertexBuffer* GetVertexBuffer() { return VertexBuffer.lock().get(); }
+	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer.lock().get(); }
+	void SetVertexBuffer(std::shared_ptr<IRHIVertexBuffer> InVertexBuffer){ VertexBuffer = InVertexBuffer;}
+	void SetIndexBuffer(std::shared_ptr<IRHIIndexBuffer> InIndexBuffer){IndexBuffer = InIndexBuffer;}
 
-	virtual void BuildIndexBuffer(std::vector<uint16_t>& InIndices) {}
 
-	IRHIVertexBuffer* GetVertexBuffer() { return VertexBuffer; }
-	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer; }
 	IRHIConstantBuffer<FObjectConstants>* GetConstantBuffer() { return ConstantBuffer; }
 
 	IRHIConstantBuffer<FBoneTransforms>* GetBoneTransformsBuffer() { return BoneTransformsBuffer; }
@@ -58,8 +60,8 @@ protected:
 	bool IsSkined;
 	IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer;
 
-	IRHIVertexBuffer* VertexBuffer;
-	IRHIIndexBuffer* IndexBuffer;
+	std::weak_ptr<IRHIVertexBuffer> VertexBuffer;
+	std::weak_ptr<IRHIIndexBuffer> IndexBuffer;
 
 	int VertexStrideSize = 0;
 	size_t VertexBufferSize = 0;

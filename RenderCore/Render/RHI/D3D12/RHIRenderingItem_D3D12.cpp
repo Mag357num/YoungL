@@ -58,10 +58,12 @@ void FRHIRenderingMesh_D3D12::BuildSkinnedBoneTransBuffer(FBoneTransforms* InTra
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
-void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint16_t>& InIndices)
+std::shared_ptr<IRHIIndexBuffer> FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint16_t>& InIndices)
 {
-	IndexBuffer = new FRHIIndexBuffer_D3D12();
-	FRHIIndexBuffer_D3D12* Buffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
+	std::shared_ptr<FRHIIndexBuffer_D3D12> RetBuffer = std::make_shared<FRHIIndexBuffer_D3D12>();
+	
+	//IndexBuffer = new FRHIIndexBuffer_D3D12();
+	//FRHIIndexBuffer_D3D12* Buffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
 
 	//create index buffer view
 	IndexBufferSize = sizeof(uint16_t) * InIndices.size();
@@ -69,22 +71,27 @@ void FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint16_t>& InIndices)
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,
 		D3D12_HEAP_FLAG_NONE, &IxResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(&Buffer->IndexBuffer));
+		IID_PPV_ARGS(&RetBuffer->IndexBuffer));
 
 	UINT8* IndexBegin;
 	D3D12_RANGE IdCopyRange;
-	Buffer->IndexBuffer->Map(0, &IdCopyRange, reinterpret_cast<void**>(&IndexBegin));
+	RetBuffer->IndexBuffer->Map(0, &IdCopyRange, reinterpret_cast<void**>(&IndexBegin));
 	memcpy(IndexBegin, InIndices.data(), IndexBufferSize);
-	Buffer->IndexBuffer->Unmap(0, nullptr);
+	RetBuffer->IndexBuffer->Unmap(0, nullptr);
 
 	IndexCount = InIndices.size();
-	Buffer->SetIndexBufferSize(IndexBufferSize);
+	RetBuffer->SetIndexBufferSize(IndexBufferSize);
+
+	
+	return RetBuffer;
 }
 
-void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices)
+std::shared_ptr<IRHIVertexBuffer> FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices)
 {
-	VertexBuffer = new FRHIVertexBuffer_D3D12();
-	FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
+	std::shared_ptr<FRHIVertexBuffer_D3D12> RetBuffer = std::make_shared<FRHIVertexBuffer_D3D12>();
+
+	//VertexBuffer = new FRHIVertexBuffer_D3D12();
+	//FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
 
 	VertexBufferSize = sizeof(FVertex) * InVertices.size();
 	VertexStrideSize = sizeof(FVertex);
@@ -92,22 +99,26 @@ void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FVertex>& InVertices
 	CD3DX12_RESOURCE_DESC VtResDesc = CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize);
 	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,
 		D3D12_HEAP_FLAG_NONE, &VtResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(&Buffer->VertexBuffer));
+		IID_PPV_ARGS(&RetBuffer->VertexBuffer));
 
 	UINT8* VertexBegin;
 	D3D12_RANGE VtCopyRange;
-	Buffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
+	RetBuffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
 	memcpy(VertexBegin, InVertices.data(), VertexBufferSize);
-	Buffer->VertexBuffer->Unmap(0, nullptr);
+	RetBuffer->VertexBuffer->Unmap(0, nullptr);
 
-	Buffer->SetVertexBufferSize(VertexBufferSize);
-	Buffer->SetStrideInBytes(VertexStrideSize);
+	RetBuffer->SetVertexBufferSize(VertexBufferSize);
+	RetBuffer->SetStrideInBytes(VertexStrideSize);
+
+	return RetBuffer;
 }
 
-void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FSkinVertex>& InVertices)
+std::shared_ptr<IRHIVertexBuffer> FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FSkinVertex>& InVertices)
 {
-	VertexBuffer = new FRHIVertexBuffer_D3D12();
-	FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
+	std::shared_ptr<FRHIVertexBuffer_D3D12> RetBuffer = std::make_shared<FRHIVertexBuffer_D3D12>();
+
+	//VertexBuffer = new FRHIVertexBuffer_D3D12();
+	//FRHIVertexBuffer_D3D12* Buffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
 
 	VertexBufferSize = sizeof(FSkinVertex) * InVertices.size();
 	VertexStrideSize = sizeof(FSkinVertex);
@@ -115,14 +126,16 @@ void FRHIRenderingMesh_D3D12::BuildVertexBuffer(std::vector<FSkinVertex>& InVert
 	CD3DX12_RESOURCE_DESC VtResDesc = CD3DX12_RESOURCE_DESC::Buffer(VertexBufferSize);
 	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,
 		D3D12_HEAP_FLAG_NONE, &VtResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(&Buffer->VertexBuffer));
+		IID_PPV_ARGS(&RetBuffer->VertexBuffer));
 
 	UINT8* VertexBegin;
 	D3D12_RANGE VtCopyRange;
-	Buffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
+	RetBuffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
 	memcpy(VertexBegin, InVertices.data(), VertexBufferSize);
-	Buffer->VertexBuffer->Unmap(0, nullptr);
+	RetBuffer->VertexBuffer->Unmap(0, nullptr);
 
-	Buffer->SetVertexBufferSize(VertexBufferSize);
-	Buffer->SetStrideInBytes(VertexStrideSize);
+	RetBuffer->SetVertexBufferSize(VertexBufferSize);
+	RetBuffer->SetStrideInBytes(VertexStrideSize);
+
+	return RetBuffer;
 }

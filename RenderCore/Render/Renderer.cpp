@@ -178,9 +178,29 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 
 		Item->BuildConstantBuffer(StaticMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<UStaticMesh> StaticMesh = StaticMeshActors[Index]->GetStaticMesh();
-		FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
-		Item->BuildVertexBuffer(StaticGeo->GetVertices());
-		Item->BuildIndexBuffer(StaticGeo->GetIndices());
+
+		if (StaticMesh.lock()->GetHasCreateRenderResource())
+		{
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = StaticMesh.lock()->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = StaticMesh.lock()->GetIndexBuffer();;
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
+		else
+		{
+			FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(StaticGeo->GetVertices());
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(StaticGeo->GetIndices());
+
+			StaticMesh.lock()->SetVertexBuffer(VertexBuffer);
+			StaticMesh.lock()->SetIndexBuffer(IndexBuffer);
+			StaticMesh.lock()->SetHasCreateRenderResource();
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
+		
 
 		RenderingMeshes[*StaticMeshActors[Index]->GetName()] = Item;
 	}
@@ -196,9 +216,28 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 
 		Item->BuildConstantBuffer(SkeletalMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<USkeletalMesh> SkeletalMesh = SkeletalMeshActors[Index]->GetSkeletalMesh();
-		FGeometry<FSkinVertex>* SkeletalGeo = SkeletalMesh.lock()->GetGeometry();
-		Item->BuildVertexBuffer(SkeletalGeo->GetVertices());
-		Item->BuildIndexBuffer(SkeletalGeo->GetIndices());
+		
+		if (SkeletalMesh.lock()->GetHasCreateRenderResource())
+		{
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = SkeletalMesh.lock()->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = SkeletalMesh.lock()->GetIndexBuffer();;
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
+		else
+		{
+			FGeometry<FSkinVertex>* SkeletalGeo = SkeletalMesh.lock()->GetGeometry();
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(SkeletalGeo->GetVertices());
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(SkeletalGeo->GetIndices());
+
+			SkeletalMesh.lock()->SetVertexBuffer(VertexBuffer);
+			SkeletalMesh.lock()->SetIndexBuffer(IndexBuffer);
+			SkeletalMesh.lock()->SetHasCreateRenderResource();
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
 
 		//todo: create BoneTransform Constant Buffer
 		Item->BuildSkinnedBoneTransBuffer(SkeletalMeshActors[Index]->GetBoneTransfroms(), RHIContext);
