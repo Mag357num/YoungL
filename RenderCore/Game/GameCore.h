@@ -9,6 +9,7 @@
 #define  AssetPathModel L"Models/ModelSave.Bin"
 
 #include "Camera.h"
+#include "GameAssetManager.h"
 #include "../Render/RenderThreadManager.h"
 
 class FGameCore
@@ -61,6 +62,12 @@ public:
 			delete SceneConstant;
 			SceneConstant = nullptr;
 		}
+
+		if (AssetManager)
+		{
+			delete AssetManager;
+			AssetManager = nullptr;
+		}
 	}
 
 	virtual void Tick(float DeltaTime);
@@ -81,14 +88,16 @@ public:
 
 	std::weak_ptr<FRenderThreadManager> RenderThreadManager_Weak;
 private:
-	void LoadActor(std::string& Path, bool bSkinedActor = false);
+	UGameAssetManager* AssetManager;
+	
+	void LoadActor(std::wstring& Path, bool bSkinedActor = false);
 
 	//unique_ptr will be automated released when ~FGameCore
 	std::vector<std::unique_ptr<AStaticMeshActor>> StaticActors;
 	std::vector<std::unique_ptr<ASkeletalMeshActor>> SkinedActors;
 
-	std::vector<std::string> AssetPaths;
-	std::vector<std::string> SkinedPaths;
+	std::vector<std::wstring> AssetPaths;
+	std::vector<std::wstring> SkinedPaths;
 
 	std::unique_ptr<FCamera> Camera;
 
@@ -100,5 +109,6 @@ private:
 	POINT WindowOffset;
 
 	bool bMouseButtonDown;
+
 };
 

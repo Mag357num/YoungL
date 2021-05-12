@@ -69,8 +69,10 @@ void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 
 void FGameCore::Initialize()
 {
-	AssetPaths.push_back("Models/ModelFloor.Bin");
-	AssetPaths.push_back("Models/ModelSave.Bin");
+	AssetManager = new UGameAssetManager();
+
+	AssetPaths.push_back(L"Models/ModelFloor.Bin");
+	AssetPaths.push_back(L"Models/ModelSave.Bin");
 
 	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
 	{
@@ -83,7 +85,7 @@ void FGameCore::Initialize()
 		}
 	}
 
-	SkinedPaths.push_back("Models/soldier.m3d");
+	SkinedPaths.push_back(L"Models/soldier.m3d");
 	for (size_t Index = 0; Index < SkinedPaths.size(); ++Index)
 	{
 		LoadActor(SkinedPaths[Index], true);
@@ -163,7 +165,7 @@ void FGameCore::Tick(float DeltaTime)
 	}
 }
 
-void FGameCore::LoadActor(std::string& Path, bool bSkinedActor)
+void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 {
 	int RandomInt = rand();
 
@@ -172,20 +174,44 @@ void FGameCore::LoadActor(std::string& Path, bool bSkinedActor)
 		std::string Name = "SkinnedMeshActor";
 		Name += to_string(RandomInt);
 		std::unique_ptr<ASkeletalMeshActor> SkinedActor = std::make_unique<ASkeletalMeshActor>(Name);
-		std::unique_ptr<FGeometry<FSkinVertex>> SkinGeo = FModelLoader::LoadSkinedMeshAndAnimation(Path, SkinedActor->GetSkinedData());
-		SkinedActor->SetSkinGeometry(SkinGeo);
+
+		std::shared_ptr<USkeletalMesh> SkeletalMesh = AssetManager->CheckSkeletalMeshLoaded(Path);
+		if (!SkeletalMesh)
+		{
+			std::unique_ptr<FGeometry<FSkinVertex>> SkinGeo = FModelLoader::LoadSkinedMeshAndAnimation(Path, SkinedActor->GetSkinedData());
+
+			SkeletalMesh = std::make_shared<USkeletalMesh>();
+			SkeletalMesh->SetAssetPath(Path);
+			SkeletalMesh->SetGeometry(std::move(SkinGeo));
+			AssetManager->AddSkeletalMesh(Path, SkeletalMesh);
+		}
+
+		SkinedActor->SetSkeletalMesh(SkeletalMesh);
+		//SkinedActor->SetSkinGeometry(SkinGeo);
 		SkinedActor->TestPlayAnimation();//test play
 		SkinedActors.push_back(std::move(SkinedActor));
 
 	}
 	else
 	{
-		std::unique_ptr<FGeometry<FVertex>> Geo = FModelLoader::LoadStaticMesh(Path);
 		
 		std::string Name = "StaticMeshActor";
 		Name += to_string(RandomInt);
 		std::unique_ptr<AStaticMeshActor> GeoActor = std::make_unique<AStaticMeshActor>(Name);
-		GeoActor->SetGeometry(Geo);
+
+		std::shared_ptr<UStaticMesh> StaticMesh = AssetManager->CheckStaticMeshLoaded(Path);
+		if (!StaticMesh)
+		{
+			std::unique_ptr<FGeometry<FVertex>> Geo = FModelLoader::LoadStaticMesh(Path);
+
+			StaticMesh = std::make_shared<UStaticMesh>();
+			StaticMesh->SetAssetPath(Path);
+			StaticMesh->SetGeometry(std::move(Geo));
+			AssetManager->AddStaticMesh(Path, StaticMesh);
+		}
+		
+
+		GeoActor->SetStaticMesh(StaticMesh);
 		StaticActors.push_back(std::move(GeoActor));
 	}
 	

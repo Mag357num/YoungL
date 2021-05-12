@@ -1,6 +1,7 @@
 #pragma once
 #include "StaticMeshActor.h"
 #include "SkinData.h"
+#include "SkeletalMesh.h"
 
 class ASkeletalMeshActor : public AStaticMeshActor
 {
@@ -13,8 +14,8 @@ public:
 
 	virtual void Tick(float DeltaTime)override;
 
-	void SetSkinGeometry(std::unique_ptr<FGeometry<FSkinVertex>>& InGeometry) { Geometry = std::move(InGeometry); };
-	FGeometry<FSkinVertex>* GetSkinGeometry() { return Geometry.get(); }
+	void SetSkeletalMesh(std::shared_ptr<USkeletalMesh> InMesh) { SkeletalMesh = InMesh; };
+	std::weak_ptr<USkeletalMesh> GetSkeletalMesh() { return SkeletalMesh; };
 
 	FBoneTransforms* GetBoneTransfroms(){return BoneTransforms;}
 
@@ -26,7 +27,8 @@ private:
 	FSkinedData* SkinedData;
 
 private:
-	std::unique_ptr<FGeometry<FSkinVertex>> Geometry;
+
+	std::weak_ptr<USkeletalMesh> SkeletalMesh;
 
 	FAnimationPlayInfo* PlayInfo;
 	FBoneTransforms* BoneTransforms;

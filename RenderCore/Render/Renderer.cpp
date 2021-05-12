@@ -169,37 +169,41 @@ void FRenderer::Resize(int InWidth, int InHeight)
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries)
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& StaticMeshActors)
 {
-	for (int Index = 0; Index < Geometries.size(); ++Index)
+	for (int Index = 0; Index < StaticMeshActors.size(); ++Index)
 	{
 		//create an empty rendering item
 		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
 
-		Item->BuildConstantBuffer(Geometries[Index]->GetObjectConstants(), RHIContext);
-		Item->BuildVertexBuffer(Geometries[Index]->GetGeometry()->GetVertices());
-		Item->BuildIndexBuffer(Geometries[Index]->GetGeometry()->GetIndices());
+		Item->BuildConstantBuffer(StaticMeshActors[Index]->GetObjectConstants(), RHIContext);
+		std::weak_ptr<UStaticMesh> StaticMesh = StaticMeshActors[Index]->GetStaticMesh();
+		FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
+		Item->BuildVertexBuffer(StaticGeo->GetVertices());
+		Item->BuildIndexBuffer(StaticGeo->GetIndices());
 
-		RenderingMeshes[*Geometries[Index]->GetName()] = Item;
+		RenderingMeshes[*StaticMeshActors[Index]->GetName()] = Item;
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Geometries)
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& SkeletalMeshActors)
 {
-	for (int Index = 0; Index < Geometries.size(); ++Index)
+	for (int Index = 0; Index < SkeletalMeshActors.size(); ++Index)
 	{
 		//create an empty rendering item
 
 		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
 
-		Item->BuildConstantBuffer(Geometries[Index]->GetObjectConstants(), RHIContext);
-		Item->BuildVertexBuffer(Geometries[Index]->GetSkinGeometry()->GetVertices());
-		Item->BuildIndexBuffer(Geometries[Index]->GetSkinGeometry()->GetIndices());
+		Item->BuildConstantBuffer(SkeletalMeshActors[Index]->GetObjectConstants(), RHIContext);
+		std::weak_ptr<USkeletalMesh> SkeletalMesh = SkeletalMeshActors[Index]->GetSkeletalMesh();
+		FGeometry<FSkinVertex>* SkeletalGeo = SkeletalMesh.lock()->GetGeometry();
+		Item->BuildVertexBuffer(SkeletalGeo->GetVertices());
+		Item->BuildIndexBuffer(SkeletalGeo->GetIndices());
 
 		//todo: create BoneTransform Constant Buffer
-		Item->BuildSkinnedBoneTransBuffer(Geometries[Index]->GetBoneTransfroms(), RHIContext);
+		Item->BuildSkinnedBoneTransBuffer(SkeletalMeshActors[Index]->GetBoneTransfroms(), RHIContext);
 
-		SkinnedRenderingMeshes[*Geometries[Index]->GetName()] = Item;
+		SkinnedRenderingMeshes[*SkeletalMeshActors[Index]->GetName()] = Item;
 	}
 }
 

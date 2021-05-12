@@ -195,6 +195,15 @@
     <ClInclude Include="Render\RHI\RHIShaderInputElement.h">
       <Filter>头文件\Render\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Game\StaticMesh.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameAssetManager.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\SkeletalMesh.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">

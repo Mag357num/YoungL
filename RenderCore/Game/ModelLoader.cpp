@@ -2,7 +2,7 @@
 #include "ModelLoader.h"
 #include <fstream>
 
-std::unique_ptr<FGeometry<FVertex>> FModelLoader::LoadStaticMesh(std::string& Path)
+std::unique_ptr<FGeometry<FVertex>> FModelLoader::LoadStaticMesh(std::wstring& Path)
 {
 	//load asset
 	std::vector<FVertex> Vertices;
@@ -199,7 +199,7 @@ void FModelLoader::ReadBoneKeyFrames(std::ifstream& Fin, UINT NumBones, FBoneAni
 	Fin >> Ignore;
 }
 
-std::unique_ptr<FGeometry<FSkinVertex>> FModelLoader::LoadSkinedMeshAndAnimation(std::string& Path, FSkinedData* OutSkinData)
+std::unique_ptr<FGeometry<FSkinVertex>> FModelLoader::LoadSkinedMeshAndAnimation(std::wstring& Path, FSkinedData* OutSkinData)
 {
 	std::ifstream Fin(Path, std::ios::in | std::ios::binary);
 

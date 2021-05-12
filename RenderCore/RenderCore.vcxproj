@@ -202,8 +202,11 @@
   <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Game\Camera.h" />
+    <ClInclude Include="Game\GameAssetManager.h" />
     <ClInclude Include="Game\GameCore.h" />
     <ClInclude Include="Game\GameTimer.h" />
+    <ClInclude Include="Game\SkeletalMesh.h" />
+    <ClInclude Include="Game\StaticMesh.h" />
     <ClInclude Include="Game\StaticMeshActor.h" />
     <ClInclude Include="Game\ModelLoader.h" />
     <ClInclude Include="Game\SkinData.h" />

@@ -3,6 +3,7 @@
 #include "../Utilities.h"
 #include "../Math/Math.h"
 #include <memory>
+#include "StaticMesh.h"
 
 class AStaticMeshActor
 {
@@ -23,14 +24,18 @@ public:
 		Scaling = FVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	virtual ~AStaticMeshActor() { ObjectConstants.reset(); Geometry.reset(); }
+	virtual ~AStaticMeshActor() { 
+		ObjectConstants.reset();
+
+	}
 
 	virtual void Tick(float DeltaTime){}
 
 	std::string* GetName(){return ActorName;}
 
-	void SetGeometry(std::unique_ptr<FGeometry<FVertex>>& InGeometry) { Geometry = std::move(InGeometry); };
-	FGeometry<FVertex>* GetGeometry(){ return Geometry.get(); }
+	void SetStaticMesh(std::shared_ptr<UStaticMesh> InMesh){ StaticMesh = InMesh;};
+	std::weak_ptr<UStaticMesh> GetStaticMesh(){return StaticMesh;};
+
 	FObjectConstants* GetObjectConstants(){return ObjectConstants.get();}
 
 	//called before create rendering mesh
@@ -72,5 +77,6 @@ protected:
 	std::unique_ptr<FObjectConstants> ObjectConstants;
 
 private:
-	std::unique_ptr<FGeometry<FVertex>> Geometry;
+
+	std::weak_ptr<UStaticMesh> StaticMesh;
 };

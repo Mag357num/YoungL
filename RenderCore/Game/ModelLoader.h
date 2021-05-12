@@ -18,7 +18,7 @@ public:
 		UINT FaceCount = 0;
 	};
 
-	static std::unique_ptr<FGeometry<FVertex>> LoadStaticMesh(std::string& Path);
+	static std::unique_ptr<FGeometry<FVertex>> LoadStaticMesh(std::wstring& Path);
 
 	static void LoadSkinedMesh()
 	{
@@ -30,7 +30,7 @@ public:
 
 	}
 
-	static std::unique_ptr<FGeometry<FSkinVertex>> LoadSkinedMeshAndAnimation(std::string& Path, FSkinedData* OutSkinData);
+	static std::unique_ptr<FGeometry<FSkinVertex>> LoadSkinedMeshAndAnimation(std::wstring& Path, FSkinedData* OutSkinData);
 
 protected:
 private:
