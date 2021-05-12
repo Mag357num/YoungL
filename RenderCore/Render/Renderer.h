@@ -1,8 +1,8 @@
 #pragma once
 
 #include "RHI/RHIContext.h"
-#include "../Game/MeshActor.h"
-#include "../Game/SkinMeshActor.h"
+#include "../Game/StaticMeshActor.h"
+#include "../Game/SkeletalMeshActor.h"
 #include "ShadowMap.h"
 #include "PostProcessing.h"
 
@@ -26,8 +26,8 @@ public:
 	void Resize(int InWidth, int InHeight);
 
 	//
-	void CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
-	void CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries);
+	void CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries);
+	void CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Geometries);
 
 	void PostProcess();
 

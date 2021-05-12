@@ -39,12 +39,12 @@ void FRenderThreadManager::NotifyRenderThreadJob()
 	RenderThread->NotifyRenderThreadJob();
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries)
 {
 	Renderer->CreateRenderingItem(Geometries);
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Geometries)
 {
 	Renderer->CreateRenderingItem(Geometries);
 }

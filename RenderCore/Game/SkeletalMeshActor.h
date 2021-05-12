@@ -1,13 +1,13 @@
 #pragma once
-#include "MeshActor.h"
+#include "StaticMeshActor.h"
 #include "SkinData.h"
 
-class ASkinMeshActor : public AMeshActor
+class ASkeletalMeshActor : public AStaticMeshActor
 {
 public:
-	ASkinMeshActor(std::string InName = "");
+	ASkeletalMeshActor(std::string InName = "");
 
-	virtual ~ASkinMeshActor();
+	virtual ~ASkeletalMeshActor();
 
 	FSkinedData* GetSkinedData(){return SkinedData;}
 

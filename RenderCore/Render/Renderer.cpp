@@ -169,12 +169,11 @@ void FRenderer::Resize(int InWidth, int InHeight)
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Geometries)
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries)
 {
 	for (int Index = 0; Index < Geometries.size(); ++Index)
 	{
 		//create an empty rendering item
-
 		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
 
 		Item->BuildConstantBuffer(Geometries[Index]->GetObjectConstants(), RHIContext);
@@ -185,7 +184,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AMeshActor>>& Ge
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkinMeshActor>>& Geometries)
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Geometries)
 {
 	for (int Index = 0; Index < Geometries.size(); ++Index)
 	{
@@ -235,7 +234,7 @@ void FRenderer::RenderScene()
 	RHIContext->BeginDraw(L"BasePass");
 
 	//render depth map first
-	//for realtime shadow
+	//for realtime shadow, prepass
 	RenderDepth();
 
 	RHIContext->SetViewport(Viewport);
@@ -272,8 +271,6 @@ void FRenderer::RenderScene()
 	{
 		PostProcess();
 	}
-
-
 	//draw scene color to back buffer; may present hdr using tonemap
 	if (!PostProcessing)
 	{

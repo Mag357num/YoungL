@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "SkinMeshActor.h"
+#include "SkeletalMeshActor.h"
 
 #include "../Engine.h"
 #include "../Render/RenderThreadManager.h"
 
-ASkinMeshActor::ASkinMeshActor(std::string InName)
-	:AMeshActor(InName)
+ASkeletalMeshActor::ASkeletalMeshActor(std::string InName)
+	:AStaticMeshActor(InName)
 {
 	SkinedData = new FSkinedData();
 	PlayInfo = new FAnimationPlayInfo();
@@ -13,7 +13,7 @@ ASkinMeshActor::ASkinMeshActor(std::string InName)
 	BoneTransforms = new FBoneTransforms();
 }
 
-ASkinMeshActor::~ASkinMeshActor()
+ASkeletalMeshActor::~ASkeletalMeshActor()
 {
 	if (SkinedData)
 	{
@@ -34,12 +34,12 @@ ASkinMeshActor::~ASkinMeshActor()
 	}
 }
 
-void ASkinMeshActor::TestPlayAnimation()
+void ASkeletalMeshActor::TestPlayAnimation()
 {
 	PlayAnimationClip("Take1");
 }
 
-void ASkinMeshActor::PlayAnimationClip(std::string ClipName)
+void ASkeletalMeshActor::PlayAnimationClip(std::string ClipName)
 {
 	PlayInfo->ClipName = ClipName;
 	PlayInfo->PlayedTime = 0.0f;
@@ -50,7 +50,7 @@ void ASkinMeshActor::PlayAnimationClip(std::string ClipName)
 	PlayInfo->ClipEndTime = SkinedData->GetClipEndTime(ClipName);
 }
 
-void ASkinMeshActor::StopAnimationClip()
+void ASkeletalMeshActor::StopAnimationClip()
 {
 	PlayInfo->RequestPlaying = false;
 	PlayInfo->IsPlaying = false;
@@ -67,7 +67,7 @@ static void UpdateSkinnedMeshBoneTransform_RenderThread(std::string* ActorName, 
 	
 }
 
-void ASkinMeshActor::Tick(float DeltaTime)
+void ASkeletalMeshActor::Tick(float DeltaTime)
 {
 	if (SkinedData)
 	{

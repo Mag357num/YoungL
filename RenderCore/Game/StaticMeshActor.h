@@ -4,10 +4,10 @@
 #include "../Math/Math.h"
 #include <memory>
 
-class AMeshActor
+class AStaticMeshActor
 {
 public:
-	AMeshActor(std::string InName = "") {
+	AStaticMeshActor(std::string InName = "") {
 		
 		if (InName == "")
 		{
@@ -23,7 +23,7 @@ public:
 		Scaling = FVector4D(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	virtual ~AMeshActor() { ObjectConstants.reset(); Geometry.reset(); }
+	virtual ~AStaticMeshActor() { ObjectConstants.reset(); Geometry.reset(); }
 
 	virtual void Tick(float DeltaTime){}
 

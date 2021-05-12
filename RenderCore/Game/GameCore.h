@@ -2,8 +2,8 @@
 
 #include <intsafe.h>
 #include <wtypes.h>
-#include "MeshActor.h"
-#include "SkinMeshActor.h"
+#include "StaticMeshActor.h"
+#include "SkeletalMeshActor.h"
 #include <string>
 #define  AssetPathFLOOR L"Models/ModelFloor.Bin"
 #define  AssetPathModel L"Models/ModelSave.Bin"
@@ -72,10 +72,10 @@ public:
 	virtual void OnMouseButtonUp(WPARAM BtnState, int X, int Y);
 	virtual void OnMouseMove(WPARAM BtnState, int X, int Y);
 
-	std::vector<std::unique_ptr<AMeshActor>>& GetStaticActors() {
+	std::vector<std::unique_ptr<AStaticMeshActor>>& GetStaticActors() {
 		return StaticActors;}
 
-	std::vector<std::unique_ptr<ASkinMeshActor>>& GetSkinedActors() {
+	std::vector<std::unique_ptr<ASkeletalMeshActor>>& GetSkinedActors() {
 		return SkinedActors;
 	}
 
@@ -84,8 +84,8 @@ private:
 	void LoadActor(std::string& Path, bool bSkinedActor = false);
 
 	//unique_ptr will be automated released when ~FGameCore
-	std::vector<std::unique_ptr<AMeshActor>> StaticActors;
-	std::vector<std::unique_ptr<ASkinMeshActor>> SkinedActors;
+	std::vector<std::unique_ptr<AStaticMeshActor>> StaticActors;
+	std::vector<std::unique_ptr<ASkeletalMeshActor>> SkinedActors;
 
 	std::vector<std::string> AssetPaths;
 	std::vector<std::string> SkinedPaths;

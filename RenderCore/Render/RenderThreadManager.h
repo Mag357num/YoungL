@@ -13,8 +13,8 @@ public:
 	void WaitForRenderThreadSingal();
 	void NotifyRenderThreadJob();
 
-	static void CreateRenderingItems(std::vector<std::unique_ptr<AMeshActor>>& Geometries);
-	static void CreateRenderingItems(std::vector<std::unique_ptr<ASkinMeshActor>>& SkinedActors);
+	static void CreateRenderingItems(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries);
+	static void CreateRenderingItems(std::vector<std::unique_ptr<ASkeletalMeshActor>>& SkinedActors);
 	static void UpdateSceneConstantBuffer(FSceneConstant* SceneConstant);
 
 	static void UpdateSkinnedMeshBoneTransform(std::string* ActorName, FBoneTransforms* InBoneTrans);

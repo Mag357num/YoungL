@@ -6,8 +6,8 @@
 
 #include "Game/GameCore.h"
 #include "Game/GameTimer.h"
-#include "Game/MeshActor.h"
-#include "Game/SkinMeshActor.h"
+#include "Game/StaticMeshActor.h"
+#include "Game/SkeletalMeshActor.h"
 
 //#include "Renderer.h"
 #include "Render/Renderer.h"
