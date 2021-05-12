@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "RHI/D3D12/RHIContext_D3D12.h"
 #include "RHI/RHIShaderParameter.h"
+#include "RHI/RHIShaderInputElement.h"
 
 #define MAX_LOADSTRING 100
 
@@ -28,13 +29,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	Viewport.MinDepth = 0.0f;
 
 	RHIContext->InitializeRHI(InWidth, Inheight);
-	IRHIGraphicsPipelineState* BasePassPSO = RHIContext->CreateGraphicsPSO();
-	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO));
 
-	IRHIGraphicsPipelineState* SkinPassPSO = RHIContext->CreateSkinnedGraphicsPSO();
-	GraphicsPSOs.insert(std::make_pair("SkinPass", SkinPassPSO));
-
-	//test
+	CreateBasePassPSO_Static();
+	CreateBasePassPSO_Skinned();
 	CreatePresentPSO();
 
 
@@ -63,8 +60,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 		SceneConstant.LightViewProj = LightVP * T;
 		SceneConstant.LightViewProj = FMath::MatrixTranspose(SceneConstant.LightViewProj);
 
-		IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateGraphicsDepthPSO();
-		GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
+		CreateDepthPassPSO();
 	}
 
 	//create Scene Color
@@ -446,6 +442,162 @@ void FRenderer::CreateSceneColor()
 	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, SceneColorFormat);
 	//create srv and rtv for color resource
 	RHIContext->CreateSrvRtvForColorResource(SceneColor);
+}
+
+void FRenderer::CreateBasePassPSO_Static()
+{
+	IRHIGraphicsPipelineState* BasePassPSO_Static = RHIContext->CreateEmpltyGraphicsPSO();
+	
+	//for shader parameter
+	{
+		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
+		BasePassPSO_Static->AddShaderParameter(&SlotPara0);
+
+		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
+		BasePassPSO_Static->AddShaderParameter(&SlotPara1);
+
+		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
+		SlotPara2.AddRangeTable(ParamRange);
+		BasePassPSO_Static->AddShaderParameter(&SlotPara2);
+
+	}
+
+	{
+		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Static->AddShaderInputElement(&InputElement0);
+
+		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Static->AddShaderInputElement(&InputElement1);
+
+		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Static->AddShaderInputElement(&InputElement2);
+	}
+
+
+	BasePassPSO_Static->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
+	BasePassPSO_Static->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
+
+	IRHIShader* VS = new IRHIShader();
+	VS->SetShaderType(ShaderType_VS);
+	VS->SetShaderPath(L"BasePassVS");
+	BasePassPSO_Static->SetVS(VS);
+
+	IRHIShader* PS = new IRHIShader();
+	PS->SetShaderType(ShaderType_PS);
+	PS->SetShaderPath(L"BasePassPS");
+	BasePassPSO_Static->SetPS(PS);
+
+	BasePassPSO_Static->SetDepthEnable(TRUE);
+
+	BasePassPSO_Static->CreateGraphicsPSOInternal();
+	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO_Static));
+}
+
+void FRenderer::CreateBasePassPSO_Skinned()
+{
+	IRHIGraphicsPipelineState* BasePassPSO_Skinned = RHIContext->CreateEmpltyGraphicsPSO();
+
+	//for shader parameter
+	{
+		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
+		BasePassPSO_Skinned->AddShaderParameter(&SlotPara0);
+
+		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
+		BasePassPSO_Skinned->AddShaderParameter(&SlotPara1);
+
+		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
+		SlotPara2.AddRangeTable(ParamRange);
+		BasePassPSO_Skinned->AddShaderParameter(&SlotPara2);
+
+		FRHIShaderParameter SlotPara3(ParaType_CBV, 2, 0, Visibility_All);
+		BasePassPSO_Skinned->AddShaderParameter(&SlotPara3);
+	}
+
+	{
+		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement0);
+
+		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement1);
+
+		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement2);
+
+		FRHIShaderInputElement InputElement3("TAGANT", 0, PixelFormat_R32G32B32_Float, 0, 32, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement3);
+
+		FRHIShaderInputElement InputElement4("BONEINDEX", 0, PixelFormat_R32G32B32A32_UINT, 0, 44, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement4);
+
+		FRHIShaderInputElement InputElement5("BONEWEIGHT", 0, PixelFormat_R32G32B32A32_Float, 0, 60, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		BasePassPSO_Skinned->AddShaderInputElement(&InputElement5);
+	}
+
+
+	BasePassPSO_Skinned->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
+	BasePassPSO_Skinned->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
+
+	IRHIShader* VS = new IRHIShader();
+	VS->SetShaderType(ShaderType_VS);
+	VS->SetShaderPath(L"SkinnedMeshVS");
+	BasePassPSO_Skinned->SetVS(VS);
+
+	IRHIShader* PS = new IRHIShader();
+	PS->SetShaderType(ShaderType_PS);
+	PS->SetShaderPath(L"SkinnedMeshPS");
+	BasePassPSO_Skinned->SetPS(PS);
+
+	BasePassPSO_Skinned->SetDepthEnable(TRUE);
+
+	BasePassPSO_Skinned->CreateGraphicsPSOInternal();
+	GraphicsPSOs.insert(std::make_pair("SkinPass", BasePassPSO_Skinned));
+}
+
+void FRenderer::CreateDepthPassPSO()
+{
+	IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateEmpltyGraphicsPSO();
+
+	//for shader parameter
+	{
+		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
+		DepthPassPSO->AddShaderParameter(&SlotPara0);
+
+		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
+		DepthPassPSO->AddShaderParameter(&SlotPara1);
+
+	}
+
+	{
+		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		DepthPassPSO->AddShaderInputElement(&InputElement0);
+
+		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		DepthPassPSO->AddShaderInputElement(&InputElement1);
+
+		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		DepthPassPSO->AddShaderInputElement(&InputElement2);
+	}
+
+
+	DepthPassPSO->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
+	DepthPassPSO->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
+
+	IRHIShader* VS = new IRHIShader();
+	VS->SetShaderType(ShaderType_VS);
+	VS->SetShaderPath(L"DepthVS");
+	DepthPassPSO->SetVS(VS);
+
+	IRHIShader* PS = new IRHIShader();
+	PS->SetShaderType(ShaderType_PS);
+	PS->SetShaderPath(L"DepthPS");
+	DepthPassPSO->SetPS(PS);
+
+	DepthPassPSO->SetDepthEnable(TRUE);
+
+	DepthPassPSO->CreateGraphicsPSOInternal();
+	GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
 }
 
 void FRenderer::CreatePresentPSO()

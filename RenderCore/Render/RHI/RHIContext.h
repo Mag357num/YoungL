@@ -65,13 +65,9 @@ public:
 	virtual IRHIShader* CreateShaderResource(){ return nullptr; }
 	virtual IRHIResource* CreateResource(){ return nullptr; }
 	virtual IRHIResource* GetBackBufferResource(){return nullptr;}
-	//virtual IRHIVertexBuffer* CreateVertexBuffer(){ return nullptr; }
-	//virtual IRHIIndexBuffer* CreateIndexBuffer(){return nullptr;}
 
 	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO(){return nullptr;}
-	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO(){return nullptr;}
-	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO() { return nullptr; }
-	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO(){return nullptr;}
+
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
 	virtual void SetRenderTarget(IRHIResource* InColor, IRHIResource* InDepth){}

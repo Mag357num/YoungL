@@ -30,6 +30,10 @@ public:
 		case PixelFormat_R24G8_Typeless:
 			return DXGI_FORMAT_R24G8_TYPELESS;
 			break;
+
+		case PixelFormat_D24_UNORM_S8_UINT:
+			return DXGI_FORMAT_D24_UNORM_S8_UINT;
+			break;
 		case PixelFormat_R8G8B8A8_Unorm:
 			return DXGI_FORMAT_R8G8B8A8_UNORM;
 			break;
@@ -48,6 +52,22 @@ public:
 
 		case PixelFormat_R11G11B10_Float:
 			return DXGI_FORMAT_R11G11B10_FLOAT;
+			break;
+
+		case PixelFormat_R32G32B32_Float:
+			return DXGI_FORMAT_R32G32B32_FLOAT;
+			break;
+
+		case PixelFormat_R32G32_Float:
+			return DXGI_FORMAT_R32G32_FLOAT;
+			break;
+
+		case PixelFormat_R32G32B32A32_Float:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+			break;
+
+		case PixelFormat_R32G32B32A32_UINT:
+			return DXGI_FORMAT_R32G32B32A32_UINT;
 			break;
 
 		default:

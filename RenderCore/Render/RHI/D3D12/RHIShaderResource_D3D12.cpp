@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "RHIShaderResource_D3D12.h"
 
+
 namespace ShaderMap
 {
 	std::map<std::wstring, D3D12_SHADER_BYTECODE> GlobalShaderMap;
@@ -11,6 +12,38 @@ using namespace ShaderMap;
 
 FRHIShaderResource_D3D12::FRHIShaderResource_D3D12()
 {
+
+	D3D12_SHADER_BYTECODE SkinnedMeshVS;
+	SkinnedMeshVS.BytecodeLength = sizeof(g_SkinnedMeshVS);
+	SkinnedMeshVS.pShaderBytecode = g_SkinnedMeshVS;
+	GlobalShaderMap.insert(std::make_pair(L"SkinnedMeshVS", SkinnedMeshVS));
+
+	D3D12_SHADER_BYTECODE SkinnedMeshPS;
+	SkinnedMeshPS.BytecodeLength = sizeof(g_SkinnedMeshPS);
+	SkinnedMeshPS.pShaderBytecode = g_SkinnedMeshPS;
+	GlobalShaderMap.insert(std::make_pair(L"SkinnedMeshPS", SkinnedMeshPS));
+
+	D3D12_SHADER_BYTECODE BasePassVS;
+	BasePassVS.BytecodeLength = sizeof(g_BasePassVS);
+	BasePassVS.pShaderBytecode = g_BasePassVS;
+	GlobalShaderMap.insert(std::make_pair(L"BasePassVS", BasePassVS));
+
+	D3D12_SHADER_BYTECODE BasePassPS;
+	BasePassPS.BytecodeLength = sizeof(g_BasePassPS);
+	BasePassPS.pShaderBytecode = g_BasePassPS;
+	GlobalShaderMap.insert(std::make_pair(L"BasePassPS", BasePassPS));
+
+	D3D12_SHADER_BYTECODE DepthVS;
+	DepthVS.BytecodeLength = sizeof(g_DepthVS);
+	DepthVS.pShaderBytecode = g_DepthVS;
+	GlobalShaderMap.insert(std::make_pair(L"DepthVS", DepthVS));
+
+	D3D12_SHADER_BYTECODE DepthPS;
+	DepthPS.BytecodeLength = sizeof(g_DepthPS);
+	DepthPS.pShaderBytecode = g_DepthPS;
+	GlobalShaderMap.insert(std::make_pair(L"DepthPS", DepthPS));
+
+
 	D3D12_SHADER_BYTECODE ScreenVS;
 	ScreenVS.BytecodeLength = sizeof(g_ScreenVS);
 	ScreenVS.pShaderBytecode = g_ScreenVS;

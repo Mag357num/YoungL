@@ -2,6 +2,7 @@
 #include "RHISamplerState.h"
 #include "RHIShaderParameter.h"
 #include "RHIShader.h"
+#include "RHIShaderInputElement.h"
 //#include <vector>
 //#include <memory>
 
@@ -41,6 +42,8 @@ public:
 	
 	}
 
+	void SetDepthEnable(bool InFlag){ DepthEnable = InFlag;}
+
 	void SetVS(IRHIShader* InShader);
 	void SetPS(IRHIShader* InShader);
 
@@ -49,6 +52,7 @@ public:
 
 	void AddSampleState(FRHISamplerState* InSampleState);
 	void AddShaderParameter(FRHIShaderParameter* InShaderParameter);
+	void AddShaderInputElement(FRHIShaderInputElement* InShaderParameter);
 
 	std::vector<std::unique_ptr<FRHISamplerState>>* GetSampleSates(){return &SamplerStates;}
 
@@ -58,12 +62,15 @@ protected:
 
 	std::vector<std::unique_ptr<FRHISamplerState>> SamplerStates;
 	std::vector<std::unique_ptr<FRHIShaderParameter>> ShaderParameters;
+	std::vector<std::unique_ptr<FRHIShaderInputElement>> ShaderInputElements;
 
 	EPixelBufferFormat ColorTargetFormat;
 	EPixelBufferFormat DepthTargetFormat;
 
 	std::unique_ptr<IRHIShader> VS;
 	std::unique_ptr<IRHIShader> PS;
+
+	bool DepthEnable;
 
 private:
 

@@ -31,9 +31,7 @@ public:
 	virtual void Resize(int InWidth, int InHeight)override;
 
 	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO()override;
-	virtual IRHIGraphicsPipelineState* CreateGraphicsPSO()override; 
-	virtual IRHIGraphicsPipelineState* CreateGraphicsDepthPSO()override;
-	virtual IRHIGraphicsPipelineState* CreateSkinnedGraphicsPSO()override;
+
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
@@ -107,8 +105,6 @@ private:
 	void BuildDescriptorHeap();
 	void PostProcess_BuildDescriptorHeap();
 
-	void BuildShadersInputLayout();
-
 	D3D12_RESOURCE_STATES TranslateResourceState(ERHIResourceState InState);
 
 	//for graphics
@@ -157,13 +153,6 @@ private:
 	UINT CbvDHAllocatedCount;
 	UINT Present_CbvDHAllocatedCount;
 
-
-	XMFLOAT4X4 IdendityMatrix = XMFLOAT4X4(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-	);
 
 	//ShadersInput Layout
 	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Static;

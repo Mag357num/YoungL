@@ -6,8 +6,8 @@
 #include "CompiledShaders/DepthVS.h"//depth pass vs
 #include "CompiledShaders/DepthPS.h"// depth pass ps
 
-#include "CompiledShaders/SkinedMeshVS.h"// skinnedMeshVS
-#include "CompiledShaders/SkinedMeshPS.h"// SkinnedMeshPs
+#include "CompiledShaders/SkinnedMeshVS.h"// skinnedMeshVS
+#include "CompiledShaders/SkinnedMeshPS.h"// SkinnedMeshPs
 
 #include "CompiledShaders/ScreenVS.h"
 #include "CompiledShaders/ScreenPS.h"

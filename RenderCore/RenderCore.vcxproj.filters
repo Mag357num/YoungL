@@ -192,6 +192,9 @@
     <ClInclude Include="Render\PostProcessing.h">
       <Filter>头文件\Render</Filter>
     </ClInclude>
+    <ClInclude Include="Render\RHI\RHIShaderInputElement.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">

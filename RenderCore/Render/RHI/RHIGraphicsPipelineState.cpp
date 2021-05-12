@@ -11,6 +11,11 @@ void IRHIGraphicsPipelineState::AddShaderParameter(FRHIShaderParameter* InShader
 	ShaderParameters.push_back(std::make_unique<FRHIShaderParameter>(*InShaderParameter));
 }
 
+void IRHIGraphicsPipelineState::AddShaderInputElement(FRHIShaderInputElement* InShaderParameter)
+{
+	ShaderInputElements.push_back(std::make_unique<FRHIShaderInputElement>(*InShaderParameter));
+}
+
 void IRHIGraphicsPipelineState::SetCorlorTargetFormat(EPixelBufferFormat InFormat)
 {
 	ColorTargetFormat = InFormat;

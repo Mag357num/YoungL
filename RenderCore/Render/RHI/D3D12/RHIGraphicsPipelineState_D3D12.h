@@ -10,12 +10,7 @@ class FRHIGraphicsPipelineState_D3D12 : public IRHIGraphicsPipelineState
 {
 public:
 	FRHIGraphicsPipelineState_D3D12(){
-		ShadersInputDesc =
-		{
-			 { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			 { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			 { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-		};
+
 	}
 	virtual ~FRHIGraphicsPipelineState_D3D12() {
 		PSO.Reset();
@@ -28,9 +23,6 @@ public:
 		//}
 		//Descriptors.empty();
 
-		if (!ShadersInputDesc.empty())
-		{
-		}
 	}
 
 
@@ -45,7 +37,7 @@ public:
 private:
 	void ParseShaderParameter(std::vector<CD3DX12_ROOT_PARAMETER>& InShaderParameters, std::vector<std::vector<CD3DX12_DESCRIPTOR_RANGE>>& D3D12Ranges);
 	void ParseSamplerState(std::vector<CD3DX12_STATIC_SAMPLER_DESC>& InStaticSamplers);
+	void ParseShaderInputElement(std::vector<D3D12_INPUT_ELEMENT_DESC>& InElementLayouts);
 
-	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc;
 };
 

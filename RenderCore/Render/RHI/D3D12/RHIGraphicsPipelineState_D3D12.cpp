@@ -153,6 +153,13 @@ void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_R
 			InShaderParameters.push_back(Parameter);
 			break;
 
+		case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
+			Parameter.InitAsConstantBufferView(ShaderParameters[Index]->GetShaderRegister(), ShaderParameters[Index]->GetShaderRegisterSpace(),
+				TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
+
+			InShaderParameters.push_back(Parameter);
+			break;
+
 		default:
 			break;
 		}
@@ -203,16 +210,19 @@ void FRHIGraphicsPipelineState_D3D12::CreateGraphicsPSOInternal()
 	ZeroMemory(&Desc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
 	Desc.pRootSignature = RootSignature.Get();
-	//draw rect dont't need input layout
-	Desc.InputLayout.NumElements = 0;
-	Desc.InputLayout.pInputElementDescs = nullptr;
+
+
+	std::vector<D3D12_INPUT_ELEMENT_DESC> InputElementLayouts;
+	ParseShaderInputElement(InputElementLayouts);
+	Desc.InputLayout.NumElements = (UINT)InputElementLayouts.size();
+	Desc.InputLayout.pInputElementDescs = InputElementLayouts.data();
 
 	Desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	Desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 
 	D3D12_DEPTH_STENCIL_DESC DSDesc;
-	DSDesc.DepthEnable = FALSE;
+	DSDesc.DepthEnable = DepthEnable;
 	DSDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 	DSDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	DSDesc.StencilEnable = FALSE;
@@ -249,14 +259,6 @@ void FRHIGraphicsPipelineState_D3D12::CreateGraphicsPSOInternal()
 
 void FRHIGraphicsPipelineState_D3D12::ParseSamplerState(std::vector<CD3DX12_STATIC_SAMPLER_DESC>& InStaticSamplers)
 {
-	//const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
-	//	4, // shaderRegister
-	//	D3D12_FILTER_ANISOTROPIC, // filter
-	//	D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
-	//	D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
-	//	D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressW
-	//	0.0f,                             // mipLODBias
-	//	8);
 
 	for (size_t SIndex = 0; SIndex < SamplerStates.size(); SIndex++)
 	{
@@ -279,5 +281,22 @@ void FRHIGraphicsPipelineState_D3D12::ParseSamplerState(std::vector<CD3DX12_STAT
 
 
 		InStaticSamplers.push_back(Desc);
+	}
+}
+
+void FRHIGraphicsPipelineState_D3D12::ParseShaderInputElement(std::vector<D3D12_INPUT_ELEMENT_DESC>& InElementLayouts)
+{
+	InElementLayouts.resize(ShaderInputElements.size());
+	for (size_t Index = 0; Index < ShaderInputElements.size(); ++Index)
+	{
+		//std::string SemanticName  = ShaderInputElements[Index]->GetSemanticName();
+		InElementLayouts[Index].SemanticName = ShaderInputElements[Index]->SemanticName.c_str();
+		InElementLayouts[Index].SemanticIndex = ShaderInputElements[Index]->GetSemanticIndex();
+		InElementLayouts[Index].Format = FRHIResource_D3D12::TranslateFormat(ShaderInputElements[Index]->GetFormat());
+		InElementLayouts[Index].InputSlot = ShaderInputElements[Index]->GetInputSlot();
+		InElementLayouts[Index].AlignedByteOffset = ShaderInputElements[Index]->GetAlignedByteOffset();
+		InElementLayouts[Index].InputSlotClass = (D3D12_INPUT_CLASSIFICATION)ShaderInputElements[Index]->GetInputSlotClass();
+		InElementLayouts[Index].InstanceDataStepRate = ShaderInputElements[Index]->GetInstanceDataStepRate();
+
 	}
 }

@@ -242,6 +242,7 @@
     <ClInclude Include="Render\RHI\RHIResourceHandle.h" />
     <ClInclude Include="Render\RHI\RHISamplerState.h" />
     <ClInclude Include="Render\RHI\RHIShader.h" />
+    <ClInclude Include="Render\RHI\RHIShaderInputElement.h" />
     <ClInclude Include="Render\RHI\RHIShaderParameter.h" />
     <ClInclude Include="Render\RHI\RHIVertexBuffer.h" />
     <ClInclude Include="Render\ShadowMap.h" />

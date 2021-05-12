@@ -35,9 +35,13 @@ protected:
 private:
 	void InitializeSceneConstant();
 
+	void CreateBasePassPSO_Static();
+	void CreateBasePassPSO_Skinned();
+	void CreateDepthPassPSO();
 	void CreatePresentPSO();
 	void CreatePostProcessPSOs();
 	
+
 	void CreateSceneColor();
 
 	void RenderDepth();
