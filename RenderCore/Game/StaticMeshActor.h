@@ -67,6 +67,8 @@ public:
 		ObjectConstants->ObjectWorld = FMath::MatrixTranspose(ObjectConstants->ObjectWorld);
 	}
 
+	//TODO: Dirty Constant Data
+
 protected:
 	
 	FVector4D Translation;

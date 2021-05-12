@@ -28,14 +28,10 @@ public:
 
 	void SetGpuVirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS InAddress){GpuVirtualAddress = InAddress;}
 
-	UINT GetRootParameterIndex(){return RootParameterIndex; }
-	void SetRootParameterIndex(UINT InIndex){RootParameterIndex = InIndex;}
-
 	virtual void CopyData(int ElementIndex, const T& Data)override;
 
 	std::unique_ptr<FRHIUploadBuffer_D3D12<T>> UploadBuffer;
 private:
-	UINT RootParameterIndex;
 
 	D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
 	D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;

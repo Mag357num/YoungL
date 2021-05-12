@@ -28,6 +28,7 @@ public:
 	//
 	void CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& StaticMeshActors);
 	void CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& SkeletalMeshActors);
+	void CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& InstancedActors);
 
 	void PostProcess();
 
@@ -55,6 +56,7 @@ private:
 
 	std::unordered_map<std::string, IRHIRenderingMesh*> RenderingMeshes;
 	std::unordered_map<std::string, IRHIRenderingMesh*> SkinnedRenderingMeshes;
+	std::unordered_map<std::string, IRHIRenderingMesh*> InstanceRenderingMeshes;
 
 	//
 	FViewport Viewport;

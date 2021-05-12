@@ -512,10 +512,10 @@ void FRHIContext_D3D12::SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData,
 	M_CommandList->SetGraphicsRoot32BitConstant(SlotParaIndex, SrcData, DestOffsetIn32BitValues);
 }
 
-void FRHIContext_D3D12::SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)
+void FRHIContext_D3D12::SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
-	M_CommandList->SetGraphicsRootConstantBufferView(Buffer_D3D12->GetRootParameterIndex(), Buffer_D3D12->GetGpuAddress());
+	M_CommandList->SetGraphicsRootConstantBufferView(SlotParaIndex, Buffer_D3D12->GetGpuAddress());
 }
 void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
 {
@@ -600,7 +600,6 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* ConstantBuffer = new FRHIConstantBuffer_D3D12<FSceneConstant>();
 
-
 	ConstantBuffer->UploadBuffer = std::make_unique<FRHIUploadBuffer_D3D12<FSceneConstant>>(new FRHIUploadBuffer_D3D12<FSceneConstant>(true));
 	ConstantBuffer->UploadBuffer->CreateUploadResource(1);
 
@@ -609,8 +608,6 @@ IRHIConstantBuffer<FSceneConstant>* FRHIContext_D3D12::CreateSceneConstantBuffer
 
 	FRHIResource_D3D12* UploadResource_D3D12 = reinterpret_cast<FRHIResource_D3D12*>(ConstantBuffer->UploadBuffer->GetResource());
 	D3D12_GPU_VIRTUAL_ADDRESS GpuAddress = UploadResource_D3D12->Resource->GetGPUVirtualAddress();
-
-	ConstantBuffer->SetRootParameterIndex(1);//0 for Object constants 
 	ConstantBuffer->SetGpuVirtualAddress(GpuAddress);
 
 	return ConstantBuffer;

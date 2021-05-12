@@ -34,6 +34,11 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
+void FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context)
+{
+
+}
+
 void FRHIRenderingMesh_D3D12::BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context)
 {
 	IsSkined = true;

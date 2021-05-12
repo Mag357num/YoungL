@@ -7,7 +7,7 @@ class USkeletalMesh
 {
 public:
 	USkeletalMesh() {
-		bHasCreateRenderResource = false;
+		bHasValidRenderResource = false;
 	}
 	~USkeletalMesh() {
 		if (VertexBuffer != nullptr)
@@ -58,18 +58,18 @@ public:
 		return IndexBuffer;
 	}
 
-	void SetHasCreateRenderResource()
+	void SetHasValidRenderResource()
 	{
-		bHasCreateRenderResource = true;
+		bHasValidRenderResource = true;
 	}
 
-	bool GetHasCreateRenderResource()
+	bool GetHasValidRenderResource()
 	{
-		return bHasCreateRenderResource;
+		return bHasValidRenderResource;
 	}
 
 private:
-	bool bHasCreateRenderResource;
+	bool bHasValidRenderResource;
 	std::shared_ptr<IRHIVertexBuffer> VertexBuffer;
 	std::shared_ptr<IRHIIndexBuffer> IndexBuffer;
 };

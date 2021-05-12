@@ -31,6 +31,7 @@ void FShadowMap::CreateShadowSceneConstant(IRHIContext* InContext, const FBoundS
 
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = InContext->CreateSceneConstantBuffer(SceneConstant);
+	SceneConstantBuffer->SetRootParameterIndex(1);
 }
 
 void FShadowMap::AutomateRotateLight(const FBoundSphere& InBound)

@@ -12,6 +12,7 @@ public:
 	}
 
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)override;
+	virtual void BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context)override;
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context)override;
 	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint16_t>& InIndices)override;
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices)override;

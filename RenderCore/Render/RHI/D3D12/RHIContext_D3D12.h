@@ -78,7 +78,7 @@ public:
 
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)override;
-	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
+	virtual void SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
 

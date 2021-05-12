@@ -204,6 +204,9 @@
     <ClInclude Include="Game\SkeletalMesh.h">
       <Filter>头文件\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\InstancedStaticMeshActor.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -271,6 +274,9 @@
     </ClCompile>
     <ClCompile Include="Render\RHI\D3D12\RHIShaderResource_D3D12.cpp">
       <Filter>源文件\Render\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\InstancedStaticMeshActor.cpp">
+      <Filter>源文件\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

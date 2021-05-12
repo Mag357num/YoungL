@@ -39,14 +39,19 @@ void FRenderThreadManager::NotifyRenderThreadJob()
 	RenderThread->NotifyRenderThreadJob();
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AStaticMeshActor>>& Geometries)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AStaticMeshActor>>& Actors)
 {
-	Renderer->CreateRenderingItem(Geometries);
+	Renderer->CreateRenderingItem(Actors);
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Geometries)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Actors)
 {
-	Renderer->CreateRenderingItem(Geometries);
+	Renderer->CreateRenderingItem(Actors);
+}
+
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& Actors)
+{
+	Renderer->CreateRenderingItem(Actors);
 }
 
 void FRenderThreadManager::UpdateSceneConstantBuffer(FSceneConstant* SceneConstant)

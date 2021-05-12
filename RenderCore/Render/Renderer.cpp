@@ -68,6 +68,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//Create Scene Constant Buffer
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
+	SceneConstantBuffer->SetRootParameterIndex(1);//0 for Object constants 
 
 	//for postprocess
 	ShouldRenderPostProcess = false;
@@ -119,6 +120,19 @@ void FRenderer::DestroyRHIContext()
 	if (!SkinnedRenderingMeshes.empty())
 	{
 		printf("Empty Error!");
+	}
+
+	if (InstanceRenderingMeshes.size() > 0)
+	{
+		for (auto It = InstanceRenderingMeshes.begin(); It != InstanceRenderingMeshes.end(); ++It)
+		{
+			It->second->Release();
+			delete It->second;
+		}
+
+		if (!InstanceRenderingMeshes.empty())
+		{
+		}
 	}
 	
 	//shadowmap
@@ -179,7 +193,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 		Item->BuildConstantBuffer(StaticMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<UStaticMesh> StaticMesh = StaticMeshActors[Index]->GetStaticMesh();
 
-		if (StaticMesh.lock()->GetHasCreateRenderResource())
+		if (StaticMesh.lock()->GetHasValidRenderResource())
 		{
 			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = StaticMesh.lock()->GetVertexBuffer();
 			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = StaticMesh.lock()->GetIndexBuffer();;
@@ -195,7 +209,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 
 			StaticMesh.lock()->SetVertexBuffer(VertexBuffer);
 			StaticMesh.lock()->SetIndexBuffer(IndexBuffer);
-			StaticMesh.lock()->SetHasCreateRenderResource();
+			StaticMesh.lock()->SetHasValidRenderResource();
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
@@ -217,7 +231,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 		Item->BuildConstantBuffer(SkeletalMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<USkeletalMesh> SkeletalMesh = SkeletalMeshActors[Index]->GetSkeletalMesh();
 		
-		if (SkeletalMesh.lock()->GetHasCreateRenderResource())
+		if (SkeletalMesh.lock()->GetHasValidRenderResource())
 		{
 			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = SkeletalMesh.lock()->GetVertexBuffer();
 			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = SkeletalMesh.lock()->GetIndexBuffer();;
@@ -233,7 +247,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 
 			SkeletalMesh.lock()->SetVertexBuffer(VertexBuffer);
 			SkeletalMesh.lock()->SetIndexBuffer(IndexBuffer);
-			SkeletalMesh.lock()->SetHasCreateRenderResource();
+			SkeletalMesh.lock()->SetHasValidRenderResource();
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
@@ -243,6 +257,43 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 		Item->BuildSkinnedBoneTransBuffer(SkeletalMeshActors[Index]->GetBoneTransfroms(), RHIContext);
 
 		SkinnedRenderingMeshes[*SkeletalMeshActors[Index]->GetName()] = Item;
+	}
+}
+
+void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& InstancedActors)
+{
+	for (int Index = 0; Index < InstancedActors.size(); ++Index)
+	{
+		//create an empty rendering item
+		IRHIRenderingMesh* Item = RHIContext->CreateEmptyRenderingMesh();
+
+		Item->BuildConstantBuffer(InstancedActors[Index]->GetObjectConstants(), RHIContext);
+		std::weak_ptr<UStaticMesh> StaticMesh = InstancedActors[Index]->GetStaticMesh();
+
+		if (StaticMesh.lock()->GetHasValidRenderResource())
+		{
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = StaticMesh.lock()->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = StaticMesh.lock()->GetIndexBuffer();;
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
+		else
+		{
+			FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(StaticGeo->GetVertices());
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(StaticGeo->GetIndices());
+
+			StaticMesh.lock()->SetVertexBuffer(VertexBuffer);
+			StaticMesh.lock()->SetIndexBuffer(IndexBuffer);
+			StaticMesh.lock()->SetHasValidRenderResource();
+
+			Item->SetVertexBuffer(VertexBuffer);
+			Item->SetIndexBuffer(IndexBuffer);
+		}
+
+
+		InstanceRenderingMeshes[*InstancedActors[Index]->GetName()] = Item;
 	}
 }
 
@@ -296,7 +347,7 @@ void FRenderer::RenderScene()
 	RHIContext->PrepareShaderParameter();
 
 	//pass sceen constant buffer
-	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+	RHIContext->SetConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 
 	//apply shadow map
 	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
@@ -347,7 +398,7 @@ void FRenderer::RenderDepth()
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["DepthPass"]);
 
 	//pass sceen constant buffer
-	RHIContext->SetSceneConstantBuffer(ShadowMap->GetSceneConstantBuffer());
+	RHIContext->SetConstantBufferView(ShadowMap->GetSceneConstantBuffer()->GetRootParameterIndex(), ShadowMap->GetSceneConstantBuffer());
 	//Draw Rendering items in scene
 	RHIContext->DrawRenderingMeshes(RenderingMeshes);
 
@@ -367,7 +418,7 @@ void FRenderer::RenderSkinnedMesh()
 
 	//draw skined Mesh
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
-	RHIContext->SetSceneConstantBuffer(SceneConstantBuffer);
+	RHIContext->SetConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
 	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
 

@@ -205,6 +205,7 @@
     <ClInclude Include="Game\GameAssetManager.h" />
     <ClInclude Include="Game\GameCore.h" />
     <ClInclude Include="Game\GameTimer.h" />
+    <ClInclude Include="Game\InstancedStaticMeshActor.h" />
     <ClInclude Include="Game\SkeletalMesh.h" />
     <ClInclude Include="Game\StaticMesh.h" />
     <ClInclude Include="Game\StaticMeshActor.h" />
@@ -259,6 +260,7 @@
     <ClCompile Include="Game\Camera.cpp" />
     <ClCompile Include="Game\GameCore.cpp" />
     <ClCompile Include="Game\GameTimer.cpp" />
+    <ClCompile Include="Game\InstancedStaticMeshActor.cpp" />
     <ClCompile Include="Game\ModelLoader.cpp" />
     <ClCompile Include="Game\SkinData.cpp" />
     <ClCompile Include="Game\SkeletalMeshActor.cpp" />

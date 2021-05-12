@@ -42,6 +42,7 @@ static void CreateRenderingItem_RenderThread(FGameCore* InGame)
 {
 	FRenderThreadManager::CreateRenderingItems(InGame->GetStaticActors());
 	FRenderThreadManager::CreateRenderingItems(InGame->GetSkinedActors());
+	FRenderThreadManager::CreateRenderingItems(InGame->GetInstancedStaticMeshActors());
 }
 
 

@@ -74,6 +74,8 @@ void FGameCore::Initialize()
 	AssetPaths.push_back(L"Models/ModelFloor.Bin");
 	AssetPaths.push_back(L"Models/ModelSave.Bin");
 
+
+	//TODO: Scene Management
 	for (size_t Index = 0; Index < AssetPaths.size(); ++Index)
 	{
 		LoadActor(AssetPaths[Index]);
@@ -98,6 +100,35 @@ void FGameCore::Initialize()
 			SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
 		}
 	}
+	//test for InstancedStaticMeshActor
+	std::shared_ptr<UStaticMesh> InstanceStatic = AssetManager->CheckStaticMeshLoaded(AssetPaths[0]);
+	if (InstanceStatic)
+	{
+		int RandomInt = rand();
+		std::string Name = "SkinnedMeshActor";
+		Name += to_string(RandomInt);
+
+		std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
+		TestInstanceActor->SetStaticMesh(InstanceStatic);
+
+		TestInstanceActor->InitiallySetLocation(FVector(0.0f, 0.0f, 0.0f));
+
+		FActorInstanceInfo InstanceInfo;
+		InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+		InstanceInfo.Scaling = FVector4D(1.0f, 1.0f, 1.0f, 1.0f);
+		InstanceInfo.Translation = FVector4D(100.0f, 0.0f, 0.0f, 0.0f);
+
+		TestInstanceActor->AddInstance(InstanceInfo);
+
+		InstanceInfo.Translation = FVector4D(300.0f, 0.0f, 0.0f, 0.0f);
+		TestInstanceActor->AddInstance(InstanceInfo);
+
+		InstanceInfo.Translation = FVector4D(500.0f, 0.0f, 0.0f, 0.0f);
+		TestInstanceActor->AddInstance(InstanceInfo);
+
+		InstanceStaticActors.push_back(std::move(TestInstanceActor));
+	}
+	
 }
 
 
@@ -142,26 +173,29 @@ void FGameCore::Tick(float DeltaTime)
 			SceneConstant->ViewProj = FMath::MatrixTranspose(SceneConstant->ViewProj);
 			SceneConstant->CamLocation = FVector4D(CamLoc.X, CamLoc.Y, CamLoc.Z, 1.0f);
 
-			FRenderThreadCommand CreateRenderItemCommand;
-			CreateRenderItemCommand.Wrap(UpdateSceneConstantBuffer_RenderThread, SceneConstant);
+			FRenderThreadCommand UpdateSceneConstantCommand;
+			UpdateSceneConstantCommand.Wrap(UpdateSceneConstantBuffer_RenderThread, SceneConstant);
 
 			std::shared_ptr<FRenderThreadManager> RenderManager = RenderThreadManager_Weak.lock();
-			RenderManager->PushRenderCommand(CreateRenderItemCommand);
+			RenderManager->PushRenderCommand(UpdateSceneConstantCommand);
 		}
 
 		Camera->ResetDirtyFlat();
 	}
 
 	//Tick Actors 
-	//todo: TickGroup
+	//TODO: TickGroup
 	for (int StaticIndex = 0; StaticIndex < StaticActors.size(); ++StaticIndex)
 	{
 		StaticActors[StaticIndex]->Tick(DeltaTime);
 	}
-
 	for (int SkinIndex = 0; SkinIndex < SkinedActors.size(); ++SkinIndex)
 	{
 		SkinedActors[SkinIndex]->Tick(DeltaTime);
+	}
+	for (int InstanceActorIndex = 0; InstanceActorIndex < InstanceStaticActors.size(); InstanceActorIndex++)
+	{
+		InstanceStaticActors[InstanceActorIndex]->Tick(DeltaTime);
 	}
 }
 

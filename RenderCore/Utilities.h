@@ -105,6 +105,17 @@ struct FBoundSphere
 	float Radius;
 };
 
+struct FActorInstanceInfo
+{
+	FVector4D Translation;
+	FVector4D Rotation;
+	FVector4D Scaling;
+};
+
+struct FInstanceData
+{
+	FMatrix World;
+};
 
 namespace Utilities
 {

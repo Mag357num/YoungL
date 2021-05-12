@@ -85,7 +85,11 @@ public:
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues){}
-	virtual void SetSceneConstantBuffer(IRHIConstantBuffer<FSceneConstant>* InBuffer){}
+
+	virtual void SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer){}
+	
+	
+	
 	virtual void SetShaderResourceView(){}
 	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource){}
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){};

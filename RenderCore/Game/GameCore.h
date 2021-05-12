@@ -4,6 +4,8 @@
 #include <wtypes.h>
 #include "StaticMeshActor.h"
 #include "SkeletalMeshActor.h"
+#include "InstancedStaticMeshActor.h"
+
 #include <string>
 #define  AssetPathFLOOR L"Models/ModelFloor.Bin"
 #define  AssetPathModel L"Models/ModelSave.Bin"
@@ -29,11 +31,12 @@ public:
 			{
 				StaticActors[Index].reset();
 			}
+			if (!StaticActors.empty())
+			{
+				printf("Empty Error!");
+			}
 		}
-		if (!StaticActors.empty())
-		{
-			printf("Empty Error!");
-		}
+		
 
 		if (SkinedActors.size() > 0)
 		{
@@ -41,10 +44,24 @@ public:
 			{
 				SkinedActors[Index].reset();
 			}
+			if (!SkinedActors.empty())
+			{
+				printf("Empty Error!");
+			}
+
 		}
-		if (!SkinedActors.empty())
+		
+
+		if (InstanceStaticActors.size() > 0)
 		{
-			printf("Empty Error!");
+			for (size_t Index = 0; Index < InstanceStaticActors.size(); Index++)
+			{
+				InstanceStaticActors[Index].reset();
+			}
+			if (!InstanceStaticActors.empty())
+			{
+				printf("Empty Error!");
+			}
 		}
 
 		if (!AssetPaths.empty())
@@ -85,6 +102,9 @@ public:
 	std::vector<std::unique_ptr<ASkeletalMeshActor>>& GetSkinedActors() {
 		return SkinedActors;
 	}
+	std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& GetInstancedStaticMeshActors() {
+		return InstanceStaticActors;
+	}
 
 	std::weak_ptr<FRenderThreadManager> RenderThreadManager_Weak;
 private:
@@ -95,6 +115,7 @@ private:
 	//unique_ptr will be automated released when ~FGameCore
 	std::vector<std::unique_ptr<AStaticMeshActor>> StaticActors;
 	std::vector<std::unique_ptr<ASkeletalMeshActor>> SkinedActors;
+	std::vector<std::unique_ptr<AInstancedStaticMeshActor>> InstanceStaticActors;
 
 	std::vector<std::wstring> AssetPaths;
 	std::vector<std::wstring> SkinedPaths;

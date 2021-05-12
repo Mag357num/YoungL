@@ -33,7 +33,7 @@ public:
 	}
 
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context) {}
-
+	virtual void BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context){}
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context) {}
 
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices) { return nullptr; }
