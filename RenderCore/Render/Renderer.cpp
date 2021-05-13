@@ -30,6 +30,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	RHIContext->InitializeRHI(InWidth, Inheight);
 
+	//create render resource manager
+	ResourceManager = new FRenderResourceManager();
+
 	CreateBasePassPSO_Static();
 	CreateBasePassPSO_Skinned();
 	CreatePresentPSO();
@@ -156,6 +159,14 @@ void FRenderer::DestroyRHIContext()
 		PostProcessing = nullptr;
 	}
 
+
+	//destroy render resource manager
+	if (ResourceManager)
+	{
+		delete ResourceManager;
+		ResourceManager = nullptr;
+	}
+
 #ifdef _WIN32
 	delete RHIContext;
 	RHIContext = nullptr;
@@ -193,26 +204,30 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 		Item->BuildConstantBuffer(StaticMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<UStaticMesh> StaticMesh = StaticMeshActors[Index]->GetStaticMesh();
 
-		if (StaticMesh.lock()->GetHasValidRenderResource())
+		FMeshRenderResource* RenderResouce = ResourceManager->CheckHasValidRenderResource(StaticMesh.lock()->GetObjectName());
+
+		if (RenderResouce)
 		{
-			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = StaticMesh.lock()->GetVertexBuffer();
-			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = StaticMesh.lock()->GetIndexBuffer();;
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = RenderResouce->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = RenderResouce->GetIndexBuffer();;
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
 		}
 		else
 		{
+			RenderResouce = new FMeshRenderResource();
 			FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
 			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(StaticGeo->GetVertices());
 			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(StaticGeo->GetIndices());
 
-			StaticMesh.lock()->SetVertexBuffer(VertexBuffer);
-			StaticMesh.lock()->SetIndexBuffer(IndexBuffer);
-			StaticMesh.lock()->SetHasValidRenderResource();
+			RenderResouce->SetVertexBuffer(VertexBuffer);
+			RenderResouce->SetIndexBuffer(IndexBuffer);
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			ResourceManager->CacheMeshRenderResource(StaticMesh.lock()->GetObjectName(), RenderResouce);
 		}
 		
 
@@ -231,26 +246,30 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 		Item->BuildConstantBuffer(SkeletalMeshActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<USkeletalMesh> SkeletalMesh = SkeletalMeshActors[Index]->GetSkeletalMesh();
 		
-		if (SkeletalMesh.lock()->GetHasValidRenderResource())
+		FMeshRenderResource* RenderResouce = ResourceManager->CheckHasValidRenderResource(SkeletalMesh.lock()->GetObjectName());
+
+		if (RenderResouce)
 		{
-			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = SkeletalMesh.lock()->GetVertexBuffer();
-			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = SkeletalMesh.lock()->GetIndexBuffer();;
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = RenderResouce->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = RenderResouce->GetIndexBuffer();;
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
 		}
 		else
 		{
+			RenderResouce = new FMeshRenderResource();
 			FGeometry<FSkinVertex>* SkeletalGeo = SkeletalMesh.lock()->GetGeometry();
 			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(SkeletalGeo->GetVertices());
 			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(SkeletalGeo->GetIndices());
 
-			SkeletalMesh.lock()->SetVertexBuffer(VertexBuffer);
-			SkeletalMesh.lock()->SetIndexBuffer(IndexBuffer);
-			SkeletalMesh.lock()->SetHasValidRenderResource();
+			RenderResouce->SetVertexBuffer(VertexBuffer);
+			RenderResouce->SetIndexBuffer(IndexBuffer);
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			ResourceManager->CacheMeshRenderResource(SkeletalMesh.lock()->GetObjectName(), RenderResouce);
 		}
 
 		//todo: create BoneTransform Constant Buffer
@@ -270,28 +289,43 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStatic
 		Item->BuildConstantBuffer(InstancedActors[Index]->GetObjectConstants(), RHIContext);
 		std::weak_ptr<UStaticMesh> StaticMesh = InstancedActors[Index]->GetStaticMesh();
 
-		if (StaticMesh.lock()->GetHasValidRenderResource())
+		FMeshRenderResource* RenderResouce = ResourceManager->CheckHasValidRenderResource(StaticMesh.lock()->GetObjectName());
+
+		if (RenderResouce)
 		{
-			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = StaticMesh.lock()->GetVertexBuffer();
-			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = StaticMesh.lock()->GetIndexBuffer();;
+			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = RenderResouce->GetVertexBuffer();
+			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = RenderResouce->GetIndexBuffer();;
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
 		}
 		else
 		{
+			RenderResouce = new FMeshRenderResource();
 			FGeometry<FVertex>* StaticGeo = StaticMesh.lock()->GetGeometry();
 			std::shared_ptr<IRHIVertexBuffer> VertexBuffer = Item->BuildVertexBuffer(StaticGeo->GetVertices());
 			std::shared_ptr<IRHIIndexBuffer> IndexBuffer = Item->BuildIndexBuffer(StaticGeo->GetIndices());
 
-			StaticMesh.lock()->SetVertexBuffer(VertexBuffer);
-			StaticMesh.lock()->SetIndexBuffer(IndexBuffer);
-			StaticMesh.lock()->SetHasValidRenderResource();
+			RenderResouce->SetVertexBuffer(VertexBuffer);
+			RenderResouce->SetIndexBuffer(IndexBuffer);
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			ResourceManager->CacheMeshRenderResource(StaticMesh.lock()->GetObjectName(), RenderResouce);
 		}
 
+		//create instance Data buffer
+		std::shared_ptr<UTexture> InstanceData = InstancedActors[Index]->GetTextureInstanceData();
+		std::shared_ptr<FRHIColorResource> InstanceResource = ResourceManager->CheckHasValidTextureResource(InstanceData->GetObjectName());
+		if (!InstanceResource)
+		{
+			InstanceResource = Item->BuildInstanceBuffer(InstanceData, RHIContext);
+			ResourceManager->CacheTextureRenderResource(InstanceData->GetObjectName(), InstanceResource);
+		}
+		
+
+		Item->SetInstantceTexture(InstanceResource);
 
 		InstanceRenderingMeshes[*InstancedActors[Index]->GetName()] = Item;
 	}
@@ -347,13 +381,13 @@ void FRenderer::RenderScene()
 	RHIContext->PrepareShaderParameter();
 
 	//pass sceen constant buffer
-	RHIContext->SetConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
+	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 
 	//apply shadow map
-	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
+	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
 
 	//Draw Rendering items in scene
-	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+	DrawRenderingMeshes(RenderingMeshes);
 
 	RenderSkinnedMesh();
 
@@ -398,9 +432,9 @@ void FRenderer::RenderDepth()
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["DepthPass"]);
 
 	//pass sceen constant buffer
-	RHIContext->SetConstantBufferView(ShadowMap->GetSceneConstantBuffer()->GetRootParameterIndex(), ShadowMap->GetSceneConstantBuffer());
+	RHIContext->SetSceneConstantBufferView(ShadowMap->GetSceneConstantBuffer()->GetRootParameterIndex(), ShadowMap->GetSceneConstantBuffer());
 	//Draw Rendering items in scene
-	RHIContext->DrawRenderingMeshes(RenderingMeshes);
+	DrawRenderingMeshes(RenderingMeshes);
 
 
 	//draw skinned mesh
@@ -418,9 +452,22 @@ void FRenderer::RenderSkinnedMesh()
 
 	//draw skined Mesh
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
-	RHIContext->SetConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
-	RHIContext->SetShadowMapSRV(ShadowMap->GetShadowMapResource());
-	RHIContext->DrawRenderingMeshes(SkinnedRenderingMeshes);
+	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
+	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
+	DrawRenderingMeshes(SkinnedRenderingMeshes);
+
+	RHIContext->EndEvent();
+}
+
+void FRenderer::RenderInstancedMesh()
+{
+	RHIContext->BeginEvent(L"Instance");
+
+	//draw skined Mesh
+	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["InstancePass"]);
+	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
+	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
+	DrawRenderingMeshes(SkinnedRenderingMeshes);
 
 	RHIContext->EndEvent();
 }
@@ -457,6 +504,38 @@ void FRenderer::DrawToBackBuffer()
 	RHIContext->TransitionBackBufferStateToPresent();
 
 	RHIContext->EndEvent();
+}
+
+void FRenderer::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)
+{
+	for (auto It = Items.begin(); It != Items.end(); ++It)
+	{
+		
+		RHIContext->SetVertexBuffer(0, 1, It->second->GetVertexBuffer());
+		RHIContext->SetIndexBuffer(It->second->GetIndexBuffer());
+		RHIContext->SetPrimitiveTopology(PrimitiveTopology_TRIANGLELIST);
+
+		IRHIConstantBuffer<FObjectConstants>* ConstantBuffer = It->second->GetConstantBuffer();
+		RHIContext->SetObjectConstantBufferView(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer);
+
+		if (It->second->GetIsSkinned())
+		{
+			IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer = It->second->GetBoneTransformsBuffer();
+			RHIContext->SetBoneTransformConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer);//root signature parameter: slot 3
+		}
+
+		//if (It->second->GetIsInstance())
+		//{
+		//	FRHIColorResource* InstanceBuffer = It->second->GetInstantceTexture();
+		//	FRHIResourceHandle_D3D12* SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InstanceBuffer->GetSrvHandle());
+		//	CommandList->SetGraphicsRootDescriptorTable(2, *SrvHandle->GetGpuHandle());
+		//	
+		//}
+
+		RHIContext->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), 1, 0, 0, 0);
+
+
+	}
 }
 
 
@@ -644,6 +723,59 @@ void FRenderer::CreateBasePassPSO_Skinned()
 
 	BasePassPSO_Skinned->CreateGraphicsPSOInternal();
 	GraphicsPSOs.insert(std::make_pair("SkinPass", BasePassPSO_Skinned));
+}
+
+void FRenderer::CreateInstantcedPassPSO()
+{
+	IRHIGraphicsPipelineState* InstancePassPSO = RHIContext->CreateEmpltyGraphicsPSO();
+
+	//for shader parameter
+	{
+		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
+		InstancePassPSO->AddShaderParameter(&SlotPara0);
+
+		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
+		InstancePassPSO->AddShaderParameter(&SlotPara1);
+
+		FRHIShaderParameter SlotPara2(ParaType_Constant, 2, 0, Visibility_All);
+		InstancePassPSO->AddShaderParameter(&SlotPara2);
+
+		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+		FRHIShaderParameter SlotPara3(ParaType_Range, 0, 0, Visibility_PS);
+		SlotPara3.AddRangeTable(ParamRange);
+		InstancePassPSO->AddShaderParameter(&SlotPara3);
+
+	}
+
+	{
+		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		InstancePassPSO->AddShaderInputElement(&InputElement0);
+
+		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		InstancePassPSO->AddShaderInputElement(&InputElement1);
+
+		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
+		InstancePassPSO->AddShaderInputElement(&InputElement2);
+	}
+
+
+	InstancePassPSO->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
+	InstancePassPSO->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
+
+	IRHIShader* VS = new IRHIShader();
+	VS->SetShaderType(ShaderType_VS);
+	VS->SetShaderPath(L"InstancePassVS");
+	InstancePassPSO->SetVS(VS);
+
+	IRHIShader* PS = new IRHIShader();
+	PS->SetShaderType(ShaderType_PS);
+	PS->SetShaderPath(L"BasePassPS");
+	InstancePassPSO->SetPS(PS);
+
+	InstancePassPSO->SetDepthEnable(TRUE);
+
+	InstancePassPSO->CreateGraphicsPSOInternal();
+	GraphicsPSOs.insert(std::make_pair("InstancePass", InstancePassPSO));
 }
 
 void FRenderer::CreateDepthPassPSO()

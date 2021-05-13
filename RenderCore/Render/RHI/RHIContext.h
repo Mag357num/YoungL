@@ -86,18 +86,25 @@ public:
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues){}
 
-	virtual void SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer){}
-	
-	
+	//for draw call info
+	virtual void SetVertexBuffer(UINT StartSlot, UINT NumViews, IRHIVertexBuffer* VertexBuffer){}
+	virtual void SetIndexBuffer(IRHIIndexBuffer* IndexBuffer){}
+	virtual void SetPrimitiveTopology(EPrimitiveTopology Topology){}
+
+	//for constant buffer view
+	virtual void SetSceneConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer){}
+	virtual void SetObjectConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FObjectConstants>* InBuffer){}
+	virtual void SetBoneTransformConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FBoneTransforms>* InBuffer){}
 	
 	virtual void SetShaderResourceView(){}
-	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource){}
+	virtual void SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource){}
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){};
 
 	virtual void SetPrimitiveTopology(){}
 
-	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items){}
-	virtual void DrawIndexedInstanced(){}
+	virtual void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT IndexCount, 
+								UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation){}
+
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset = 0){}
 
 	virtual void FlushCommandQueue(){}
@@ -113,6 +120,7 @@ public:
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
+	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource) { }
 
 protected:
 	EPixelBufferFormat BackBufferFormat;

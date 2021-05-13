@@ -45,7 +45,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 
 	//create factory
-	CreateDXGIFactory1(IID_PPV_ARGS(&M_Factory));
+	CreateDXGIFactory1(IID_PPV_ARGS(&Factory));
 
 	//enumerate adapter device
 	//try to create hard ware device
@@ -54,32 +54,32 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	if (FAILED(Result))
 	{
 		Microsoft::WRL::ComPtr<IDXGIAdapter> WarpAdapter;
-		M_Factory->EnumWarpAdapter(IID_PPV_ARGS(&WarpAdapter));
+		Factory->EnumWarpAdapter(IID_PPV_ARGS(&WarpAdapter));
 		D3D12CreateDevice(WarpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&M_Device));
 	}
 
-	M_RtvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	M_DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	RtvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	CbvSrvUavDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	//create commang objects
-	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&M_CommandAllocator));
+	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocator));
 	D3D12_COMMAND_QUEUE_DESC QueueDesc = {};
 	QueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	QueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-	M_Device->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&M_CommandQueue));
-	M_Device->CreateCommandList(1, D3D12_COMMAND_LIST_TYPE_DIRECT, M_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&M_CommandList));
+	M_Device->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(&CommandQueue));
+	M_Device->CreateCommandList(1, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&CommandList));
 
-	M_CommandList->Close();
+	CommandList->Close();
 
 	//create fence
-	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&M_Fence));
+	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
 
 	//create swapchain
-	M_SwapChain.Reset();
+	SwapChain.Reset();
 	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
-	SwapChainDesc.BufferCount = M_SwapchainBackbufferCount;
+	SwapChainDesc.BufferCount = SwapchainBackbufferCount;
 	SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	SwapChainDesc.SampleDesc.Count = 1;
 	SwapChainDesc.SampleDesc.Quality = 0;
@@ -89,14 +89,14 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	SwapChainDesc.BufferDesc.Width = ClientWidth;
 	SwapChainDesc.BufferDesc.Height = ClientHeight;
-	SwapChainDesc.BufferDesc.Format = M_BackBufferFormat;
+	SwapChainDesc.BufferDesc.Format = BackBufferFormat;
 	SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 	SwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
 	SwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 
 
-	M_Factory->CreateSwapChain(M_CommandQueue.Get(), &SwapChainDesc, M_SwapChain.GetAddressOf());
+	Factory->CreateSwapChain(CommandQueue.Get(), &SwapChainDesc, SwapChain.GetAddressOf());
 
 	//create discriptor heap
 	D3D12_DESCRIPTOR_HEAP_DESC RtvHeapDesc;
@@ -104,7 +104,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	RtvHeapDesc.NumDescriptors = NumDescriptorsPerHeap;//swapchain count for back buffer; another is for scenecolor(postprocess)
 	RtvHeapDesc.NodeMask = 0;
 	RtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	M_Device->CreateDescriptorHeap(&RtvHeapDesc, IID_PPV_ARGS(&M_RtvHeap));
+	M_Device->CreateDescriptorHeap(&RtvHeapDesc, IID_PPV_ARGS(&RtvHeap));
 
 	D3D12_DESCRIPTOR_HEAP_DESC DsvHeapDesc;
 	DsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
@@ -112,7 +112,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	DsvHeapDesc.NodeMask = 0;
 	DsvHeapDesc.NumDescriptors = NumDescriptorsPerHeap;//0: for scene color ;1 :for shadow depth
 
-	M_Device->CreateDescriptorHeap(&DsvHeapDesc, IID_PPV_ARGS(&M_DsvHeap));
+	M_Device->CreateDescriptorHeap(&DsvHeapDesc, IID_PPV_ARGS(&DsvHeap));
 
 	//initialize back buffer
 	OnResize();
@@ -175,28 +175,28 @@ void FRHIContext_D3D12::OnResize()
 	FlushCommandQueue();
 
 	//reset command list
-	M_CommandList->Reset(M_CommandAllocator.Get(), nullptr);
+	CommandList->Reset(CommandAllocator.Get(), nullptr);
 
 	//reset back buffer;
-	for (int i = 0; i < M_SwapchainBackbufferCount; ++i)
+	for (int i = 0; i < SwapchainBackbufferCount; ++i)
 	{
-		M_BackBuffer[i].Reset();
+		BackBuffer[i].Reset();
 	}
-	M_DepthStencilBuffer.Reset();
+	DepthStencilBuffer.Reset();
 
 	//resize swapchain
-	M_SwapChain->ResizeBuffers(M_SwapchainBackbufferCount, ClientWidth, ClientHeight,
-		M_BackBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+	SwapChain->ResizeBuffers(SwapchainBackbufferCount, ClientWidth, ClientHeight,
+		BackBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	M_CurrentBackBuffer = 0;
+	CurrentBackBuffer = 0;
 
 	//get back buffer from swap chain && create rtv
-	CD3DX12_CPU_DESCRIPTOR_HANDLE Rtvhandle(M_RtvHeap->GetCPUDescriptorHandleForHeapStart());
-	for (int i = 0; i < M_SwapchainBackbufferCount; ++i)
+	CD3DX12_CPU_DESCRIPTOR_HANDLE Rtvhandle(RtvHeap->GetCPUDescriptorHandleForHeapStart());
+	for (int i = 0; i < SwapchainBackbufferCount; ++i)
 	{
-		M_SwapChain->GetBuffer(i, IID_PPV_ARGS(&M_BackBuffer[i]));
-		M_Device->CreateRenderTargetView(M_BackBuffer[i].Get(), nullptr, Rtvhandle);
-		Rtvhandle.Offset(1, M_RtvDescriptorSize);
+		SwapChain->GetBuffer(i, IID_PPV_ARGS(&BackBuffer[i]));
+		M_Device->CreateRenderTargetView(BackBuffer[i].Get(), nullptr, Rtvhandle);
+		Rtvhandle.Offset(1, RtvDescriptorSize);
 	}
 	//
 
@@ -222,43 +222,43 @@ void FRHIContext_D3D12::OnResize()
 
 
 	D3D12_CLEAR_VALUE ClearValue;
-	ClearValue.Format = M_DepthStencilFormat;
+	ClearValue.Format = DepthStencilFormat;
 	ClearValue.DepthStencil.Depth = 1.0f;
 	ClearValue.DepthStencil.Stencil = 0;
 	CD3DX12_HEAP_PROPERTIES HeapProperty(D3D12_HEAP_TYPE_DEFAULT);
 	M_Device->CreateCommittedResource(&HeapProperty, D3D12_HEAP_FLAG_NONE, &DRDesc, D3D12_RESOURCE_STATE_COMMON,
-		&ClearValue, IID_PPV_ARGS(&M_DepthStencilBuffer));
+		&ClearValue, IID_PPV_ARGS(&DepthStencilBuffer));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE DsvHandle(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE DsvHandle(DsvHeap->GetCPUDescriptorHandleForHeapStart());
 	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
-	DsvDesc.Format = M_DepthStencilFormat;
+	DsvDesc.Format = DepthStencilFormat;
 	DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 	DsvDesc.Texture2D.MipSlice = 0;
-	M_Device->CreateDepthStencilView(M_DepthStencilBuffer.Get(), &DsvDesc, DsvHandle);
+	M_Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &DsvDesc, DsvHandle);
 
 	//transilate dsv state to depth
-	CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(M_DepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON,
+	CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(DepthStencilBuffer.Get(), D3D12_RESOURCE_STATE_COMMON,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE);
-	M_CommandList->ResourceBarrier(1, &Barrier);
+	CommandList->ResourceBarrier(1, &Barrier);
 
 	//excute command list
-	M_CommandList->Close();
-	ID3D12CommandList* cmdLists[] = { M_CommandList.Get() };
-	M_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+	CommandList->Close();
+	ID3D12CommandList* cmdLists[] = { CommandList.Get() };
+	CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
 	//flush command queue
 	FlushCommandQueue();
 
 	//update screen view port
-	M_ScreenViewport.Width = static_cast<float>(ClientWidth);
-	M_ScreenViewport.Height = static_cast<float>(ClientHeight);
-	M_ScreenViewport.TopLeftX = 0;
-	M_ScreenViewport.TopLeftY = 0;
-	M_ScreenViewport.MaxDepth = 1.0f;
-	M_ScreenViewport.MinDepth = 0.0f;
+	ScreenViewport.Width = static_cast<float>(ClientWidth);
+	ScreenViewport.Height = static_cast<float>(ClientHeight);
+	ScreenViewport.TopLeftX = 0;
+	ScreenViewport.TopLeftY = 0;
+	ScreenViewport.MaxDepth = 1.0f;
+	ScreenViewport.MinDepth = 0.0f;
 
-	M_ScissorRect = { 0,0, ClientWidth, ClientHeight };
+	ScissorRect = { 0,0, ClientWidth, ClientHeight };
 }
 
 //for render model
@@ -268,7 +268,7 @@ void FRHIContext_D3D12::BuildDescriptorHeap()
 	HeapDesc.NumDescriptors = NumDescriptorsPerHeap;
 	HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&M_CbvSrvUavHeap));
+	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&CbvSrvUavHeap));
 }
 
 void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
@@ -289,36 +289,36 @@ IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateEmpltyGraphicsPSO()
 
 void FRHIContext_D3D12::BeginDraw(const wchar_t* Label)
 {
-	M_CommandAllocator->Reset();
-	M_CommandList->Reset(M_CommandAllocator.Get(), nullptr);
+	CommandAllocator->Reset();
+	CommandList->Reset(CommandAllocator.Get(), nullptr);
 
-	::PIXBeginEvent(M_CommandList.Get(), PIX_COLOR_DEFAULT, Label);
+	::PIXBeginEvent(CommandList.Get(), PIX_COLOR_DEFAULT, Label);
 }
 
 void FRHIContext_D3D12::EndDraw()
 {
-	::PIXEndEvent(M_CommandList.Get());
+	::PIXEndEvent(CommandList.Get());
 
-	M_CommandList->Close();
-	ID3D12CommandList* CmdLists[] = { M_CommandList.Get() };
-	M_CommandQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);
+	CommandList->Close();
+	ID3D12CommandList* CmdLists[] = { CommandList.Get() };
+	CommandQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);
 }
 
 void FRHIContext_D3D12::BeginEvent(const wchar_t* Label)
 {
-	::PIXBeginEvent(M_CommandList.Get(), PIX_COLOR_DEFAULT, Label);
+	::PIXBeginEvent(CommandList.Get(), PIX_COLOR_DEFAULT, Label);
 }
 
 void FRHIContext_D3D12::EndEvent()
 {
-	::PIXEndEvent(M_CommandList.Get());
+	::PIXEndEvent(CommandList.Get());
 }
 
 void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
-	M_CommandList->SetPipelineState(D3D12PSO->PSO.Get());
-	M_CommandList->SetGraphicsRootSignature(D3D12PSO->RootSignature.Get());
+	CommandList->SetPipelineState(D3D12PSO->PSO.Get());
+	CommandList->SetGraphicsRootSignature(D3D12PSO->RootSignature.Get());
 }
 
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
@@ -331,7 +331,7 @@ void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
 	VP.MaxDepth = (float)Viewport.MaxDepth;
 	VP.MinDepth = (float)Viewport.MinDepth;
 
-	M_CommandList->RSSetViewports(1, &VP);
+	CommandList->RSSetViewports(1, &VP);
 }
 
 void FRHIContext_D3D12::SetScissor(long InX, long InY, long InWidth, long InHeight)
@@ -342,19 +342,19 @@ void FRHIContext_D3D12::SetScissor(long InX, long InY, long InWidth, long InHeig
 	Rect.right = InWidth;
 	Rect.bottom = InHeight;
 
-	M_CommandList->RSSetScissorRects(1, &Rect);
+	CommandList->RSSetScissorRects(1, &Rect);
 }
 
 void FRHIContext_D3D12::SetBackBufferAsRt()
 {
 
 	//clear target view
-	M_CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::LightBlue, 0, nullptr);
-	M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	CommandList->ClearRenderTargetView(GetCurrentBackBufferView(), Colors::LightBlue, 0, nullptr);
+	CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE BackBufferHandle = GetCurrentBackBufferView();
 	D3D12_CPU_DESCRIPTOR_HANDLE DsvrHandle = GetCurrentDepthStencilView();
-	M_CommandList->OMSetRenderTargets(1, &BackBufferHandle, true, &DsvrHandle);
+	CommandList->OMSetRenderTargets(1, &BackBufferHandle, true, &DsvrHandle);
 }
 
 D3D12_RESOURCE_STATES FRHIContext_D3D12::TranslateResourceState(ERHIResourceState InState)
@@ -402,7 +402,7 @@ void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InD
 		{
 			FRHIResourceHandle_D3D12* DsvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(DepthResource->GetDsvHandle());
 			Dsv = DsvHandle->GetCpuHandle();
-			M_CommandList->ClearDepthStencilView(*DsvHandle->GetCpuHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+			CommandList->ClearDepthStencilView(*DsvHandle->GetCpuHandle(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 			
 		}
 	}
@@ -417,17 +417,17 @@ void FRHIContext_D3D12::SetRenderTarget(IRHIResource* InColor, IRHIResource* InD
 			bHasRtv = true;
 			FRHIResourceHandle_D3D12* RtvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle());
 			Rtv = RtvHandle->GetCpuHandle();
-			M_CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), Colors::LightBlue, 0, nullptr);
+			CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), Colors::LightBlue, 0, nullptr);
 		}
 	}
 
 	if (!bHasRtv)
 	{
-		M_CommandList->OMSetRenderTargets(0, nullptr, false, Dsv);
+		CommandList->OMSetRenderTargets(0, nullptr, false, Dsv);
 	}
 	else
 	{
-		M_CommandList->OMSetRenderTargets(1, Rtv, true, Dsv);
+		CommandList->OMSetRenderTargets(1, Rtv, true, Dsv);
 	}
 	
 }
@@ -443,12 +443,12 @@ void FRHIContext_D3D12::SetColorTarget(IRHIResource* InColor)
 		{
 			FRHIResourceHandle_D3D12* RtvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(ColorResource_D3D12->GetRTVHandle());
 
-			M_CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), ColorResource_D3D12->GetClearValue().Color, 0, nullptr);
+			CommandList->ClearRenderTargetView(*RtvHandle->GetCpuHandle(), ColorResource_D3D12->GetClearValue().Color, 0, nullptr);
 
-			M_CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+			CommandList->ClearDepthStencilView(GetCurrentDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 			D3D12_CPU_DESCRIPTOR_HANDLE DsvrHandle = GetCurrentDepthStencilView();
-			M_CommandList->OMSetRenderTargets(1, RtvHandle->GetCpuHandle(), true, &DsvrHandle);
+			CommandList->OMSetRenderTargets(1, RtvHandle->GetCpuHandle(), true, &DsvrHandle);
 		}
 	}
 }
@@ -458,14 +458,14 @@ void FRHIContext_D3D12::TransitionBackBufferStateToRT()
 	//change targe state
 	D3D12_RESOURCE_BARRIER BarrierRT = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	M_CommandList->ResourceBarrier(1, &BarrierRT);
+	CommandList->ResourceBarrier(1, &BarrierRT);
 }
 
 void FRHIContext_D3D12::TransitionBackBufferStateToPresent()
 {
 	D3D12_RESOURCE_BARRIER BarrierPresent = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	M_CommandList->ResourceBarrier(1, &BarrierPresent);
+	CommandList->ResourceBarrier(1, &BarrierPresent);
 }
 
 void FRHIContext_D3D12::TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter)
@@ -486,22 +486,58 @@ void FRHIContext_D3D12::TransitionResource(IRHIResource* InResource, ERHIResourc
 	ID3D12Resource* NativeResource= Resource_D3D12->Resource.Get();
 	D3D12_RESOURCE_BARRIER BarrierRT = CD3DX12_RESOURCE_BARRIER::Transition(NativeResource, Before, After);
 
-	M_CommandList->ResourceBarrier(1, &BarrierRT);
+	CommandList->ResourceBarrier(1, &BarrierRT);
 
+}
+
+D3D_PRIMITIVE_TOPOLOGY TranslateTopology(EPrimitiveTopology Topology)
+{
+	D3D_PRIMITIVE_TOPOLOGY Ret = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	switch (Topology)
+	{
+	case PrimitiveTopology_TRIANGLELIST:
+		Ret = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		break;
+	default:
+		break;
+	}
+
+	return Ret;
+}
+
+
+void FRHIContext_D3D12::SetPrimitiveTopology(EPrimitiveTopology Topology)
+{
+	CommandList->IASetPrimitiveTopology(TranslateTopology(Topology));
+}
+
+void FRHIContext_D3D12::SetIndexBuffer(IRHIIndexBuffer* IndexBuffer)
+{
+	FRHIIndexBuffer_D3D12* IndexBuffer_D3D = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
+	D3D12_INDEX_BUFFER_VIEW IbView = IndexBuffer_D3D->GetIBView();
+	CommandList->IASetIndexBuffer(&IbView);
+}
+
+void FRHIContext_D3D12::SetVertexBuffer(UINT StartSlot, UINT NumViews, IRHIVertexBuffer* VertexBuffer)
+{
+	FRHIVertexBuffer_D3D12* VertexBuffer_D3D = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
+	D3D12_VERTEX_BUFFER_VIEW VbView = VertexBuffer_D3D->GetVBView();
+	CommandList->IASetVertexBuffers(StartSlot, NumViews, &VbView);
 }
 
 
 void FRHIContext_D3D12::PrepareShaderParameter()
 {
-	ID3D12DescriptorHeap* DescriporHeaps[] = { M_CbvSrvUavHeap.Get() };
-	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
+	ID3D12DescriptorHeap* DescriporHeaps[] = { CbvSrvUavHeap.Get() };
+	CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
 	//M_CommandList->SetGraphicsRootSignature(M_RootSignaure.Get());
 }
 
 void FRHIContext_D3D12::PreparePresentShaderParameter()
 {
 	ID3D12DescriptorHeap* DescriporHeaps[] = { Present_CbvSrvUavHeap.Get() };
-	M_CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
+	CommandList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
 
 	//M_CommandList->SetGraphicsRootSignature(Present_RootSignature.Get());
 }
@@ -509,20 +545,34 @@ void FRHIContext_D3D12::PreparePresentShaderParameter()
 
 void FRHIContext_D3D12::SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
 {
-	M_CommandList->SetGraphicsRoot32BitConstant(SlotParaIndex, SrcData, DestOffsetIn32BitValues);
+	CommandList->SetGraphicsRoot32BitConstant(SlotParaIndex, SrcData, DestOffsetIn32BitValues);
 }
 
-void FRHIContext_D3D12::SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)
+void FRHIContext_D3D12::SetSceneConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)
 {
 	FRHIConstantBuffer_D3D12<FSceneConstant>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FSceneConstant>*>(InBuffer);
-	M_CommandList->SetGraphicsRootConstantBufferView(SlotParaIndex, Buffer_D3D12->GetGpuAddress());
+	CommandList->SetGraphicsRootConstantBufferView(SlotParaIndex, Buffer_D3D12->GetGpuAddress());
 }
-void FRHIContext_D3D12::SetShadowMapSRV(FRHIDepthResource* InDepthResource)
+
+void FRHIContext_D3D12::SetObjectConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FObjectConstants>* InBuffer)
+{
+	FRHIConstantBuffer_D3D12<FObjectConstants>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(InBuffer);
+	CommandList->SetGraphicsRootConstantBufferView(SlotParaIndex, Buffer_D3D12->GetGpuAddress());
+}
+
+void FRHIContext_D3D12::SetBoneTransformConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FBoneTransforms>* InBuffer)
+{
+	FRHIConstantBuffer_D3D12<FBoneTransforms>* Buffer_D3D12 = reinterpret_cast<FRHIConstantBuffer_D3D12<FBoneTransforms>*>(InBuffer);
+	CommandList->SetGraphicsRootConstantBufferView(SlotParaIndex, Buffer_D3D12->GetGpuAddress());
+}
+
+
+void FRHIContext_D3D12::SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource)
 {
 	if (InDepthResource && InDepthResource->GetSrvHandle())
 	{
 		FRHIResourceHandle_D3D12*  SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InDepthResource->GetSrvHandle());
-		M_CommandList->SetGraphicsRootDescriptorTable(2, *SrvHandle->GetGpuHandle());//root parameter index is 2
+		CommandList->SetGraphicsRootDescriptorTable(ParaIndex, *SrvHandle->GetGpuHandle());//root parameter index is 2
 	}
 }
 
@@ -531,54 +581,32 @@ void FRHIContext_D3D12::SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorRe
 	if (InColorResource && InColorResource->GetSrvHandle())
 	{
 		FRHIResourceHandle_D3D12* SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InColorResource->GetSrvHandle());
-		M_CommandList->SetGraphicsRootDescriptorTable(ParaIndex, *SrvHandle->GetGpuHandle());
+		CommandList->SetGraphicsRootDescriptorTable(ParaIndex, *SrvHandle->GetGpuHandle());
 	}
 }
 
-void FRHIContext_D3D12::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)
+
+void FRHIContext_D3D12::DrawIndexedInstanced(UINT IndexCountPerInstance, UINT IndexCount, 
+						UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)
 {
-	for (auto It = Items.begin(); It != Items.end(); ++It)
-	{
-		FRHIVertexBuffer_D3D12* VertexBuffer = reinterpret_cast<FRHIVertexBuffer_D3D12*>(It->second->GetVertexBuffer());
-		D3D12_VERTEX_BUFFER_VIEW VbView = VertexBuffer->GetVBView();
-		M_CommandList->IASetVertexBuffers(0, 1, &VbView);
-
-		FRHIIndexBuffer_D3D12* IndexBuffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(It->second->GetIndexBuffer());
-		D3D12_INDEX_BUFFER_VIEW IbView = IndexBuffer->GetIBView();
-		M_CommandList->IASetIndexBuffer(&IbView);
-		M_CommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		FRHIConstantBuffer_D3D12<FObjectConstants>* ConstantBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FObjectConstants>*>(It->second->GetConstantBuffer());
-		M_CommandList->SetGraphicsRootConstantBufferView(ConstantBuffer->GetRootParameterIndex(), ConstantBuffer->GetGpuAddress());
-		
-		if (It->second->GetIsSkinned())
-		{
-			FRHIConstantBuffer_D3D12<FBoneTransforms>* BoneTransformsBuffer = reinterpret_cast<FRHIConstantBuffer_D3D12<FBoneTransforms>*>(It->second->GetBoneTransformsBuffer());
-			M_CommandList->SetGraphicsRootConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer->GetGpuAddress());//root signature parameter: slot 3
-		}
-		
-		M_CommandList->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), 1, 0, 0, 0);
-
-		
-	}
-	
+	CommandList->DrawIndexedInstanced(IndexCountPerInstance, IndexCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
 }
 
 void FRHIContext_D3D12::Draw(UINT VertexCount, UINT VertexStartOffset)
 {
-	M_CommandList->DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
+	CommandList->DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
 }
 
 void FRHIContext_D3D12::FlushCommandQueue()
 {
-	M_CurrentFenceValue++;
+	CurrentFenceValue++;
 
-	M_CommandQueue->Signal(M_Fence.Get(), M_CurrentFenceValue);
+	CommandQueue->Signal(Fence.Get(), CurrentFenceValue);
 
-	if (M_Fence->GetCompletedValue() < M_CurrentFenceValue)
+	if (Fence->GetCompletedValue() < CurrentFenceValue)
 	{
 		HANDLE EventHandle = CreateEventEx(nullptr, nullptr, false, EVENT_ALL_ACCESS);
-		M_Fence->SetEventOnCompletion(M_CurrentFenceValue, EventHandle);
+		Fence->SetEventOnCompletion(CurrentFenceValue, EventHandle);
 
 		WaitForSingleObject(EventHandle, INFINITE);
 		CloseHandle(EventHandle);
@@ -587,8 +615,8 @@ void FRHIContext_D3D12::FlushCommandQueue()
 
 void FRHIContext_D3D12::Present()
 {
-	M_SwapChain->Present(0, 0);
-	M_CurrentBackBuffer = (M_CurrentBackBuffer + 1) % M_SwapchainBackbufferCount;
+	SwapChain->Present(0, 0);
+	CurrentBackBuffer = (CurrentBackBuffer + 1) % SwapchainBackbufferCount;
 }
 
 IRHIRenderingMesh* FRHIContext_D3D12::CreateEmptyRenderingMesh()
@@ -641,7 +669,7 @@ FRHIDepthResource* FRHIContext_D3D12::CreateDepthResource(int InWidth, int InHei
 	ResourceDesc.SampleDesc.Quality = 0;
 
 	D3D12_CLEAR_VALUE ClearValue;
-	ClearValue.Format = M_DepthStencilFormat;
+	ClearValue.Format = DepthStencilFormat;
 	ClearValue.DepthStencil.Depth = 1.0f;
 	ClearValue.DepthStencil.Stencil = 0;
 
@@ -664,7 +692,7 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 
 	FRHIDepthResource_D3D12* DepthResource_D3D12 = reinterpret_cast<FRHIDepthResource_D3D12*>(InDepthResource);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(M_CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());
 
 	SrvCpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
 
@@ -679,7 +707,7 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 
 	M_Device->CreateShaderResourceView(DepthResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
 
-	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(M_CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
 
 	SrvGpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
 
@@ -691,11 +719,11 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 	//incre cbv descriptor coupnt
 	CbvDHAllocatedCount ++;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuDescriptorStart(M_DsvHeap->GetCPUDescriptorHandleForHeapStart());
-	DsvCpuDescriptorStart.ptr += DsvDHAllocatedCount * M_DsvDescriptorSize;//0 reserved for base pass depth
+	D3D12_CPU_DESCRIPTOR_HANDLE DsvCpuDescriptorStart(DsvHeap->GetCPUDescriptorHandleForHeapStart());
+	DsvCpuDescriptorStart.ptr += DsvDHAllocatedCount * DsvDescriptorSize;//0 reserved for base pass depth
 	D3D12_DEPTH_STENCIL_VIEW_DESC DsvDesc;
 	DsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	DsvDesc.Format = M_DepthStencilFormat;
+	DsvDesc.Format = DepthStencilFormat;
 	DsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	DsvDesc.Texture2D.MipSlice = 0;
 
@@ -704,8 +732,8 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 
 	FRHIResourceHandle_D3D12* DsvHandle = new FRHIResourceHandle_D3D12();
 	DsvHandle->SetCpuhandle(DsvCpuDescriptorStart);
-	D3D12_GPU_DESCRIPTOR_HANDLE DsvGpuDescriptorStart(M_DsvHeap->GetGPUDescriptorHandleForHeapStart());
-	DsvGpuDescriptorStart.ptr += DsvDHAllocatedCount * M_DsvDescriptorSize;//0 reserved for base pass depth
+	D3D12_GPU_DESCRIPTOR_HANDLE DsvGpuDescriptorStart(DsvHeap->GetGPUDescriptorHandleForHeapStart());
+	DsvGpuDescriptorStart.ptr += DsvDHAllocatedCount * DsvDescriptorSize;//0 reserved for base pass depth
 	DsvHandle->SetGpuhandle(DsvGpuDescriptorStart);
 	DepthResource_D3D12->SetDsvHandle(DsvHandle);
 
@@ -784,22 +812,52 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 	ColorResource_D3D12->SetSrvHandle(SrvHandle);
 
 	//incre Present cbv allocator
-	Present_CbvDHAllocatedCount ++;
+	Present_CbvDHAllocatedCount++;
 
 
-	D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuDescriptorStart(M_RtvHeap->GetCPUDescriptorHandleForHeapStart());
-	RtvCpuDescriptorStart.ptr += (RtvDHAllocatedCount * M_RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
+	D3D12_CPU_DESCRIPTOR_HANDLE RtvCpuDescriptorStart(RtvHeap->GetCPUDescriptorHandleForHeapStart());
+	RtvCpuDescriptorStart.ptr += (RtvDHAllocatedCount * RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
 
 	M_Device->CreateRenderTargetView(ColorResource_D3D12->Resource.Get(), nullptr, RtvCpuDescriptorStart);
 
 
 	FRHIResourceHandle_D3D12* RtvHandle = new FRHIResourceHandle_D3D12();
 	RtvHandle->SetCpuhandle(RtvCpuDescriptorStart);
-	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(M_RtvHeap->GetGPUDescriptorHandleForHeapStart());
-	RtvGpuDescriptorStart.ptr += (RtvDHAllocatedCount * M_DsvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
+	D3D12_GPU_DESCRIPTOR_HANDLE RtvGpuDescriptorStart(RtvHeap->GetGPUDescriptorHandleForHeapStart());
+	RtvGpuDescriptorStart.ptr += (RtvDHAllocatedCount * RtvDescriptorSize);//0, 1: reserved for base pass swap chaine rendertareget
 	RtvHandle->SetGpuhandle(RtvGpuDescriptorStart);
 	ColorResource_D3D12->SetRtvHandle(RtvHandle);
 
 	//incre count
 	RtvDHAllocatedCount++;
+}
+
+void FRHIContext_D3D12::CreateSrvForColorResource(FRHIColorResource* InColorResource)
+{
+	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE SrvCpuDescriptorStart(CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+	SrvCpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SrvDesc.Format = FRHIResource_D3D12::TranslateFormat(InColorResource->GetFormat());
+	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SrvDesc.Texture2D.MipLevels = 1;
+	SrvDesc.Texture2D.MostDetailedMip = 0;
+	SrvDesc.Texture2D.PlaneSlice = 0;
+	SrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	M_Device->CreateShaderResourceView(ColorResource_D3D12->Resource.Get(), &SrvDesc, SrvCpuDescriptorStart);
+
+	D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuDescriptorStart(CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	SrvGpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
+
+	FRHIResourceHandle_D3D12* SrvHandle = new FRHIResourceHandle_D3D12();
+	SrvHandle->SetCpuhandle(SrvCpuDescriptorStart);
+	SrvHandle->SetGpuhandle(SrvGpuDescriptorStart);
+	ColorResource_D3D12->SetSrvHandle(SrvHandle);
+
+	//incre Present cbv allocator
+	CbvDHAllocatedCount++;
 }

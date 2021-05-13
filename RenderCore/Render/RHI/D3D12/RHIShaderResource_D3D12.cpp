@@ -33,6 +33,12 @@ FRHIShaderResource_D3D12::FRHIShaderResource_D3D12()
 	BasePassPS.pShaderBytecode = g_BasePassPS;
 	GlobalShaderMap.insert(std::make_pair(L"BasePassPS", BasePassPS));
 
+	
+	D3D12_SHADER_BYTECODE InstancePassVS;
+	InstancePassVS.BytecodeLength = sizeof(g_InstancePassVS);
+	InstancePassVS.pShaderBytecode = g_InstancePassVS;
+	GlobalShaderMap.insert(std::make_pair(L"InstancePassVS", InstancePassVS));
+
 	D3D12_SHADER_BYTECODE DepthVS;
 	DepthVS.BytecodeLength = sizeof(g_DepthVS);
 	DepthVS.pShaderBytecode = g_DepthVS;

@@ -11,6 +11,7 @@ public:
 	IRHIRenderingMesh()
 	{
 		IsSkined = false;
+		IsInstance = false;
 	}
 
 	virtual ~IRHIRenderingMesh() {
@@ -36,6 +37,8 @@ public:
 	virtual void BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context){}
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context) {}
 
+	virtual std::shared_ptr<FRHIColorResource> BuildInstanceBuffer(std::shared_ptr<UTexture> InstanceTexture, IRHIContext* Context){return nullptr;}
+
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices) { return nullptr; }
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FSkinVertex>& InVertices) {return nullptr;}
 	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint16_t>& InIndices) { return nullptr; }
@@ -53,6 +56,11 @@ public:
 
 	size_t GetIndexCount() { return IndexCount; }
 
+
+	bool GetIsInstance(){return IsInstance;}
+	FRHIColorResource* GetInstantceTexture(){return InstatnceDataResource.lock().get();}
+	void SetInstantceTexture(std::shared_ptr<FRHIColorResource> InTexture){ InstatnceDataResource = InTexture;}
+
 protected:
 	IRHIConstantBuffer<FObjectConstants>* ConstantBuffer;
 
@@ -62,6 +70,10 @@ protected:
 
 	std::weak_ptr<IRHIVertexBuffer> VertexBuffer;
 	std::weak_ptr<IRHIIndexBuffer> IndexBuffer;
+
+	//used by instanced static mesh
+	bool IsInstance;
+	std::weak_ptr<FRHIColorResource> InstatnceDataResource;
 
 	int VertexStrideSize = 0;
 	size_t VertexBufferSize = 0;

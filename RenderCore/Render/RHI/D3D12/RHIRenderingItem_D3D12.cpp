@@ -34,9 +34,25 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
-void FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context)
+std::shared_ptr<FRHIColorResource> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::shared_ptr<UTexture> InstanceTexture, IRHIContext* Context)
 {
+	IsInstance = true;
 
+	//create render resource for instance data
+	EPixelBufferFormat Format = EPixelBufferFormat::PixelFormat_R16G16B16A16_Float;
+
+	FRHIColorResource* ResourceData = Context->CreateColorResource(InstanceTexture->GetWidth(), InstanceTexture->GetHeight(), Format);
+
+	//TODO:
+	//copy data begin
+	//copy data end
+
+	//create srv and rtv for color resource
+	Context->CreateSrvForColorResource(ResourceData);
+
+	std::shared_ptr<FRHIColorResource> InstanceResource = std::shared_ptr<FRHIColorResource>(ResourceData);
+
+	return InstanceResource;
 }
 
 void FRHIRenderingMesh_D3D12::BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context)

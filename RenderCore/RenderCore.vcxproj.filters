@@ -207,6 +207,15 @@
     <ClInclude Include="Game\InstancedStaticMeshActor.h">
       <Filter>头文件\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Texture.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Object.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RenderResourceManager.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -278,6 +287,12 @@
     <ClCompile Include="Game\InstancedStaticMeshActor.cpp">
       <Filter>源文件\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Texture.cpp">
+      <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RenderResourceManager.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RenderCore.rc">
@@ -335,6 +350,9 @@
     <FxCompile Include="Shaders\BloomSunMergePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\InstancePassVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Lighting.hlsli">
@@ -358,7 +376,7 @@
     <None Include="Shaders\PostProcess_BloomUpRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\PostProcess_CombineLUTs.hlsli">
+    <None Include="Shaders\PostProcess_CombineLUTsRS.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\ACES.hlsli">

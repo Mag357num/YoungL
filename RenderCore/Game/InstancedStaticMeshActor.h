@@ -1,6 +1,7 @@
 #pragma once
 #include "StaticMeshActor.h"
 #include "../Utilities.h"
+#include "Texture.h"
 
 class AInstancedStaticMeshActor : public AStaticMeshActor
 {
@@ -8,13 +9,18 @@ public:
 	AInstancedStaticMeshActor(std::string InName = "")
 		:AStaticMeshActor(InName)
 	{
-
+		InstanceDataDirty = false;
 	}
 
 	virtual ~AInstancedStaticMeshActor()
 	{
 		if (!Instances.empty())
 		{
+		}
+
+		if (InstanceTextureData)
+		{
+			InstanceTextureData.reset();
 		}
 	}
 
@@ -24,8 +30,13 @@ public:
 	void UpdateInstance(UINT Index, FActorInstanceInfo InInstance);
 	void RemoveInstance(UINT Index);
 
-	//TODO: Dirty Instance Data
+	std::shared_ptr<UTexture> GetTextureInstanceData();
 
 private:
+	void MarkInstanceDataDirty(){ InstanceDataDirty = true;}
+	bool InstanceDataDirty;
+	void BuildTextureInstanceData();
+
 	std::vector<FActorInstanceInfo> Instances;
+	std::shared_ptr<UTexture> InstanceTextureData;
 };

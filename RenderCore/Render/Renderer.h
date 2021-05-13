@@ -5,6 +5,7 @@
 #include "../Game/SkeletalMeshActor.h"
 #include "ShadowMap.h"
 #include "PostProcessing.h"
+#include "RenderResourceManager.h"
 
 class FRenderer
 {
@@ -38,6 +39,7 @@ private:
 
 	void CreateBasePassPSO_Static();
 	void CreateBasePassPSO_Skinned();
+	void CreateInstantcedPassPSO();
 	void CreateDepthPassPSO();
 	void CreatePresentPSO();
 	void CreatePostProcessPSOs();
@@ -47,8 +49,12 @@ private:
 
 	void RenderDepth();
 	void RenderSkinnedMesh();
+	void RenderInstancedMesh();
 
 	void DrawToBackBuffer();
+
+
+	void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items);
 
 	IRHIContext* RHIContext;
 
@@ -74,4 +80,7 @@ private:
 	//for postprocess
 	bool ShouldRenderPostProcess;
 	FPostProcessing* PostProcessing;
+
+	//render resource manager
+	FRenderResourceManager* ResourceManager;
 };

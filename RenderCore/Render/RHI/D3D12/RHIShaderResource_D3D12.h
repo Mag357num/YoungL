@@ -17,6 +17,7 @@
 #include "CompiledShaders/CombineLUTsPS.h"
 #include "CompiledShaders/ToneMapPS.h"
 #include "CompiledShaders/BloomSunMergePS.h"
+#include "CompiledShaders/InstancePassVS.h"
 
 #include <d3d12.h>
 #include <map>

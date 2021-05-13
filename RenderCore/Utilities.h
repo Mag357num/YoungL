@@ -105,6 +105,79 @@ struct FBoundSphere
 	float Radius;
 };
 
+enum EColorType
+{
+	ColorType_SRGB = 0,
+	ColorType_Linear
+};
+
+struct FColor
+{
+	FColor(){}
+
+	FColor(int R, int G, int B, int A)
+	{
+		Type = ColorType_SRGB;
+		ColorI[0] = R;
+		ColorI[1] = G;
+		ColorI[2] = B;
+		ColorI[3] = A;
+	}
+
+	FColor(float R, float G, float B, float A)
+	{
+		Type = ColorType_Linear;
+		ColorF[0] = R;
+		ColorF[1] = G;
+		ColorF[2] = B;
+		ColorF[3] = A;
+	}
+
+	EColorType Type;
+	union
+	{
+		int ColorI[4];
+		float ColorF[4];
+	};
+
+	static FColor MakeColorFromSRGB(int R, int G, int B, int A )
+	{
+		FColor Ret;
+
+		Ret.Type = ColorType_SRGB;
+		Ret.ColorI[0] = R;
+		Ret.ColorI[1] = G;
+		Ret.ColorI[2] = B;
+		Ret.ColorI[3] = A;
+
+		return Ret;
+	}
+
+	static FColor MakeColorFromLinear(float R, float G, float B, float A)
+	{
+		FColor Ret;
+
+		Ret.Type = ColorType_Linear;
+		Ret.ColorF[0] = R;
+		Ret.ColorF[1] = G;
+		Ret.ColorF[2] = B;
+		Ret.ColorF[3] = A;
+
+		return Ret;
+	}
+
+	////ClearValue light blue
+	//ClearValue.Color[0] = 0.678431392f;
+	//ClearValue.Color[1] = 0.847058892f;
+	//ClearValue.Color[2] = 0.901960850f;
+	//ClearValue.Color[3] = 1.0f;//0.678431392f, 0.847058892f, 0.901960850f
+};
+
+namespace FColorPreset
+{
+	static FColor LightBlue = FColor(0.678431392f, 0.847058892f, 0.901960850f, 1.0f);
+}
+
 struct FActorInstanceInfo
 {
 	FVector4D Translation;

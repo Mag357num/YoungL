@@ -214,7 +214,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 		{
 			std::unique_ptr<FGeometry<FSkinVertex>> SkinGeo = FModelLoader::LoadSkinedMeshAndAnimation(Path, SkinedActor->GetSkinedData());
 
-			SkeletalMesh = std::make_shared<USkeletalMesh>();
+			SkeletalMesh = std::make_shared<USkeletalMesh>("SkeletalMesh");
 			SkeletalMesh->SetAssetPath(Path);
 			SkeletalMesh->SetGeometry(std::move(SkinGeo));
 			AssetManager->AddSkeletalMesh(Path, SkeletalMesh);
@@ -238,7 +238,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 		{
 			std::unique_ptr<FGeometry<FVertex>> Geo = FModelLoader::LoadStaticMesh(Path);
 
-			StaticMesh = std::make_shared<UStaticMesh>();
+			StaticMesh = std::make_shared<UStaticMesh>("StaticMesh");
 			StaticMesh->SetAssetPath(Path);
 			StaticMesh->SetGeometry(std::move(Geo));
 			AssetManager->AddStaticMesh(Path, StaticMesh);

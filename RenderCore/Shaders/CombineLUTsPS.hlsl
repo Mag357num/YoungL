@@ -1,4 +1,4 @@
-#include "PostProcess_CombineLUTs.hlsli"
+#include "PostProcess_CombineLUTsRS.hlsli"
 #include "ACES.hlsli"
 
 int4 RenderTargetSize : register(b0);

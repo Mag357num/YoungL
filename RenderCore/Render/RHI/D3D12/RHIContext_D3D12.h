@@ -35,20 +35,20 @@ public:
 
 	// for populate commands
 	ID3D12Resource* GetCurrentBackBuffer() {
-		return M_BackBuffer[M_CurrentBackBuffer].Get();
+		return BackBuffer[CurrentBackBuffer].Get();
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()
 	{
 		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			M_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
-			M_CurrentBackBuffer,
-			M_RtvDescriptorSize);
+			RtvHeap->GetCPUDescriptorHandleForHeapStart(),
+			CurrentBackBuffer,
+			RtvDescriptorSize);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentDepthStencilView()
 	{
-		return M_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+		return DsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 	
 	virtual void BeginDraw(const wchar_t* Label)override;
@@ -73,13 +73,25 @@ public:
 	virtual void PrepareShaderParameter()override;
 	virtual void PreparePresentShaderParameter()override;
 
-	virtual void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items)override;
+
+	//for draw call info
+	virtual void SetVertexBuffer(UINT StartSlot, UINT NumViews, IRHIVertexBuffer* VertexBuffer)override;
+	virtual void SetIndexBuffer(IRHIIndexBuffer* IndexBuffer)override;
+	virtual void SetPrimitiveTopology(EPrimitiveTopology Topology)override;
+
+
+	virtual void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT IndexCount, 
+					UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)override;
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset /* = 0 */)override;
 
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)override;
-	virtual void SetConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
-	virtual void SetShadowMapSRV(FRHIDepthResource* InDepthResource)override;
+	virtual void SetSceneConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
+	virtual void SetObjectConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FObjectConstants>* InBuffer)override;
+	virtual void SetBoneTransformConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FBoneTransforms>* InBuffer)override;
+
+
+	virtual void SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource)override;
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
 
 	virtual void FlushCommandQueue()override;
@@ -90,7 +102,7 @@ public:
 	virtual IRHIConstantBuffer<FSceneConstant>* CreateSceneConstantBuffer(const FSceneConstant& SceneConstant)override;
 
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap() {
-		return M_CbvSrvUavHeap.Get();
+		return CbvSrvUavHeap.Get();
 	}
 
 	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
@@ -98,6 +110,7 @@ public:
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)override;
+	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource)override;
 
 private:
 	void OnResize();
@@ -111,39 +124,39 @@ private:
 	int ClientWidth = 800;
 	int ClientHeight = 600;
 
-	ComPtr<IDXGIFactory4> M_Factory;
-	ComPtr<IDXGISwapChain> M_SwapChain;
+	ComPtr<IDXGIFactory4> Factory;
+	ComPtr<IDXGISwapChain> SwapChain;
 
-	ComPtr<ID3D12CommandAllocator> M_CommandAllocator;
-	ComPtr<ID3D12CommandQueue> M_CommandQueue;
-	ComPtr<ID3D12GraphicsCommandList>	M_CommandList;
-	ComPtr<ID3D12Fence>	M_Fence;
-	UINT64 M_CurrentFenceValue;
+	ComPtr<ID3D12CommandAllocator> CommandAllocator;
+	ComPtr<ID3D12CommandQueue> CommandQueue;
+	ComPtr<ID3D12GraphicsCommandList>	CommandList;
+	ComPtr<ID3D12Fence>	Fence;
+	UINT64 CurrentFenceValue;
 
 
-	static const int M_SwapchainBackbufferCount = 2;
-	ComPtr<ID3D12Resource>	M_BackBuffer[M_SwapchainBackbufferCount];
-	ComPtr<ID3D12Resource> M_DepthStencilBuffer;
-	int M_CurrentBackBuffer = 0;
+	static const int SwapchainBackbufferCount = 2;
+	ComPtr<ID3D12Resource>	BackBuffer[SwapchainBackbufferCount];
+	ComPtr<ID3D12Resource> DepthStencilBuffer;
+	int CurrentBackBuffer = 0;
 
-	DXGI_FORMAT M_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	DXGI_FORMAT M_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	D3D12_VIEWPORT M_ScreenViewport;
-	D3D12_RECT M_ScissorRect;
+	D3D12_VIEWPORT ScreenViewport;
+	D3D12_RECT ScissorRect;
 
 
 	//todo: extract to descriptor heap manager
-	ComPtr<ID3D12DescriptorHeap>	M_RtvHeap;
-	ComPtr<ID3D12DescriptorHeap>	M_DsvHeap;
+	ComPtr<ID3D12DescriptorHeap>	RtvHeap;
+	ComPtr<ID3D12DescriptorHeap>	DsvHeap;
 
 	//heap for cbv srv uav heap
-	ComPtr<ID3D12DescriptorHeap> M_CbvSrvUavHeap;
+	ComPtr<ID3D12DescriptorHeap> CbvSrvUavHeap;
 	//heap for postprocess
 	ComPtr<ID3D12DescriptorHeap> Present_CbvSrvUavHeap;
 
-	UINT M_RtvDescriptorSize;
-	UINT M_DsvDescriptorSize;
+	UINT RtvDescriptorSize;
+	UINT DsvDescriptorSize;
 	UINT CbvSrvUavDescriptorSize;
 
 
@@ -152,12 +165,6 @@ private:
 	UINT DsvDHAllocatedCount;
 	UINT CbvDHAllocatedCount;
 	UINT Present_CbvDHAllocatedCount;
-
-
-	//ShadersInput Layout
-	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Static;
-	std::vector<D3D12_INPUT_ELEMENT_DESC> ShadersInputDesc_Skinned;
-
 
 	//shader resource
 	FRHIShaderResource_D3D12* ShaderResource;
