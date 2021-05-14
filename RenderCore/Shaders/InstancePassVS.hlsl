@@ -33,21 +33,35 @@ VertexOut main(VertexIn Vin, uint instanceID : SV_InstanceID)
 	int InstanceWidth = round(RenderTargetSize[0] * 0.5f);
 	int InstanceHeight = round(RenderTargetSize[1] * 0.5f);
 
-	int InstanceRow = instanceID / InstanceWidth;
-	int InstanceCol = instanceID % InstanceWidth;
+	int InstanceRow = floor(1.0f * instanceID / InstanceWidth);
+	int InstanceCol = instanceID - InstanceRow * InstanceWidth;
 
-	int2 PixelRow0 = int2(InstanceRow * 2, InstanceCol * 2);
-	int2 PixelRow1 = int2(InstanceRow * 2, InstanceCol * 2 + 1);
-	int2 PixelRow2 = int2(InstanceRow * 2 + 1, InstanceCol * 2);
-	int2 PixelRow3 = int2(InstanceRow * 2 + 1, InstanceCol * 2 + 1);
+	int2 PixelRow0 = int2(InstanceCol * 2,		InstanceRow * 2);
+	int2 PixelRow1 = int2(InstanceCol * 2 + 1,	InstanceRow * 2);
+	int2 PixelRow2 = int2(InstanceCol * 2,		InstanceRow * 2 + 1);
+	int2 PixelRow3 = int2(InstanceCol * 2 + 1,	InstanceRow * 2 + 1);
 
+	//float4 Row0Data = InstatnceData.Load(int3(0, 1, 0));
 	float4 Row0Data = InstatnceData.Load(int3(PixelRow0, 0));
 	float4 Row1Data = InstatnceData.Load(int3(PixelRow1, 0));
 	float4 Row2Data = InstatnceData.Load(int3(PixelRow2, 0));
 	float4 Row3Data = InstatnceData.Load(int3(PixelRow3, 0));
 
+	float4x4 InstanceSpace = {
+				Row0Data,
+				Row1Data,
+				Row2Data,
+				Row3Data
+	};
+
+	float4 InstanceSpaceLoc = mul(float4(Vin.Pos, 1.0f), InstanceSpace);
+
 	// Transform to homogeneous clip space.
-	float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
+	float4 PosW = mul(InstanceSpaceLoc, ObjectWorld);
+
+	//Vin.Pos += float3(250.0f, 0.0f, 0.0f) * instanceID;
+	//float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
+
 	vout.PosH = mul(PosW, ViewProj);
 	vout.ShadowPosH = mul(PosW, LightViewProj);
 	// Just pass vertex color into the pixel shader.
@@ -57,7 +71,7 @@ VertexOut main(VertexIn Vin, uint instanceID : SV_InstanceID)
 
 	//vout.Color = float4(vout.Normal * 0.5f + 0.5f, 1.0f);
 	//vout.Color = float4(0.5f, 0.5f, 0.5f, 1.0f);
-	vout.Color = Row0Data * 0.25f + Row1Data * 0.25f + Row2Data * 0.25f + Row3Data * 0.25f;
+	vout.Color = Row0Data;
 
 	vout.PosW = Vin.Pos;
 

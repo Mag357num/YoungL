@@ -122,6 +122,7 @@ void FGameCore::Initialize()
 		TestInstanceActor->AddInstance(InstanceInfo);
 
 		InstanceInfo.Translation = FVector4D(300.0f, 0.0f, 0.0f, 0.0f);
+		InstanceInfo.Scaling = FVector4D(0.8f, 0.8f, 0.8f, 1.0f);
 		TestInstanceActor->AddInstance(InstanceInfo);
 
 		InstanceInfo.Translation = FVector4D(500.0f, 0.0f, 0.0f, 0.0f);
