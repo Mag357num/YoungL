@@ -47,7 +47,7 @@ public:
 
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices) { return nullptr; }
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FSkinVertex>& InVertices) {return nullptr;}
-	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint16_t>& InIndices) { return nullptr; }
+	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint32_t>& InIndices) { return nullptr; }
 
 	IRHIVertexBuffer* GetVertexBuffer() { return VertexBuffer.lock().get(); }
 	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer.lock().get(); }

@@ -38,7 +38,7 @@ private:
 	static void ReadMaterials(std::ifstream& Fin, UINT NumMaterials, std::vector<FMaterial>& Mats);
 	static void ReadSubsetTable(std::ifstream& Fin, UINT NumSubSets, std::vector<FSubset>& Subsets);
 	static void ReadSkinnedVertices(std::ifstream& Fin, UINT NumVertices, std::vector<FSkinVertex>& OutVertices);
-	static void ReadTriangles(std::ifstream& Fin, UINT NumTriangles, std::vector<USHORT>& OutIndices);
+	static void ReadTriangles(std::ifstream& Fin, UINT NumTriangles, std::vector<uint32_t>& OutIndices);
 	static void ReadBoneOffsets(std::ifstream& Fin, UINT NumBones, std::vector<FMatrix>& BoneOffsets);
 	static void ReadBoneHierarchy(std::ifstream& Fin, UINT NumBones, std::vector<int>& BoneIndexToParentIndex);
 	static void ReadAnimationClips(std::ifstream& Fin, UINT NumBones, UINT NumAnimationClips, 

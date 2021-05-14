@@ -103,7 +103,7 @@ void FRHIRenderingMesh_D3D12::BuildSkinnedBoneTransBuffer(FBoneTransforms* InTra
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
-std::shared_ptr<IRHIIndexBuffer> FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint16_t>& InIndices)
+std::shared_ptr<IRHIIndexBuffer> FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::vector<uint32_t>& InIndices)
 {
 	std::shared_ptr<FRHIIndexBuffer_D3D12> RetBuffer = std::make_shared<FRHIIndexBuffer_D3D12>();
 	
@@ -111,7 +111,7 @@ std::shared_ptr<IRHIIndexBuffer> FRHIRenderingMesh_D3D12::BuildIndexBuffer(std::
 	//FRHIIndexBuffer_D3D12* Buffer = reinterpret_cast<FRHIIndexBuffer_D3D12*>(IndexBuffer);
 
 	//create index buffer view
-	IndexBufferSize = sizeof(uint16_t) * InIndices.size();
+	IndexBufferSize = sizeof(uint32_t) * InIndices.size();
 	CD3DX12_RESOURCE_DESC IxResDesc = CD3DX12_RESOURCE_DESC::Buffer(IndexBufferSize);
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
 	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,

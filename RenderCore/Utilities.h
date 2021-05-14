@@ -11,7 +11,7 @@ template<typename T>
 class FGeometry
 {
 public:
-	FGeometry(std::vector<T>& InVertices, std::vector<uint16_t> InIndices)
+	FGeometry(std::vector<T>& InVertices, std::vector<uint32_t> InIndices)
 	:Vertices(InVertices),
 	Indices(InIndices)
 	{
@@ -35,13 +35,13 @@ public:
 	}
 
 	std::vector<T>& GetVertices(){return Vertices;}
-	std::vector<uint16_t>& GetIndices(){return Indices;}
+	std::vector<uint32_t>& GetIndices(){return Indices;}
 
 public:
 
 private:
 	std::vector<T> Vertices;
-	std::vector<uint16_t> Indices;
+	std::vector<uint32_t> Indices;
 
 };
 

@@ -21,10 +21,10 @@ std::unique_ptr<FGeometry<FVertex>> FModelLoader::LoadStaticMesh(std::wstring& P
 
 	Fin.close();
 
-	std::vector<uint16_t> TransIndices;
+	std::vector<uint32_t> TransIndices;
 	for (int i = 0; i < Indices.size(); i++)
 	{
-		TransIndices.push_back((uint16_t)Indices[i]);
+		TransIndices.push_back(Indices[i]);
 	}
 
 	std::unique_ptr<FGeometry<FVertex>> Geo = std::make_unique<FGeometry<FVertex>>(Vertices, TransIndices);
@@ -94,7 +94,7 @@ void FModelLoader::ReadSkinnedVertices(std::ifstream& Fin, UINT NumVertices, std
 	}
 }
 
-void FModelLoader::ReadTriangles(std::ifstream& Fin, UINT NumTriangles, std::vector<USHORT>& OutIndices)
+void FModelLoader::ReadTriangles(std::ifstream& Fin, UINT NumTriangles, std::vector<uint32_t>& OutIndices)
 {
 	std::string Ignore;
 	OutIndices.resize(NumTriangles * 3);
@@ -102,7 +102,11 @@ void FModelLoader::ReadTriangles(std::ifstream& Fin, UINT NumTriangles, std::vec
 	Fin >> Ignore;
 	for (UINT Index = 0 ; Index < NumTriangles; ++ Index)
 	{
-		Fin >> OutIndices[Index*3 +0] >> OutIndices[Index * 3 + 1] >> OutIndices[Index * 3 + 2];
+		USHORT Index0, Index1, Index2;
+		Fin >> Index0 >> Index1 >> Index2;
+		OutIndices[Index * 3 + 0] = Index0;
+		OutIndices[Index * 3 + 1] = Index1;
+		OutIndices[Index * 3 + 2] = Index2;
 	}
 }
 
@@ -212,7 +216,7 @@ std::unique_ptr<FGeometry<FSkinVertex>> FModelLoader::LoadSkinedMeshAndAnimation
 	std::string Ignore;
 
 	std::vector<FSkinVertex> Vertices;
-	std::vector<USHORT> Indices;
+	std::vector<uint32_t> Indices;
 
 	if (Fin)
 	{
