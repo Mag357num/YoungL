@@ -16,7 +16,10 @@ public:
 	void Tick();
 
 	int GetFrameRate(){return FrameRate;}
-	float GetFrameTime(){return 1000.0f / FrameRate;}
+	float GetFrameTime(){return 1.0f / FrameRate;}
+
+	__int64 GetCurrentTimeCount();
+	double GetDeltaTimeBetweenTwoCount(__int64 Start, __int64 End);
 
 	double GetFPS();
 private:

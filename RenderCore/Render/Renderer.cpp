@@ -75,7 +75,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	SceneConstantBuffer->SetRootParameterIndex(1);//0 for Object constants 
 
 	//on & offs
-	ShouldRenderShadow = false;
+	ShouldRenderShadow = true;
 
 
 

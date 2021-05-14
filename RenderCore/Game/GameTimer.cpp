@@ -128,3 +128,19 @@ double FGameTimer::GetFPS()
 
 	return 1.0f / ActoruallyFrame;
 }
+
+__int64 FGameTimer::GetCurrentTimeCount()
+{
+	__int64 TemCurrTime;
+	QueryPerformanceCounter((LARGE_INTEGER*)&TemCurrTime);
+
+	return TemCurrTime;
+}
+
+double FGameTimer::GetDeltaTimeBetweenTwoCount(__int64 Start, __int64 End)
+{
+	double RetDelta;
+	RetDelta = (CurrTime - PrevTime) * SecondsPerCount;
+
+	return RetDelta;
+}
