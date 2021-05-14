@@ -58,21 +58,13 @@ VertexOut main(VertexIn Vin, uint instanceID : SV_InstanceID)
 
 	// Transform to homogeneous clip space.
 	float4 PosW = mul(InstanceSpaceLoc, ObjectWorld);
-
-	//Vin.Pos += float3(250.0f, 0.0f, 0.0f) * instanceID;
-	//float4 PosW = mul(float4(Vin.Pos, 1.0f), ObjectWorld);
-
 	vout.PosH = mul(PosW, ViewProj);
 	vout.ShadowPosH = mul(PosW, LightViewProj);
+
 	// Just pass vertex color into the pixel shader.
 	vout.Uv = Vin.Uv;
-	
 	vout.Normal = normalize(Vin.Normal);
-
-	//vout.Color = float4(vout.Normal * 0.5f + 0.5f, 1.0f);
-	//vout.Color = float4(0.5f, 0.5f, 0.5f, 1.0f);
-	vout.Color = Row0Data;
-
+	vout.Color = float4(vout.Normal * 0.5f + 0.5f, 1.0f);
 	vout.PosW = Vin.Pos;
 
 	return vout;

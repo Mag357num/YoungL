@@ -114,19 +114,20 @@ void FGameCore::Initialize()
 
 		TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
 
-		FActorInstanceInfo InstanceInfo;
-		InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-		InstanceInfo.Scaling = FVector4D(1.0f, 1.0f, 1.0f, 1.0f);
-		InstanceInfo.Translation = FVector4D(100.0f, 0.0f, 0.0f, 0.0f);
-
-		TestInstanceActor->AddInstance(InstanceInfo);
-
-		InstanceInfo.Translation = FVector4D(300.0f, 0.0f, 0.0f, 0.0f);
-		InstanceInfo.Scaling = FVector4D(0.8f, 0.8f, 0.8f, 1.0f);
-		TestInstanceActor->AddInstance(InstanceInfo);
-
-		InstanceInfo.Translation = FVector4D(500.0f, 0.0f, 0.0f, 0.0f);
-		TestInstanceActor->AddInstance(InstanceInfo);
+		//test instance
+		for (int Col = 0; Col < 2; ++Col)
+		{
+			for (int Row = 0; Row < 2; ++Row)
+			{
+				FActorInstanceInfo InstanceInfo;
+				InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+				InstanceInfo.Translation = FVector4D(Col * 300.0f, Row * 300.0f, 0.0f, 0.0f);
+				float Rand = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+				float Scale = 0.8f + 0.2f * Rand;
+				InstanceInfo.Scaling = FVector4D(Scale, Scale, Scale, 1.0f);
+				TestInstanceActor->AddInstance(InstanceInfo);
+			}
+		}
 
 		InstanceStaticActors.push_back(std::move(TestInstanceActor));
 	}

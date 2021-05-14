@@ -20,6 +20,15 @@ public:
 	FGameCore* GetGameCore(){return GameCore;}
 	FRenderThreadManager* GetRenderThreadManager(){return RenderThreadManager.get();}
 	
+	double GetFPS(){
+		
+		if (GameTimer)
+		{
+			return GameTimer->GetFPS();
+		}
+		return 0.0;
+	}
+
 private:
 	static FEngine* Instance;
 

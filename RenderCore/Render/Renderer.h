@@ -78,6 +78,9 @@ private:
 	FRHIColorResource* SceneColor;
 	EPixelBufferFormat SceneColorFormat;
 
+	// on and offs
+	bool ShouldRenderShadow;
+
 	//for postprocess
 	bool ShouldRenderPostProcess;
 	FPostProcessing* PostProcessing;

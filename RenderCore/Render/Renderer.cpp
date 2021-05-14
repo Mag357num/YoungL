@@ -74,6 +74,11 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	SceneConstantBuffer = RHIContext->CreateSceneConstantBuffer(SceneConstant);
 	SceneConstantBuffer->SetRootParameterIndex(1);//0 for Object constants 
 
+	//on & offs
+	ShouldRenderShadow = false;
+
+
+
 	//for postprocess
 	ShouldRenderPostProcess = false;
 	if (ShouldRenderPostProcess)
@@ -394,10 +399,15 @@ void FRenderer::RenderScene()
 
 	//render depth map first
 	//for realtime shadow, prepass
-	RenderDepth();
+	if (ShouldRenderShadow)
+	{
+		RenderDepth();
+	}
+	
 
 	RHIContext->SetViewport(Viewport);
 	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
+	RHIContext->SetPrimitiveTopology(PrimitiveTopology_TRIANGLELIST);
 
 	//use scene color as render target
 	RHIContext->TransitionResource(SceneColor, State_GenerateRead, State_RenderTarget);
@@ -415,7 +425,10 @@ void FRenderer::RenderScene()
 	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 
 	//apply shadow map
-	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
+	if (ShouldRenderShadow)
+	{
+		RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
+	}
 
 	//Draw Rendering items in scene
 	DrawRenderingMeshes(RenderingMeshes);
@@ -642,14 +655,26 @@ void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 
 void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTransforms* InBoneTrans)
 {
-	FBoneTransforms BufferData = *InBoneTrans;
-	SkinnedRenderingMeshes[ActorName]->GetBoneTransformsBuffer()->CopyData(0, BufferData);
+	std::unordered_map<std::string, IRHIRenderingMesh*>::iterator Iter;
+	Iter = SkinnedRenderingMeshes.find(ActorName);
+	if (Iter != SkinnedRenderingMeshes.end())
+	{
+		FBoneTransforms BufferData = *InBoneTrans;
+		Iter->second->GetBoneTransformsBuffer()->CopyData(0, BufferData);
+	}
+
 }
 
 void FRenderer::UpdateInstanceTextureData(std::string* ActorName, UTexture* InstanceTexture)
 {
-	InstanceRenderingMeshes[*ActorName]->MarkInstanceDataDirty(*InstanceTexture->GetAllColors(), 
-								InstanceTexture->GetWidth(), InstanceTexture->GetHeight());
+	std::unordered_map<std::string, IRHIRenderingMesh*>::iterator Iter;
+	Iter = InstanceRenderingMeshes.find(*ActorName);
+	if (Iter != InstanceRenderingMeshes.end())
+	{
+		Iter->second->MarkInstanceDataDirty(*InstanceTexture->GetAllColors(),
+			InstanceTexture->GetWidth(), InstanceTexture->GetHeight());
+	}
+
 }
 
 void FRenderer::CreateSceneColor()

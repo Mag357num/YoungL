@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "GameTimer.h"
+#include "../Utilities.h"
+
 #include <windows.h>
 
 FGameTimer::FGameTimer()
@@ -109,4 +111,20 @@ void FGameTimer::Tick()
 	{
 		DelteTime = 0.0;
 	}
+}
+
+double FGameTimer::GetFPS()
+{
+	double ActoruallyFrame = DelteTime;
+	double FreeStateFrameTime = 1.0f / FrameRate;
+	if (ActoruallyFrame < FreeStateFrameTime)
+	{
+		ActoruallyFrame = FreeStateFrameTime;		
+	}
+	else
+	{
+		Utilities::Print("ActoruallyFrame > Frame Rate Time\n");
+	}
+
+	return 1.0f / ActoruallyFrame;
 }

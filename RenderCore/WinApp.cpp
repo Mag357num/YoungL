@@ -124,4 +124,12 @@ void FWinApp::DestroyApp()
 void FWinApp::Update()
 {
 	FEngine::GetEngine()->Tick();
+
+	double FPS = FEngine::GetEngine()->GetFPS();
+	int FPSInt = (int)floor(FPS);
+
+	std::string TitleContent = "YoungL FPS: ";
+	std::string FpsStr = std::to_string(FPSInt);
+	TitleContent += FpsStr;
+	SetWindowTextA(WinApp::Mainhandle, TitleContent.c_str());
 }

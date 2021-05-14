@@ -17,6 +17,8 @@ public:
 
 	int GetFrameRate(){return FrameRate;}
 	float GetFrameTime(){return 1000.0f / FrameRate;}
+
+	double GetFPS();
 private:
 
 	double SecondsPerCount;
