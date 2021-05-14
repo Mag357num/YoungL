@@ -76,7 +76,9 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//on & offs
 	ShouldRenderShadow = true;
-
+	ShouldRenderStatic = true;
+	ShouldRenderSkeletal = true;
+	ShouldRenderInstanced = false;
 
 
 	//for postprocess
@@ -430,13 +432,23 @@ void FRenderer::RenderScene()
 		RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
 	}
 
-	//Draw Rendering items in scene
-	DrawRenderingMeshes(RenderingMeshes);
+	if (ShouldRenderStatic)
+	{
+		//Draw Rendering items in scene
+		DrawRenderingMeshes(RenderingMeshes);
+	}
+	
+	if (ShouldRenderSkeletal)
+	{
+		RenderSkinnedMesh();
+	}
+	
 
-	RenderSkinnedMesh();
-
-	//draw instanced
-	RenderInstancedMesh();
+	if (ShouldRenderInstanced)
+	{
+		//draw instanced
+		RenderInstancedMesh();
+	}
 
 	//change back buffer state to present
 	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);

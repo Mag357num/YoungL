@@ -80,6 +80,9 @@ private:
 
 	// on and offs
 	bool ShouldRenderShadow;
+	bool ShouldRenderStatic;
+	bool ShouldRenderSkeletal;
+	bool ShouldRenderInstanced;
 
 	//for postprocess
 	bool ShouldRenderPostProcess;

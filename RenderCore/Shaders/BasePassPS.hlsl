@@ -84,5 +84,5 @@ float4 main(VertexOut Pin) : SV_Target
 	
 	float3 OutColor = ComputeBlinnPhone_DirectionalLight(Light, Mat, Pin.Normal, ViewDirection, ShadowFactor);
 	return float4(OutColor, 1.0f);
-	
+	//return float4(1.0f, 0.0f, 0.0f, 1.0f);
 }

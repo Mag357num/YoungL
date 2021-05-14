@@ -10,7 +10,7 @@ FGameTimer::FGameTimer()
 	QueryPerformanceFrequency((LARGE_INTEGER*)&CountPerSec);
 	SecondsPerCount = 1.0f / (double) CountPerSec;
 
-	FrameRate = 60;
+	FrameRate = 90;
 }
 
 FGameTimer::~FGameTimer()

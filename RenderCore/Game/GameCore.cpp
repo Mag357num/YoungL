@@ -115,9 +115,9 @@ void FGameCore::Initialize()
 		TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
 
 		//test instance
-		for (int Col = 0; Col < 2; ++Col)
+		for (int Col = 0; Col < 32; ++Col)
 		{
-			for (int Row = 0; Row < 2; ++Row)
+			for (int Row = 0; Row < 32; ++Row)
 			{
 				FActorInstanceInfo InstanceInfo;
 				InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);

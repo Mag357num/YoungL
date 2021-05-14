@@ -25,7 +25,7 @@ int2 RenderTargetSize : register(b2);
 Texture2D InstatnceData : register(t1);
 
 //[RootSignature(RenderCore_RootSig)]
-VertexOut main(VertexIn Vin, uint instanceID : SV_InstanceID)
+VertexOut main(VertexIn Vin, uint InstanceID : SV_InstanceID)
 {
 	VertexOut vout;
 
@@ -33,15 +33,14 @@ VertexOut main(VertexIn Vin, uint instanceID : SV_InstanceID)
 	int InstanceWidth = round(RenderTargetSize[0] * 0.5f);
 	int InstanceHeight = round(RenderTargetSize[1] * 0.5f);
 
-	int InstanceRow = floor(1.0f * instanceID / InstanceWidth);
-	int InstanceCol = instanceID - InstanceRow * InstanceWidth;
+	int InstanceRow = floor(1.0f * InstanceID / InstanceWidth);
+	int InstanceCol = InstanceID - InstanceRow * InstanceWidth;
 
 	int2 PixelRow0 = int2(InstanceCol * 2,		InstanceRow * 2);
 	int2 PixelRow1 = int2(InstanceCol * 2 + 1,	InstanceRow * 2);
 	int2 PixelRow2 = int2(InstanceCol * 2,		InstanceRow * 2 + 1);
 	int2 PixelRow3 = int2(InstanceCol * 2 + 1,	InstanceRow * 2 + 1);
 
-	//float4 Row0Data = InstatnceData.Load(int3(0, 1, 0));
 	float4 Row0Data = InstatnceData.Load(int3(PixelRow0, 0));
 	float4 Row1Data = InstatnceData.Load(int3(PixelRow1, 0));
 	float4 Row2Data = InstatnceData.Load(int3(PixelRow2, 0));

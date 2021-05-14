@@ -8,7 +8,7 @@ FCamera::FCamera(int ViewWidth, int ViewHeigt)
 	CamTarget(FVector(0.0f, 0.0f, 150.0f)),
 	CamUp(FVector(0.0f, 0.0f, 1.0f)),
 	NearPlan(1.0f),
-	FarPlan(1000.0f),
+	FarPlan(10000.0f),
 	Fov(45.0f),
 	AspectRatio(1.333f)//800x600
 
@@ -27,7 +27,7 @@ FCamera::FCamera(int ViewWidth, int ViewHeigt)
 	IsCamerInfoDirty = false;
 
 	View = FMath::MatrixLookAtLH(TempCameraLoc, TempCameraTarget, TempUp);
-	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, 1.0f, 2000.0f);
+	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov/180.0f, AspectRatio, NearPlan, FarPlan);
 
 	IsCamerInfoDirty = true;
 }
@@ -50,7 +50,7 @@ void FCamera::UpdateView()
 
 void FCamera::UpdateProj()
 {
-	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov / 180.0f, AspectRatio, 1.0f, 1000.0f);
+	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov / 180.0f, AspectRatio, NearPlan, FarPlan);
 	IsCamerInfoDirty = true;
 }
 

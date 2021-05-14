@@ -45,7 +45,7 @@ void AInstancedStaticMeshActor::BuildTextureInstanceData()
 
 	if (!InstanceTextureData)
 	{
-		InstanceTextureData = UTexture::CreateTextureWithClear(128, 128, FColorPreset::LightBlue);
+		InstanceTextureData = UTexture::CreateTextureWithClear(64, 64, FColorPreset::LightBlue);
 	}
 
 	//request update render resource
