@@ -23,6 +23,7 @@ public:
 	void UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant);
 
 	void UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTransforms* InBoneTrans);
+	void UpdateInstanceTextureData(std::string* ActorName, UTexture* InstanceTexture);
 
 	void Resize(int InWidth, int InHeight);
 

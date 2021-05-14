@@ -741,7 +741,7 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 	DsvDHAllocatedCount ++;
 }
 
-FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
+FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload)
 {
 	FRHIColorResource_D3D12* ColorResource = new FRHIColorResource_D3D12(InWidth, InHeight, InFormat);
 
@@ -752,7 +752,13 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	ResourceDesc.Alignment = 0;
 	ResourceDesc.DepthOrArraySize = 1;
-	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	if (!NeedUpload)
+	{
+		
+		ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+	}
 
 	ResourceDesc.Format = FRHIResource_D3D12::TranslateFormat(ColorResource->GetFormat());
 	ResourceDesc.Height = ColorResource->GetHeight();
@@ -772,9 +778,20 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 
 	ColorResource->SetClearValue(ClearValue);
 
-	M_Device->CreateCommittedResource(&HeapProperties,
-		D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-		&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
+	if (NeedUpload)
+	{
+		M_Device->CreateCommittedResource(&HeapProperties,
+				D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
+				nullptr, IID_PPV_ARGS(&ColorResource->Resource));
+	}
+	else
+	{
+		M_Device->CreateCommittedResource(&HeapProperties,
+			D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
+			&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
+	}
+	
+	
 
 
 	return ColorResource;
@@ -860,4 +877,38 @@ void FRHIContext_D3D12::CreateSrvForColorResource(FRHIColorResource* InColorReso
 
 	//incre Present cbv allocator
 	CbvDHAllocatedCount++;
+}
+
+//TODO:Copy Data to render resource
+void FRHIContext_D3D12::CopyTextureDataToResource(std::vector<FColor>& Colors, UINT Width, UINT Height, FRHIColorResource* ColorResource)
+{
+	{
+		FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(ColorResource);
+	
+		const UINT64 uploadBufferSize = GetRequiredIntermediateSize(ColorResource_D3D12->Resource.Get(), 0, 1);
+
+		// Create the GPU upload buffer.
+		if (!ColorResource_D3D12->UploadResource.Get())
+		{
+			CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+			CD3DX12_RESOURCE_DESC ResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
+			HRESULT Hr = M_Device->CreateCommittedResource(
+				&HeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&ResourceDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&ColorResource_D3D12->UploadResource));
+		}
+		
+		// Copy data to the intermediate upload heap and then schedule a copy 
+		// from the upload heap to the Texture2D.
+		D3D12_SUBRESOURCE_DATA TextureData = {};
+		TextureData.pData = Colors.data();
+		TextureData.RowPitch = Width * sizeof(FColor);
+		TextureData.SlicePitch = TextureData.RowPitch * Height;
+
+		UpdateSubresources(CommandList.Get(), ColorResource_D3D12->Resource.Get(), ColorResource_D3D12->UploadResource.Get(), 0, 0, 1, &TextureData);
+
+	}
 }

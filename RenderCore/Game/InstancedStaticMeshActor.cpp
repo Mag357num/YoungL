@@ -34,6 +34,11 @@ void AInstancedStaticMeshActor::RemoveInstance(UINT Index)
 	MarkInstanceDataDirty();
 }
 
+static void UpdateInstanceTextureData_RenderThread(std::string* ActorName, std::shared_ptr<UTexture> InstanceData)
+{
+	FRenderThreadManager::UpdateInstanceTextureData(ActorName, InstanceData.get());
+}
+
 void AInstancedStaticMeshActor::BuildTextureInstanceData()
 {
 	InstanceDataDirty = false;
@@ -44,7 +49,13 @@ void AInstancedStaticMeshActor::BuildTextureInstanceData()
 	}
 
 	//request update render resource
-	InstanceTextureData->RequestUpdateRenderResource();
+	InstanceTextureData->RequestUpdateRenderResource(Instances);
+	//request upload texture data
+	FRenderThreadManager* RenderThreadManager = FEngine::GetEngine()->GetRenderThreadManager();
+
+	FRenderThreadCommand UpdateInstanceDataCommand;
+	UpdateInstanceDataCommand.Wrap(UpdateInstanceTextureData_RenderThread, ActorName, InstanceTextureData);
+	RenderThreadManager->PushRenderCommand(UpdateInstanceDataCommand);
 }
 
 std::shared_ptr<UTexture> AInstancedStaticMeshActor::GetTextureInstanceData()

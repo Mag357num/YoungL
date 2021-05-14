@@ -35,6 +35,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	CreateBasePassPSO_Static();
 	CreateBasePassPSO_Skinned();
+	CreateInstantcedPassPSO();
 	CreatePresentPSO();
 
 
@@ -213,6 +214,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			Item->SetVertexStrideSize(RenderResouce->GetVertexStrideSize());
+			Item->SetVertexBufferSize(RenderResouce->GetVertexBufferSize());
+			Item->SetIndexBufferSize(RenderResouce->GetIndexBufferSize());
+			Item->SetIndexCount(RenderResouce->GetIndexCount());
 		}
 		else
 		{
@@ -223,6 +229,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 
 			RenderResouce->SetVertexBuffer(VertexBuffer);
 			RenderResouce->SetIndexBuffer(IndexBuffer);
+
+			RenderResouce->SetVertexStrideSize(Item->GetVertexStrideSize());
+			RenderResouce->SetVertexBufferSize(Item->GetVertexBufferSize());
+			RenderResouce->SetIndexBufferSize(Item->GetIndexBufferSize());
+			RenderResouce->SetIndexCount(Item->GetIndexCount());
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
@@ -255,6 +266,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			Item->SetVertexStrideSize(RenderResouce->GetVertexStrideSize());
+			Item->SetVertexBufferSize(RenderResouce->GetVertexBufferSize());
+			Item->SetIndexBufferSize(RenderResouce->GetIndexBufferSize());
+			Item->SetIndexCount(RenderResouce->GetIndexCount());
 		}
 		else
 		{
@@ -265,6 +281,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 
 			RenderResouce->SetVertexBuffer(VertexBuffer);
 			RenderResouce->SetIndexBuffer(IndexBuffer);
+
+			RenderResouce->SetVertexStrideSize(Item->GetVertexStrideSize());
+			RenderResouce->SetVertexBufferSize(Item->GetVertexBufferSize());
+			RenderResouce->SetIndexBufferSize(Item->GetIndexBufferSize());
+			RenderResouce->SetIndexCount(Item->GetIndexCount());
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
@@ -298,6 +319,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStatic
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
+
+			Item->SetVertexStrideSize(RenderResouce->GetVertexStrideSize());
+			Item->SetVertexBufferSize(RenderResouce->GetVertexBufferSize());
+			Item->SetIndexBufferSize(RenderResouce->GetIndexBufferSize());
+			Item->SetIndexCount(RenderResouce->GetIndexCount());
 		}
 		else
 		{
@@ -308,6 +334,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStatic
 
 			RenderResouce->SetVertexBuffer(VertexBuffer);
 			RenderResouce->SetIndexBuffer(IndexBuffer);
+
+			RenderResouce->SetVertexStrideSize(Item->GetVertexStrideSize());
+			RenderResouce->SetVertexBufferSize(Item->GetVertexBufferSize());
+			RenderResouce->SetIndexBufferSize(Item->GetIndexBufferSize());
+			RenderResouce->SetIndexCount(Item->GetIndexCount());
 
 			Item->SetVertexBuffer(VertexBuffer);
 			Item->SetIndexBuffer(IndexBuffer);
@@ -320,11 +351,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStatic
 		std::shared_ptr<FRHIColorResource> InstanceResource = ResourceManager->CheckHasValidTextureResource(InstanceData->GetObjectName());
 		if (!InstanceResource)
 		{
-			InstanceResource = Item->BuildInstanceBuffer(InstanceData, RHIContext);
+			InstanceResource = Item->BuildInstanceBuffer(*InstanceData->GetAllColors(), InstanceData->GetWidth(), InstanceData->GetHeight(), RHIContext);
 			ResourceManager->CacheTextureRenderResource(InstanceData->GetObjectName(), InstanceResource);
 		}
 		
-
+		Item->SetInstanceCount(InstancedActors[Index]->GetInstanceCount());
 		Item->SetInstantceTexture(InstanceResource);
 
 		InstanceRenderingMeshes[*InstancedActors[Index]->GetName()] = Item;
@@ -390,6 +421,9 @@ void FRenderer::RenderScene()
 	DrawRenderingMeshes(RenderingMeshes);
 
 	RenderSkinnedMesh();
+
+	//draw instanced
+	RenderInstancedMesh();
 
 	//change back buffer state to present
 	RHIContext->TransitionResource(SceneColor, State_RenderTarget, State_GenerateRead);
@@ -467,7 +501,7 @@ void FRenderer::RenderInstancedMesh()
 	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["InstancePass"]);
 	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
-	DrawRenderingMeshes(SkinnedRenderingMeshes);
+	DrawRenderingMeshes(InstanceRenderingMeshes);
 
 	RHIContext->EndEvent();
 }
@@ -521,18 +555,25 @@ void FRenderer::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderin
 		if (It->second->GetIsSkinned())
 		{
 			IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer = It->second->GetBoneTransformsBuffer();
-			RHIContext->SetBoneTransformConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer);//root signature parameter: slot 3
+			RHIContext->SetBoneTransformConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer);
 		}
 
-		//if (It->second->GetIsInstance())
-		//{
-		//	FRHIColorResource* InstanceBuffer = It->second->GetInstantceTexture();
-		//	FRHIResourceHandle_D3D12* SrvHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InstanceBuffer->GetSrvHandle());
-		//	CommandList->SetGraphicsRootDescriptorTable(2, *SrvHandle->GetGpuHandle());
-		//	
-		//}
+		if (It->second->GetIsInstance())
+		{
 
-		RHIContext->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), 1, 0, 0, 0);
+			if (It->second->GetNeedUploadInstanceData())
+			{
+				It->second->UploadInstanceDataToBuffer(RHIContext);
+			}
+
+			FRHIColorResource* InstanceBuffer = It->second->GetInstantceTexture();
+			RHIContext->SetGraphicRootConstant(3, InstanceBuffer->GetWidth(), 0);
+			RHIContext->SetGraphicRootConstant(3, InstanceBuffer->GetHeight(), 1);
+			RHIContext->SetColorSRV(4, InstanceBuffer);
+
+		}
+
+		RHIContext->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), (UINT)It->second->GetInstanceCount(), 0, 0, 0);
 
 
 	}
@@ -603,6 +644,12 @@ void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTrans
 {
 	FBoneTransforms BufferData = *InBoneTrans;
 	SkinnedRenderingMeshes[ActorName]->GetBoneTransformsBuffer()->CopyData(0, BufferData);
+}
+
+void FRenderer::UpdateInstanceTextureData(std::string* ActorName, UTexture* InstanceTexture)
+{
+	InstanceRenderingMeshes[*ActorName]->MarkInstanceDataDirty(*InstanceTexture->GetAllColors(), 
+								InstanceTexture->GetWidth(), InstanceTexture->GetHeight());
 }
 
 void FRenderer::CreateSceneColor()
@@ -737,13 +784,19 @@ void FRenderer::CreateInstantcedPassPSO()
 		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
 		InstancePassPSO->AddShaderParameter(&SlotPara1);
 
-		FRHIShaderParameter SlotPara2(ParaType_Constant, 2, 0, Visibility_All);
+		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
+		SlotPara2.AddRangeTable(ParamRange);
 		InstancePassPSO->AddShaderParameter(&SlotPara2);
 
-		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-		FRHIShaderParameter SlotPara3(ParaType_Range, 0, 0, Visibility_PS);
-		SlotPara3.AddRangeTable(ParamRange);
+		FRHIShaderParameter SlotPara3(ParaType_Constant, 2, 0, Visibility_All);
+		SlotPara3.SetNum32BitValues(2);
 		InstancePassPSO->AddShaderParameter(&SlotPara3);
+
+		FParameterRange ParamRange1(RangeType_SRV, 1, 1, 0);
+		FRHIShaderParameter SlotPara4(ParaType_Range, 0, 0, Visibility_VS);
+		SlotPara4.AddRangeTable(ParamRange1);
+		InstancePassPSO->AddShaderParameter(&SlotPara4);
 
 	}
 

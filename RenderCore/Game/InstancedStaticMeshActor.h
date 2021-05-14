@@ -31,6 +31,7 @@ public:
 	void RemoveInstance(UINT Index);
 
 	std::shared_ptr<UTexture> GetTextureInstanceData();
+	size_t GetInstanceCount(){return Instances.size();}
 
 private:
 	void MarkInstanceDataDirty(){ InstanceDataDirty = true;}

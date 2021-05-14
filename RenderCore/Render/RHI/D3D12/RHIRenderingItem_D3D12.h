@@ -14,7 +14,9 @@ public:
 	virtual void BuildConstantBuffer(FObjectConstants* InObjConstants, IRHIContext* Context)override;
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context)override;
 
-	virtual std::shared_ptr<FRHIColorResource> BuildInstanceBuffer(std::shared_ptr<UTexture> InstanceTexture, IRHIContext* Context)override;
+	virtual std::shared_ptr<FRHIColorResource> BuildInstanceBuffer(std::vector<FColor>& Colors, UINT Width, UINT Height, IRHIContext* Context)override;
+	virtual void UploadInstanceDataToBuffer(IRHIContext* Context)override;
+	virtual void MarkInstanceDataDirty(std::vector<FColor>& Colors, UINT Width, UINT Height)override;
 
 	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint16_t>& InIndices)override;
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices)override;
@@ -22,5 +24,8 @@ public:
 
 
 private:
-
+	//instance texture data
+	std::vector<FColor>* InstanceData;
+	UINT InstanceTextureWidth;
+	UINT InstanceTextureHeight;
 };

@@ -34,18 +34,21 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 	Buffer->SetGpuVirtualAddress(GpuAddress);
 }
 
-std::shared_ptr<FRHIColorResource> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::shared_ptr<UTexture> InstanceTexture, IRHIContext* Context)
+std::shared_ptr<FRHIColorResource> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::vector<FColor>& Colors, UINT Width, UINT Height, IRHIContext* Context)
 {
 	IsInstance = true;
 
 	//create render resource for instance data
-	EPixelBufferFormat Format = EPixelBufferFormat::PixelFormat_R16G16B16A16_Float;
+	EPixelBufferFormat Format = EPixelBufferFormat::PixelFormat_R32G32B32A32_Float;
 
-	FRHIColorResource* ResourceData = Context->CreateColorResource(InstanceTexture->GetWidth(), InstanceTexture->GetHeight(), Format);
+	FRHIColorResource* ResourceData = Context->CreateColorResource(Width, Height, Format, true);
 
 	//TODO:
 	//copy data begin
+	//Context->CopyTextureDataToResource(Colors, Width, Height, ResourceData);
 	//copy data end
+	//temerary save instance data
+	MarkInstanceDataDirty(Colors, Width, Height);
 
 	//create srv and rtv for color resource
 	Context->CreateSrvForColorResource(ResourceData);
@@ -54,6 +57,27 @@ std::shared_ptr<FRHIColorResource> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(
 
 	return InstanceResource;
 }
+
+void FRHIRenderingMesh_D3D12::UploadInstanceDataToBuffer(IRHIContext* Context)
+{
+	FRHIColorResource* InstanceResource = InstatnceDataResource.lock().get();
+	Context->CopyTextureDataToResource(*InstanceData, InstanceTextureWidth, InstanceTextureHeight, InstanceResource);
+	bNeedUploadInstanceData = false;
+	InstanceData = nullptr;
+}
+
+void FRHIRenderingMesh_D3D12::MarkInstanceDataDirty(std::vector<FColor>& Colors, UINT Width, UINT Height)
+{
+	//copy data begin
+	//Context->CopyTextureDataToResource(Colors, Width, Height, ResourceData);
+	//copy data end
+	//temerary save instance data
+	bNeedUploadInstanceData = true;
+	InstanceData = &Colors;
+	InstanceTextureWidth = Width;
+	InstanceTextureHeight = Height;
+}
+
 
 void FRHIRenderingMesh_D3D12::BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context)
 {

@@ -23,10 +23,11 @@ public:
 
 	void ModifyColor(UINT Row, UINT Column, FColor InColor);
 
-	void RequestUpdateRenderResource();
+	void RequestUpdateRenderResource(std::vector<FActorInstanceInfo>& InstanceInfos);
 
 	UINT GetWidth(){return Width;}
 	UINT GetHeight() { return Height; }
+	std::vector<FColor>* GetAllColors(){return &Colors;}
 private:
 	
 	UINT Width;

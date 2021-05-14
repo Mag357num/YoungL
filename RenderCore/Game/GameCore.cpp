@@ -100,18 +100,19 @@ void FGameCore::Initialize()
 			SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
 		}
 	}
+
 	//test for InstancedStaticMeshActor
-	std::shared_ptr<UStaticMesh> InstanceStatic = AssetManager->CheckStaticMeshLoaded(AssetPaths[0]);
+	std::shared_ptr<UStaticMesh> InstanceStatic = AssetManager->CheckStaticMeshLoaded(AssetPaths[1]);
 	if (InstanceStatic)
 	{
 		int RandomInt = rand();
-		std::string Name = "SkinnedMeshActor";
+		std::string Name = "InstancedStaticMeshActor";
 		Name += to_string(RandomInt);
 
 		std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
 		TestInstanceActor->SetStaticMesh(InstanceStatic);
 
-		TestInstanceActor->InitiallySetLocation(FVector(0.0f, 0.0f, 0.0f));
+		TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
 
 		FActorInstanceInfo InstanceInfo;
 		InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);

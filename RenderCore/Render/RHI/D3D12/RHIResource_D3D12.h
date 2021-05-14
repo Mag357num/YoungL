@@ -17,6 +17,11 @@ public:
 		{
 			Resource.Reset();
 		}
+
+		if (UploadResource != nullptr)
+		{
+			UploadResource.Reset();
+		}
 		
 	}
 
@@ -81,6 +86,7 @@ public:
 	void UnMap(UINT SubResource, const D3D12_RANGE* WriteRange);
 
 	ComPtr<ID3D12Resource> Resource;
+	ComPtr<ID3D12Resource> UploadResource;
 private:
 	
 

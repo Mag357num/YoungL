@@ -117,38 +117,33 @@ struct FColor
 
 	FColor(int R, int G, int B, int A)
 	{
-		Type = ColorType_SRGB;
-		ColorI[0] = R;
-		ColorI[1] = G;
-		ColorI[2] = B;
-		ColorI[3] = A;
+
+		ColorF[0] = floor(R* 1.0f / 256.0f);
+		ColorF[1] = floor(G * 1.0f / 256.0f);
+		ColorF[2] = floor(B * 1.0f / 256.0f);
+		ColorF[3] = floor(A * 1.0f / 256.0f);
 	}
 
 	FColor(float R, float G, float B, float A)
 	{
-		Type = ColorType_Linear;
+
 		ColorF[0] = R;
 		ColorF[1] = G;
 		ColorF[2] = B;
 		ColorF[3] = A;
 	}
 
-	EColorType Type;
-	union
-	{
-		int ColorI[4];
-		float ColorF[4];
-	};
+	float ColorF[4];
 
 	static FColor MakeColorFromSRGB(int R, int G, int B, int A )
 	{
 		FColor Ret;
 
-		Ret.Type = ColorType_SRGB;
-		Ret.ColorI[0] = R;
-		Ret.ColorI[1] = G;
-		Ret.ColorI[2] = B;
-		Ret.ColorI[3] = A;
+
+		Ret.ColorF[0] = floor(R * 1.0f / 256.0f);
+		Ret.ColorF[1] = floor(G * 1.0f / 256.0f);
+		Ret.ColorF[2] = floor(B * 1.0f / 256.0f);
+		Ret.ColorF[3] = floor(A * 1.0f / 256.0f);
 
 		return Ret;
 	}
@@ -157,7 +152,7 @@ struct FColor
 	{
 		FColor Ret;
 
-		Ret.Type = ColorType_Linear;
+
 		Ret.ColorF[0] = R;
 		Ret.ColorF[1] = G;
 		Ret.ColorF[2] = B;

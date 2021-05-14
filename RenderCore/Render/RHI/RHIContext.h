@@ -118,9 +118,10 @@ public:
 	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
 
-	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
+	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload = false){ return nullptr; }
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
 	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource) { }
+	virtual void CopyTextureDataToResource(std::vector<FColor>& Colors, UINT Width, UINT Height, FRHIColorResource* ColorResource){}
 
 protected:
 	EPixelBufferFormat BackBufferFormat;
