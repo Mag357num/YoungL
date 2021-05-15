@@ -102,35 +102,76 @@ void FGameCore::Initialize()
 	}
 
 	//test for InstancedStaticMeshActor
-	std::shared_ptr<UStaticMesh> InstanceStatic = AssetManager->CheckStaticMeshLoaded(AssetPaths[1]);
-	if (InstanceStatic)
+	//"Models/skull.txt"
 	{
-		int RandomInt = rand();
-		std::string Name = "InstancedStaticMeshActor";
-		Name += to_string(RandomInt);
+		std::wstring InstancedMeshPath = L"Models/skull.txt";
+		std::unique_ptr<FGeometry<FVertex>> InstancedGeo = FModelLoader::BuildSkullGeometry(InstancedMeshPath);
 
-		std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
-		TestInstanceActor->SetStaticMesh(InstanceStatic);
+		std::shared_ptr<UStaticMesh> InstanceStatic = std::make_shared<UStaticMesh>("InstancedStaticMesh");
+		InstanceStatic->SetAssetPath(InstancedMeshPath);
+		InstanceStatic->SetGeometry(std::move(InstancedGeo));
+		AssetManager->AddStaticMesh(InstancedMeshPath, InstanceStatic);
 
-		TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
-
-		//test instance
-		for (int Col = 0; Col < 32; ++Col)
+		if (InstanceStatic)
 		{
-			for (int Row = 0; Row < 32; ++Row)
-			{
-				FActorInstanceInfo InstanceInfo;
-				InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-				InstanceInfo.Translation = FVector4D(Col * 300.0f, Row * 300.0f, 0.0f, 0.0f);
-				float Rand = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-				float Scale = 0.8f + 0.2f * Rand;
-				InstanceInfo.Scaling = FVector4D(Scale, Scale, Scale, 1.0f);
-				TestInstanceActor->AddInstance(InstanceInfo);
-			}
-		}
+			int RandomInt = rand();
+			std::string Name = "InstancedStaticMeshActor";
+			Name += to_string(RandomInt);
 
-		InstanceStaticActors.push_back(std::move(TestInstanceActor));
+			std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
+			TestInstanceActor->SetStaticMesh(InstanceStatic);
+
+			TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
+
+			//test instance
+			for (int Col = 0; Col < 32; ++Col)
+			{
+				for (int Row = 0; Row < 32; ++Row)
+				{
+					FActorInstanceInfo InstanceInfo;
+					InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+					InstanceInfo.Translation = FVector4D(Col * 200.0f, Row * 200.0f, 0.0f, 0.0f);
+					float Rand = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					float Scale = 15.0f + 2.0f * Rand;
+					InstanceInfo.Scaling = FVector4D(Scale, Scale, Scale, 1.0f);
+					TestInstanceActor->AddInstance(InstanceInfo);
+				}
+			}
+
+			InstanceStaticActors.push_back(std::move(TestInstanceActor));
+		}
 	}
+
+
+	//std::shared_ptr<UStaticMesh> InstanceStatic = AssetManager->CheckStaticMeshLoaded(AssetPaths[1]);
+	//if (InstanceStatic)
+	//{
+	//	int RandomInt = rand();
+	//	std::string Name = "InstancedStaticMeshActor";
+	//	Name += to_string(RandomInt);
+
+	//	std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
+	//	TestInstanceActor->SetStaticMesh(InstanceStatic);
+
+	//	TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
+
+	//	//test instance
+	//	for (int Col = 0; Col < 32; ++Col)
+	//	{
+	//		for (int Row = 0; Row < 32; ++Row)
+	//		{
+	//			FActorInstanceInfo InstanceInfo;
+	//			InstanceInfo.Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+	//			InstanceInfo.Translation = FVector4D(Col * 300.0f, Row * 300.0f, 0.0f, 0.0f);
+	//			float Rand = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	//			float Scale = 0.8f + 0.2f * Rand;
+	//			InstanceInfo.Scaling = FVector4D(Scale, Scale, Scale, 1.0f);
+	//			TestInstanceActor->AddInstance(InstanceInfo);
+	//		}
+	//	}
+
+	//	InstanceStaticActors.push_back(std::move(TestInstanceActor));
+	//}
 	
 }
 

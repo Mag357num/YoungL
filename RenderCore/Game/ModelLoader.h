@@ -19,6 +19,7 @@ public:
 	};
 
 	static std::unique_ptr<FGeometry<FVertex>> LoadStaticMesh(std::wstring& Path);
+	static std::unique_ptr<FGeometry<FVertex>>  BuildSkullGeometry(std::wstring& Path);
 
 	static void LoadSkinedMesh()
 	{

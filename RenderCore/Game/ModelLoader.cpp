@@ -33,6 +33,63 @@ std::unique_ptr<FGeometry<FVertex>> FModelLoader::LoadStaticMesh(std::wstring& P
 }
 
 
+std::unique_ptr<FGeometry<FVertex>>  FModelLoader::BuildSkullGeometry(std::wstring& Path)
+{
+	//std::ifstream fin("Models/skull.txt");
+	std::ifstream fin(Path);
+
+	UINT vcount = 0;
+	UINT tcount = 0;
+	std::string ignore;
+
+	fin >> ignore >> vcount;
+	fin >> ignore >> tcount;
+	fin >> ignore >> ignore >> ignore >> ignore;
+
+
+	std::vector<FVertex> vertices(vcount);
+	for (UINT i = 0; i < vcount; ++i)
+	{
+		fin >> vertices[i].Position.X >> vertices[i].Position.Y >> vertices[i].Position.Z;
+		fin >> vertices[i].Normal.X >> vertices[i].Normal.Y >> vertices[i].Normal.Z;
+
+		//XMVECTOR P = XMLoadFloat3(&vertices[i].Position);
+
+		//// Project point onto unit sphere and generate spherical texture coordinates.
+		//XMFLOAT3 spherePos;
+		//XMStoreFloat3(&spherePos, XMVector3Normalize(P));
+
+		//float theta = atan2f(spherePos.z, spherePos.x);
+
+		//// Put in [0, 2pi].
+		//if (theta < 0.0f)
+		//	theta += XM_2PI;
+
+		//float phi = acosf(spherePos.y);
+
+		//float u = theta / (2.0f * XM_PI);
+		//float v = phi / XM_PI;
+
+		//vertices[i].TexC = { u, v };
+
+	}
+
+	fin >> ignore;
+	fin >> ignore;
+	fin >> ignore;
+
+	std::vector<uint32_t> Indices(3 * tcount);
+	for (UINT i = 0; i < tcount; ++i)
+	{
+		fin >> Indices[i * 3 + 0] >> Indices[i * 3 + 1] >> Indices[i * 3 + 2];
+	}
+
+	fin.close();
+
+	std::unique_ptr<FGeometry<FVertex>> Geo = std::make_unique<FGeometry<FVertex>>(vertices, Indices);
+	return std::move(Geo);
+}
+
 void FModelLoader::ReadMaterials(std::ifstream& Fin, UINT NumMaterials, std::vector<FMaterial>& Mats)
 {
 	std::string Ignore;

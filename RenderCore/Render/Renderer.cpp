@@ -78,7 +78,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	ShouldRenderShadow = true;
 	ShouldRenderStatic = true;
 	ShouldRenderSkeletal = true;
-	ShouldRenderInstanced = false;
+	ShouldRenderInstanced = true;
 
 
 	//for postprocess
