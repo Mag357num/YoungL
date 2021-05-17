@@ -182,7 +182,10 @@ struct FActorInstanceInfo
 
 struct FInstanceData
 {
-	FMatrix World;
+	FVector4D TranslationRow0;
+	FVector4D TranslationRow1;
+	FVector4D TranslationRow2;
+	FVector4D TranslationRow3;
 };
 
 namespace Utilities

@@ -17,11 +17,6 @@ public:
 		if (!Instances.empty())
 		{
 		}
-
-		if (InstanceTextureData)
-		{
-			InstanceTextureData.reset();
-		}
 	}
 
 	virtual void Tick(float DeltaTime)override;
@@ -30,14 +25,13 @@ public:
 	void UpdateInstance(UINT Index, FActorInstanceInfo InInstance);
 	void RemoveInstance(UINT Index);
 
-	std::shared_ptr<UTexture> GetTextureInstanceData();
 	size_t GetInstanceCount(){return Instances.size();}
+
+	std::vector<FInstanceData> CalcInstanceDatas();
 
 private:
 	void MarkInstanceDataDirty(){ InstanceDataDirty = true;}
 	bool InstanceDataDirty;
-	void BuildTextureInstanceData();
 
 	std::vector<FActorInstanceInfo> Instances;
-	std::shared_ptr<UTexture> InstanceTextureData;
 };

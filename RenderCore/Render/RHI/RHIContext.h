@@ -88,6 +88,7 @@ public:
 
 	//for draw call info
 	virtual void SetVertexBuffer(UINT StartSlot, UINT NumViews, IRHIVertexBuffer* VertexBuffer){}
+	virtual void SetInstanceVertexBuffer(UINT StartSlot, IRHIVertexBuffer* VertexBuffer, IRHIVertexBuffer* InstanceBuffer){}
 	virtual void SetIndexBuffer(IRHIIndexBuffer* IndexBuffer){}
 	virtual void SetPrimitiveTopology(EPrimitiveTopology Topology){}
 

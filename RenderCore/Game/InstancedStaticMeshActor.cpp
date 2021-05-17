@@ -4,11 +4,6 @@
 void AInstancedStaticMeshActor::Tick(float DeltaTime)
 {
 	AStaticMeshActor::Tick(DeltaTime);
-
-	if (InstanceDataDirty)
-	{
-		BuildTextureInstanceData();
-	}
 }
 
 void AInstancedStaticMeshActor::AddInstance(FActorInstanceInfo InInstance)
@@ -34,31 +29,19 @@ void AInstancedStaticMeshActor::RemoveInstance(UINT Index)
 	MarkInstanceDataDirty();
 }
 
-static void UpdateInstanceTextureData_RenderThread(std::string* ActorName, std::shared_ptr<UTexture> InstanceData)
+std::vector<FInstanceData> AInstancedStaticMeshActor::CalcInstanceDatas()
 {
-	FRenderThreadManager::UpdateInstanceTextureData(ActorName, InstanceData.get());
-}
-
-void AInstancedStaticMeshActor::BuildTextureInstanceData()
-{
-	InstanceDataDirty = false;
-
-	if (!InstanceTextureData)
+	std::vector<FInstanceData> RetArray;
+	for (size_t Index = 0; Index < Instances.size(); ++Index)
 	{
-		InstanceTextureData = UTexture::CreateTextureWithClear(64, 64, FColorPreset::LightBlue);
+		FMatrix Transform = FMath::MatrixAffineTransformation(Instances[Index].Scaling, Instances[Index].Rotation, Instances[Index].Translation);
+		FInstanceData InstanceData;
+		InstanceData.TranslationRow0 = Transform.GetRow0();
+		InstanceData.TranslationRow1 = Transform.GetRow1();
+		InstanceData.TranslationRow2 = Transform.GetRow2();
+		InstanceData.TranslationRow3 = Transform.GetRow3();
+		RetArray.push_back(InstanceData);
 	}
 
-	//request update render resource
-	InstanceTextureData->RequestUpdateRenderResource(Instances);
-	//request upload texture data
-	FRenderThreadManager* RenderThreadManager = FEngine::GetEngine()->GetRenderThreadManager();
-
-	FRenderThreadCommand UpdateInstanceDataCommand;
-	UpdateInstanceDataCommand.Wrap(UpdateInstanceTextureData_RenderThread, ActorName, InstanceTextureData);
-	RenderThreadManager->PushRenderCommand(UpdateInstanceDataCommand);
-}
-
-std::shared_ptr<UTexture> AInstancedStaticMeshActor::GetTextureInstanceData()
-{
-	return InstanceTextureData;
+	return RetArray;
 }

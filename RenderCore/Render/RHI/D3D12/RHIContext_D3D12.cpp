@@ -526,6 +526,18 @@ void FRHIContext_D3D12::SetVertexBuffer(UINT StartSlot, UINT NumViews, IRHIVerte
 	CommandList->IASetVertexBuffers(StartSlot, NumViews, &VbView);
 }
 
+void FRHIContext_D3D12::SetInstanceVertexBuffer(UINT StartSlot, IRHIVertexBuffer* VertexBuffer, IRHIVertexBuffer* InstanceBuffer)
+{
+	D3D12_VERTEX_BUFFER_VIEW Views[2];
+	FRHIVertexBuffer_D3D12* VertexBuffer_D3D = reinterpret_cast<FRHIVertexBuffer_D3D12*>(VertexBuffer);
+	Views[0] = VertexBuffer_D3D->GetVBView();
+
+	FRHIVertexBuffer_D3D12* InstanceBuffer_D3D = reinterpret_cast<FRHIVertexBuffer_D3D12*>(InstanceBuffer);
+	Views[1] = InstanceBuffer_D3D->GetVBView();
+
+	CommandList->IASetVertexBuffers(StartSlot, 2, Views);
+}
+
 
 void FRHIContext_D3D12::PrepareShaderParameter()
 {

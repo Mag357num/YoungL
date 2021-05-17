@@ -12,7 +12,6 @@ public:
 	{
 		IsSkined = false;
 		IsInstance = false;
-		bNeedUploadInstanceData = false;
 
 		InstanceCount = 1;
 	}
@@ -40,19 +39,18 @@ public:
 	//virtual void BuildInstanceBuffer(std::vector<FInstanceData>& InstanceDatas, IRHIContext* Context){}
 	virtual void BuildSkinnedBoneTransBuffer(FBoneTransforms* InTransforms, IRHIContext* Context) {}
 	
-
-	virtual std::shared_ptr<FRHIColorResource> BuildInstanceBuffer(std::vector<FColor>& Colors, UINT Width, UINT Height, IRHIContext* Context){return nullptr;}
-	virtual void UploadInstanceDataToBuffer(IRHIContext* Context){}
-	virtual void MarkInstanceDataDirty(std::vector<FColor>& Colors, UINT Width, UINT Height){}
-
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FVertex>& InVertices) { return nullptr; }
 	virtual std::shared_ptr<IRHIVertexBuffer> BuildVertexBuffer(std::vector<FSkinVertex>& InVertices) {return nullptr;}
 	virtual std::shared_ptr<IRHIIndexBuffer> BuildIndexBuffer(std::vector<uint32_t>& InIndices) { return nullptr; }
+	virtual std::shared_ptr<IRHIVertexBuffer> BuildInstanceBuffer(std::vector<FInstanceData>& InInstanceDatas) { return nullptr; }
 
 	IRHIVertexBuffer* GetVertexBuffer() { return VertexBuffer.lock().get(); }
 	IRHIIndexBuffer* GetIndexBuffer() { return IndexBuffer.lock().get(); }
+	IRHIVertexBuffer* GetInstanceBuffer(){return InstanceBuffer.get();}
+
 	void SetVertexBuffer(std::shared_ptr<IRHIVertexBuffer> InVertexBuffer){ VertexBuffer = InVertexBuffer;}
 	void SetIndexBuffer(std::shared_ptr<IRHIIndexBuffer> InIndexBuffer){IndexBuffer = InIndexBuffer;}
+	void SetInstanceBuffer(std::shared_ptr<IRHIVertexBuffer> InBuffer){InstanceBuffer = InBuffer;};
 
 
 	IRHIConstantBuffer<FObjectConstants>* GetConstantBuffer() { return ConstantBuffer; }
@@ -74,11 +72,20 @@ public:
 		InstanceCount = InCount;
 		}
 
+
+	void SetInstanceDataStrideSize(size_t InSize){InstanceDataStrideSize = InSize;}
+	void SetInstanceBufferSize(size_t InSize){InstanceBufferSize = InSize;}
+	size_t GetInstanceDataStrideSize() {
+		return InstanceDataStrideSize;
+	}
+	size_t GetInstanceBufferSize()
+	{
+		return InstanceBufferSize;
+	}
+
+
 	bool GetIsInstance(){return IsInstance;}
-	bool GetNeedUploadInstanceData(){return bNeedUploadInstanceData;}
-	void SetNeedUploadInstanceData(bool InFlag){bNeedUploadInstanceData = InFlag;}
-	FRHIColorResource* GetInstantceTexture(){return InstatnceDataResource.lock().get();}
-	void SetInstantceTexture(std::shared_ptr<FRHIColorResource> InTexture){ InstatnceDataResource = InTexture;}
+
 
 protected:
 	IRHIConstantBuffer<FObjectConstants>* ConstantBuffer;
@@ -90,13 +97,17 @@ protected:
 	std::weak_ptr<IRHIVertexBuffer> VertexBuffer;
 	std::weak_ptr<IRHIIndexBuffer> IndexBuffer;
 
+	std::shared_ptr<IRHIVertexBuffer> InstanceBuffer;
+
 	//used by instanced static mesh
 	bool IsInstance;
-	bool bNeedUploadInstanceData;
-	std::weak_ptr<FRHIColorResource> InstatnceDataResource;
 
 	size_t VertexStrideSize = 0;
 	size_t VertexBufferSize = 0;
+
+	size_t InstanceDataStrideSize = 0;
+	size_t InstanceBufferSize = 0;
+
 	size_t IndexBufferSize = 0;
 	size_t IndexCount = 0;
 	size_t InstanceCount = 0;

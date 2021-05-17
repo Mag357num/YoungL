@@ -20,37 +20,48 @@ cbuffer mainPassObject : register(b1)
 	float4 LightStrength;
 };
 
+struct InstanceVertexIn
+{
+	float3 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float2 Uv : TEXCOORD;
+
+	float4 TransitionRow0 : INS_TRANS0ROW;
+	float4 TransitionRow1 : INS_TRANS1ROW;
+	float4 TransitionRow2 : INS_TRANS2ROW;
+	float4 TransitionRow3 : INS_TRANS3ROW;
+};
+
+
 int2 RenderTargetSize : register(b2);
 
-Texture2D InstatnceData : register(t1);
-
 //[RootSignature(RenderCore_RootSig)]
-VertexOut main(VertexIn Vin, uint InstanceID : SV_InstanceID)
+VertexOut main(InstanceVertexIn Vin)
 {
 	VertexOut vout;
 
-	//instance id to pixel
-	int InstanceWidth = round(RenderTargetSize[0] * 0.5f);
-	int InstanceHeight = round(RenderTargetSize[1] * 0.5f);
+	////instance id to pixel
+	//int InstanceWidth = round(RenderTargetSize[0] * 0.5f);
+	//int InstanceHeight = round(RenderTargetSize[1] * 0.5f);
 
-	int InstanceRow = floor(1.0f * InstanceID / InstanceWidth);
-	int InstanceCol = InstanceID - InstanceRow * InstanceWidth;
+	//int InstanceRow = floor(1.0f * InstanceID / InstanceWidth);
+	//int InstanceCol = InstanceID - InstanceRow * InstanceWidth;
 
-	int2 PixelRow0 = int2(InstanceCol * 2,		InstanceRow * 2);
-	int2 PixelRow1 = int2(InstanceCol * 2 + 1,	InstanceRow * 2);
-	int2 PixelRow2 = int2(InstanceCol * 2,		InstanceRow * 2 + 1);
-	int2 PixelRow3 = int2(InstanceCol * 2 + 1,	InstanceRow * 2 + 1);
+	//int2 PixelRow0 = int2(InstanceCol * 2,		InstanceRow * 2);
+	//int2 PixelRow1 = int2(InstanceCol * 2 + 1,	InstanceRow * 2);
+	//int2 PixelRow2 = int2(InstanceCol * 2,		InstanceRow * 2 + 1);
+	//int2 PixelRow3 = int2(InstanceCol * 2 + 1,	InstanceRow * 2 + 1);
 
-	float4 Row0Data = InstatnceData.Load(int3(PixelRow0, 0));
-	float4 Row1Data = InstatnceData.Load(int3(PixelRow1, 0));
-	float4 Row2Data = InstatnceData.Load(int3(PixelRow2, 0));
-	float4 Row3Data = InstatnceData.Load(int3(PixelRow3, 0));
+	//float4 Row0Data = InstatnceData.Load(int3(PixelRow0, 0));
+	//float4 Row1Data = InstatnceData.Load(int3(PixelRow1, 0));
+	//float4 Row2Data = InstatnceData.Load(int3(PixelRow2, 0));
+	//float4 Row3Data = InstatnceData.Load(int3(PixelRow3, 0));
 
 	float4x4 InstanceSpace = {
-				Row0Data,
-				Row1Data,
-				Row2Data,
-				Row3Data
+				Vin.TransitionRow0,
+				Vin.TransitionRow1,
+				Vin.TransitionRow2,
+				Vin.TransitionRow3
 	};
 
 	float4 InstanceSpaceLoc = mul(float4(Vin.Pos, 1.0f), InstanceSpace);

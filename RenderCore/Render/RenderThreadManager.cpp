@@ -63,8 +63,3 @@ void FRenderThreadManager::UpdateSkinnedMeshBoneTransform(std::string* ActorName
 {
 	Renderer->UpdateSkinnedMeshBoneTransform(*ActorName, InBoneTrans);
 }
-
-void FRenderThreadManager::UpdateInstanceTextureData(std::string* ActorName, UTexture* InstanceTexture)
-{
-	Renderer->UpdateInstanceTextureData(ActorName, InstanceTexture);
-}

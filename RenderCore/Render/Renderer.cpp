@@ -353,17 +353,11 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStatic
 			ResourceManager->CacheMeshRenderResource(StaticMesh.lock()->GetObjectName(), RenderResouce);
 		}
 
-		//create instance Data buffer
-		std::shared_ptr<UTexture> InstanceData = InstancedActors[Index]->GetTextureInstanceData();
-		std::shared_ptr<FRHIColorResource> InstanceResource = ResourceManager->CheckHasValidTextureResource(InstanceData->GetObjectName());
-		if (!InstanceResource)
-		{
-			InstanceResource = Item->BuildInstanceBuffer(*InstanceData->GetAllColors(), InstanceData->GetWidth(), InstanceData->GetHeight(), RHIContext);
-			ResourceManager->CacheTextureRenderResource(InstanceData->GetObjectName(), InstanceResource);
-		}
+		std::vector<FInstanceData> InstanceDatas = InstancedActors[Index]->CalcInstanceDatas();
+		std::shared_ptr<IRHIVertexBuffer> InstanceBuffer = Item->BuildInstanceBuffer(InstanceDatas);
+		Item->SetInstanceBuffer(InstanceBuffer);
 		
 		Item->SetInstanceCount(InstancedActors[Index]->GetInstanceCount());
-		Item->SetInstantceTexture(InstanceResource);
 
 		InstanceRenderingMeshes[*InstancedActors[Index]->GetName()] = Item;
 	}
@@ -570,7 +564,15 @@ void FRenderer::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderin
 	for (auto It = Items.begin(); It != Items.end(); ++It)
 	{
 		
-		RHIContext->SetVertexBuffer(0, 1, It->second->GetVertexBuffer());
+		if (It->second->GetIsInstance())
+		{
+			RHIContext->SetInstanceVertexBuffer(0, It->second->GetVertexBuffer(), It->second->GetInstanceBuffer());
+		}
+		else
+		{
+			RHIContext->SetVertexBuffer(0, 1, It->second->GetVertexBuffer());
+		}
+		
 		RHIContext->SetIndexBuffer(It->second->GetIndexBuffer());
 		RHIContext->SetPrimitiveTopology(PrimitiveTopology_TRIANGLELIST);
 
@@ -581,21 +583,6 @@ void FRenderer::DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderin
 		{
 			IRHIConstantBuffer<FBoneTransforms>* BoneTransformsBuffer = It->second->GetBoneTransformsBuffer();
 			RHIContext->SetBoneTransformConstantBufferView(BoneTransformsBuffer->GetRootParameterIndex(), BoneTransformsBuffer);
-		}
-
-		if (It->second->GetIsInstance())
-		{
-
-			if (It->second->GetNeedUploadInstanceData())
-			{
-				It->second->UploadInstanceDataToBuffer(RHIContext);
-			}
-
-			FRHIColorResource* InstanceBuffer = It->second->GetInstantceTexture();
-			RHIContext->SetGraphicRootConstant(3, InstanceBuffer->GetWidth(), 0);
-			RHIContext->SetGraphicRootConstant(3, InstanceBuffer->GetHeight(), 1);
-			RHIContext->SetColorSRV(4, InstanceBuffer);
-
 		}
 
 		RHIContext->DrawIndexedInstanced((UINT)It->second->GetIndexCount(), (UINT)It->second->GetInstanceCount(), 0, 0, 0);
@@ -673,18 +660,6 @@ void FRenderer::UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTrans
 	{
 		FBoneTransforms BufferData = *InBoneTrans;
 		Iter->second->GetBoneTransformsBuffer()->CopyData(0, BufferData);
-	}
-
-}
-
-void FRenderer::UpdateInstanceTextureData(std::string* ActorName, UTexture* InstanceTexture)
-{
-	std::unordered_map<std::string, IRHIRenderingMesh*>::iterator Iter;
-	Iter = InstanceRenderingMeshes.find(*ActorName);
-	if (Iter != InstanceRenderingMeshes.end())
-	{
-		Iter->second->MarkInstanceDataDirty(*InstanceTexture->GetAllColors(),
-			InstanceTexture->GetWidth(), InstanceTexture->GetHeight());
 	}
 
 }
@@ -830,11 +805,6 @@ void FRenderer::CreateInstantcedPassPSO()
 		SlotPara3.SetNum32BitValues(2);
 		InstancePassPSO->AddShaderParameter(&SlotPara3);
 
-		FParameterRange ParamRange1(RangeType_SRV, 1, 1, 0);
-		FRHIShaderParameter SlotPara4(ParaType_Range, 0, 0, Visibility_VS);
-		SlotPara4.AddRangeTable(ParamRange1);
-		InstancePassPSO->AddShaderParameter(&SlotPara4);
-
 	}
 
 	{
@@ -846,6 +816,18 @@ void FRenderer::CreateInstantcedPassPSO()
 
 		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
 		InstancePassPSO->AddShaderInputElement(&InputElement2);
+
+		FRHIShaderInputElement InputElement3("INS_TRANS0ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 0, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
+		InstancePassPSO->AddShaderInputElement(&InputElement3);
+
+		FRHIShaderInputElement InputElement4("INS_TRANS1ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 16, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
+		InstancePassPSO->AddShaderInputElement(&InputElement4);
+
+		FRHIShaderInputElement InputElement5("INS_TRANS2ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 32, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
+		InstancePassPSO->AddShaderInputElement(&InputElement5);
+
+		FRHIShaderInputElement InputElement6("INS_TRANS3ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 48, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
+		InstancePassPSO->AddShaderInputElement(&InputElement6);
 	}
 
 

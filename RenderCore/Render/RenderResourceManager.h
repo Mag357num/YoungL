@@ -39,11 +39,13 @@ public:
 
 	size_t GetVertexStrideSize() { return VertexStrideSize; }
 	size_t GetVertexBufferSize() { return VertexBufferSize; }
+
 	size_t GetIndexBufferSize() { return IndexBufferSize; }
 	size_t GetIndexCount() { return IndexCount; }
 
 	void SetVertexStrideSize(size_t InStride){ VertexStrideSize = InStride;}
 	void SetVertexBufferSize(size_t InVBSize) { VertexBufferSize = InVBSize; }
+
 	void SetIndexBufferSize(size_t InIBSize) { IndexBufferSize = InIBSize; }
 	void SetIndexCount(size_t InCount) { IndexCount = InCount; }
 
@@ -53,6 +55,7 @@ private:
 
 	size_t VertexStrideSize = 0;
 	size_t VertexBufferSize = 0;
+
 	size_t IndexBufferSize = 0;
 	size_t IndexCount = 0;
 };

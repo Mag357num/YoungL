@@ -5,6 +5,7 @@
 #include "RHIIndexBuffer_D3D12.h"
 #include "RHIVertexBuffer_D3D12.h"
 #include "RHIConstantBuffer_D3D12.h"
+
 #include "RHIContext_D3D12.h"
 
 namespace D3D12RHI
@@ -32,50 +33,6 @@ void FRHIRenderingMesh_D3D12::BuildConstantBuffer(FObjectConstants* InObjConstan
 
 	Buffer->SetRootParameterIndex(0);
 	Buffer->SetGpuVirtualAddress(GpuAddress);
-}
-
-std::shared_ptr<FRHIColorResource> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::vector<FColor>& Colors, UINT Width, UINT Height, IRHIContext* Context)
-{
-	IsInstance = true;
-
-	//create render resource for instance data
-	EPixelBufferFormat Format = EPixelBufferFormat::PixelFormat_R32G32B32A32_Float;
-
-	FRHIColorResource* ResourceData = Context->CreateColorResource(Width, Height, Format, true);
-
-	//TODO:
-	//copy data begin
-	//Context->CopyTextureDataToResource(Colors, Width, Height, ResourceData);
-	//copy data end
-	//temerary save instance data
-	MarkInstanceDataDirty(Colors, Width, Height);
-
-	//create srv and rtv for color resource
-	Context->CreateSrvForColorResource(ResourceData);
-
-	std::shared_ptr<FRHIColorResource> InstanceResource = std::shared_ptr<FRHIColorResource>(ResourceData);
-
-	return InstanceResource;
-}
-
-void FRHIRenderingMesh_D3D12::UploadInstanceDataToBuffer(IRHIContext* Context)
-{
-	FRHIColorResource* InstanceResource = InstatnceDataResource.lock().get();
-	Context->CopyTextureDataToResource(*InstanceData, InstanceTextureWidth, InstanceTextureHeight, InstanceResource);
-	bNeedUploadInstanceData = false;
-	InstanceData = nullptr;
-}
-
-void FRHIRenderingMesh_D3D12::MarkInstanceDataDirty(std::vector<FColor>& Colors, UINT Width, UINT Height)
-{
-	//copy data begin
-	//Context->CopyTextureDataToResource(Colors, Width, Height, ResourceData);
-	//copy data end
-	//temerary save instance data
-	bNeedUploadInstanceData = true;
-	InstanceData = &Colors;
-	InstanceTextureWidth = Width;
-	InstanceTextureHeight = Height;
 }
 
 
@@ -181,6 +138,33 @@ std::shared_ptr<IRHIVertexBuffer> FRHIRenderingMesh_D3D12::BuildVertexBuffer(std
 
 	RetBuffer->SetVertexBufferSize(VertexBufferSize);
 	RetBuffer->SetStrideInBytes(VertexStrideSize);
+
+	return RetBuffer;
+}
+
+std::shared_ptr<IRHIVertexBuffer> FRHIRenderingMesh_D3D12::BuildInstanceBuffer(std::vector<FInstanceData>& InInstanceDatas)
+{
+	IsInstance = true;
+
+	std::shared_ptr<FRHIVertexBuffer_D3D12> RetBuffer = std::make_shared<FRHIVertexBuffer_D3D12>();
+
+	InstanceDataStrideSize = sizeof(FInstanceData);
+	InstanceBufferSize = sizeof(FInstanceData) * InInstanceDatas.size();
+
+	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+	CD3DX12_RESOURCE_DESC VtResDesc = CD3DX12_RESOURCE_DESC::Buffer(InstanceBufferSize);
+	D3D12RHI::M_Device->CreateCommittedResource(&HeapProperties,
+		D3D12_HEAP_FLAG_NONE, &VtResDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+		IID_PPV_ARGS(&RetBuffer->VertexBuffer));
+
+	UINT8* VertexBegin;
+	D3D12_RANGE VtCopyRange;
+	RetBuffer->VertexBuffer->Map(0, &VtCopyRange, reinterpret_cast<void**>(&VertexBegin));
+	memcpy(VertexBegin, InInstanceDatas.data(), InstanceBufferSize);
+	RetBuffer->VertexBuffer->Unmap(0, nullptr);
+
+	RetBuffer->SetVertexBufferSize(InstanceBufferSize);
+	RetBuffer->SetStrideInBytes(InstanceDataStrideSize);
 
 	return RetBuffer;
 }
