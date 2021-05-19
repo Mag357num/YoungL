@@ -96,7 +96,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 
 	//create gpu driven
 	GPUDriven = new FGPUDriven();
-	//GPUDriven->InitFrustumCull(RHIContext, PSOManager);
+	GPUDriven->InitFrustumCull(RHIContext, PSOManager);
 
 }
 
@@ -115,6 +115,8 @@ void FRenderer::DestroyRHIContext()
 			It->second->Release();
 			delete It->second;
 		}
+
+		RenderingMeshes.clear();
 		if (!RenderingMeshes.empty())
 		{
 			Utilities::Print("Empty RenderingMeshes Error! \n");
@@ -130,6 +132,8 @@ void FRenderer::DestroyRHIContext()
 			It->second->Release();
 			delete It->second;
 		}
+
+		SkinnedRenderingMeshes.clear();
 		if (!SkinnedRenderingMeshes.empty())
 		{
 			Utilities::Print("Empty SkinnedRenderingMeshes Error! \n");
@@ -145,6 +149,7 @@ void FRenderer::DestroyRHIContext()
 			delete It->second;
 		}
 
+		InstanceRenderingMeshes.clear();
 		if (!InstanceRenderingMeshes.empty())
 		{
 			Utilities::Print("Empty InstanceRenderingMeshes Error! \n");

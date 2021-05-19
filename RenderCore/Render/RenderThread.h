@@ -78,7 +78,7 @@ public:
 
 			if (!RenderThreadTask::CommandQueue.empty())
 			{
-				Utilities::Print("Empty Error");
+				Utilities::Print("RenderThread Empty CommandQueue Error \n");
 			}
 
 			Renderer->RenderScene();

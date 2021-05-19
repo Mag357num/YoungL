@@ -16,7 +16,9 @@ FPSOManager::~FPSOManager()
 			delete It->second;
 			It->second = nullptr;
 		}
+
 		//empty
+		GraphicsPSOs.clear();
 		if (!GraphicsPSOs.empty())
 		{
 			Utilities::Print("Empty GraphicsPSOs Error! \n");
@@ -33,6 +35,7 @@ FPSOManager::~FPSOManager()
 		}
 
 		//empty
+		ComputePSOs.clear();
 		if (!ComputePSOs.empty())
 		{
 			Utilities::Print("Empty ComputePSOs Error! \n");
@@ -325,8 +328,8 @@ void FPSOManager::CreateFrustumCullPSO(IRHIContext* RHIContext, std::string PSON
 
 	IRHIComputePipelineState* FrustmPSO = RHIContext->CreateEmptyComputePSO();
 
-	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
+	FParameterRange ParamRange(RangeType_UAV, 1, 0, 0);
+	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_All);
 	ShaderParam.AddRangeTable(ParamRange);
 	FrustmPSO->AddShaderParameter(&ShaderParam);
 

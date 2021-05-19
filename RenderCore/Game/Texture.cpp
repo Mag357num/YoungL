@@ -12,16 +12,12 @@ UTexture::UTexture(std::string TypeName, UINT InWidth, UINT InHeight)
 
 UTexture::~UTexture()
 {
-	if (!Colors.empty())
-	{
-	}
+	Colors.clear();
 }
 
 void UTexture::InitializeTextureContent(std::vector<FColor>& InColors)
 {
-	if (!Colors.empty())
-	{
-	}
+	Colors.clear();
 
 	for (UINT Row = 0; Row < Height; ++Row)
 	{
@@ -36,9 +32,7 @@ void UTexture::InitializeTextureContent(std::vector<FColor>& InColors)
 
 void UTexture::InitializeTextureContent(FColor ClearColor)
 {
-	if (!Colors.empty())
-	{
-	}
+	Colors.clear();
 
 	for (UINT Row = 0; Row < Height; ++Row)
 	{

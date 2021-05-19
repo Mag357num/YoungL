@@ -14,9 +14,10 @@ FRenderResourceManager::~FRenderResourceManager()
 		{
 			delete It->second;
 		}
-
+		MeshRenderResources.clear();
 		if (!MeshRenderResources.empty())
 		{
+			Utilities::Print("RenderResourceManager Empty MeshRenderResources Error! \n");
 		}
 	}
 
@@ -27,8 +28,10 @@ FRenderResourceManager::~FRenderResourceManager()
 			It->second.reset();
 		}
 
+		TextureRenderResource.clear();
 		if (!TextureRenderResource.empty())
 		{
+			Utilities::Print("RenderResourceManager Empty TextureRenderResource Error! \n");
 		}
 	}
 }

@@ -23,14 +23,16 @@ public:
 
 	~FGeometry()
 	{
+		Vertices.clear();
 		if (!Vertices.empty())
 		{
-			printf("Empty Error!");
+			printf("Empty Vertices Error! \n");
 		}
 		
+		Indices.clear();
 		if (!Indices.empty())
 		{
-			printf("Empty Error!");
+			printf("Empty Indeces Error! \n");
 		}
 	}
 

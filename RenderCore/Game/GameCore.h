@@ -31,10 +31,8 @@ public:
 			{
 				StaticActors[Index].reset();
 			}
-			if (!StaticActors.empty())
-			{
-				printf("Empty Error!");
-			}
+			StaticActors.clear();
+
 		}
 		
 
@@ -44,10 +42,7 @@ public:
 			{
 				SkinedActors[Index].reset();
 			}
-			if (!SkinedActors.empty())
-			{
-				printf("Empty Error!");
-			}
+			SkinedActors.clear();
 
 		}
 		
@@ -58,21 +53,13 @@ public:
 			{
 				InstanceStaticActors[Index].reset();
 			}
-			if (!InstanceStaticActors.empty())
-			{
-				printf("Empty Error!");
-			}
+			InstanceStaticActors.clear();
 		}
 
-		if (!AssetPaths.empty())
-		{
-			printf("Empty Error!");
-		}
+		AssetPaths.clear();
 
-		if (!SkinedPaths.empty())
-		{
-			printf("Empty Error!");
-		}
+		SkinedPaths.clear();
+
 
 		if (SceneConstant)
 		{

@@ -107,9 +107,16 @@ FRHIShaderResource_D3D12::~FRHIShaderResource_D3D12() {
 	//	delete It->second;
 	//}
 
+	GlobalShaderMap.clear();
 	if (!GlobalShaderMap.empty())
 	{
+		Utilities::Print("ShaderResource Empty GlobalShaderMap Error! \n");
+	}
 
+	GlobalCSShaderMap.clear();
+	if (!GlobalCSShaderMap.empty())
+	{
+		Utilities::Print("ShaderResource Empty GlobalCSShaderMap Error! \n");
 	}
 
 }

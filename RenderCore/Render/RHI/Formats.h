@@ -33,6 +33,7 @@ enum EResourcFlag
 {
 	Resource_None = 0,
 	Resource_Allow_Render_Target,
+	Resource_Allow_Depth_Stencil,
 	Resource_Allow_Unordered_Access,
 
 };

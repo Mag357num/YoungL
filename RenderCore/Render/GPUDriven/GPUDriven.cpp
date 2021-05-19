@@ -23,11 +23,11 @@ void FGPUDriven::InitFrustumCull(IRHIContext* RHIContext, FPSOManager* InPSOMana
 	ColorDesc.Height = 64;
 	ColorDesc.Format = PixelFormat_R16G16B16A16_Float;
 	ColorDesc.ResourceFlag = Resource_Allow_Unordered_Access;
-	ColorDesc.ResourceState = State_Uav;
+	ColorDesc.ResourceState = State_None;
 
 	FrustumCullResult = RHIContext->CreateColorResource(ColorDesc);
 	RHIContext->CreateSrvForColorResource(FrustumCullResult, true);
 
 
-	InPSOManager->CreateFrustumCullPSO(RHIContext, "FrustumPSO");
+	//InPSOManager->CreateFrustumCullPSO(RHIContext, "FrustumPSO");
 }

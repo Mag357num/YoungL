@@ -93,6 +93,9 @@ public:
 		case Resource_Allow_Render_Target:
 			Ret = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 			break;
+		case Resource_Allow_Depth_Stencil:
+			Ret = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+			break;
 		case Resource_Allow_Unordered_Access:
 			Ret = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 			break;

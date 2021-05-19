@@ -19,6 +19,7 @@ public:
 				SamplerStates[SIndex].reset();
 			}
 
+			SamplerStates.clear();
 			if (!SamplerStates.empty())
 			{
 				Utilities::Print("Empty SamplerStates Error! \n");
@@ -32,6 +33,7 @@ public:
 				ShaderParameters[PIndex].reset();
 			}
 
+			ShaderParameters.clear();
 			if (!ShaderParameters.empty())
 			{
 				Utilities::Print("Empty ShaderParameters Error! \n");
@@ -45,6 +47,7 @@ public:
 				ShaderInputElements[PIndex].reset();
 			}
 
+			ShaderInputElements.clear();
 			if (!ShaderInputElements.empty())
 			{
 				Utilities::Print("Empty ShaderParameters Error! \n");

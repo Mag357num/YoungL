@@ -801,9 +801,21 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(FColorResourceDesc Des
 
 	ColorResource->SetClearValue(ClearValue);
 
+
+	const D3D12_CLEAR_VALUE* OptimizedClearValue;
+	if (ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION_BUFFER && 
+		(Desc.ResourceFlag != Resource_Allow_Render_Target && Desc.ResourceFlag != Resource_Allow_Depth_Stencil))
+	{
+		OptimizedClearValue = nullptr;
+	}
+	else
+	{
+		OptimizedClearValue = &ClearValue;
+	}
+
 	M_Device->CreateCommittedResource(&HeapProperties,
 		D3D12_HEAP_FLAG_NONE, &ResourceDesc, TranslateResourceState(Desc.ResourceState),
-		&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
+		OptimizedClearValue, IID_PPV_ARGS(&ColorResource->Resource));
 
 
 	return ColorResource;

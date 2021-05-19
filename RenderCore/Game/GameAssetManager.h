@@ -16,10 +16,10 @@ public:
 			{
 				It->second.reset();
 			}
-			
+			StaticMeshes.clear();
 			if (!StaticMeshes.empty())
 			{
-				
+				Utilities::Print("GameAssetManager Empty StaticMeshes Error! \n");
 			}
 
 			for (auto ItSkeletal = SkeletalMeshes.begin(); ItSkeletal != SkeletalMeshes.end(); ++ItSkeletal)
@@ -27,9 +27,10 @@ public:
 				ItSkeletal->second.reset();
 			}
 
+			SkeletalMeshes.clear();
 			if (!SkeletalMeshes.empty())
 			{
-
+				Utilities::Print("GameAssetManager Empty SkeletalMeshes Error! \n");
 			}
 		}
 	}

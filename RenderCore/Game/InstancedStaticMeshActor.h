@@ -14,8 +14,10 @@ public:
 
 	virtual ~AInstancedStaticMeshActor()
 	{
+		Instances.clear();
 		if (!Instances.empty())
 		{
+			Utilities::Print("InstancedStaticMeshActor Empty Instances Error! \n");
 		}
 	}
 
