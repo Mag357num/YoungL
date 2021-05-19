@@ -1,6 +1,6 @@
 #pragma once
 
-class FRHIColorResource: public IRHIResource
+class FRHIColorResource : public IRHIResource
 {
 public:
 	FRHIColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
@@ -8,6 +8,7 @@ public:
 		Height(InHeight),
 		Format(InFormat)
 	{
+
 	}
 
 	virtual ~FRHIColorResource() {
@@ -23,11 +24,11 @@ public:
 			RTVHandle = nullptr;
 		}
 
-		//if (UAVHandle)
-		//{
-		//	delete UAVHandle;
-		//	UAVHandle = nullptr;
-		//}
+		if (UAVHandle)
+		{
+			delete UAVHandle;
+			UAVHandle = nullptr;
+		}
 	}
 
 
@@ -37,16 +38,16 @@ public:
 
 	void SetSrvHandle(IRHIResourceHandle* InHandle) { SRVHandle = InHandle; }
 	void SetRtvHandle(IRHIResourceHandle* InHandle) { RTVHandle = InHandle; }
-	//void SetUAVHandle(IRHIResourceHandle* InHandle) { UAVHandle = InHandle; }
+	void SetUAVHandle(IRHIResourceHandle* InHandle) { UAVHandle = InHandle; }
 
 	IRHIResourceHandle* GetRTVHandle() { return RTVHandle; }
 	IRHIResourceHandle* GetSrvHandle() { return SRVHandle; }
-	//IRHIResourceHandle* GetUAVHandle(){return UAVHandle;}
+	IRHIResourceHandle* GetUAVHandle() { return UAVHandle; }
 
 protected:
-	IRHIResourceHandle* SRVHandle;
-	IRHIResourceHandle* RTVHandle;
-	//IRHIResourceHandle* UAVHandle;
+	IRHIResourceHandle* SRVHandle = nullptr;
+	IRHIResourceHandle* RTVHandle = nullptr;
+	IRHIResourceHandle* UAVHandle = nullptr;
 
 	int Width;
 	int Height;

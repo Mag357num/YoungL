@@ -1,7 +1,7 @@
 #pragma once
 #include "RHIResourceHandle.h"
 
-class FRHIDepthResource
+class FRHIDepthResource : public IRHIResource
 {
 public:
 	FRHIDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)
