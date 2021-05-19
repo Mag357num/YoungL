@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "FRHIShader_D3D12.h"
+#include "RHIShader_D3D12.h"
 
 #include <D3Dcompiler.h>
 #pragma comment(lib, "D3DCompiler.lib")

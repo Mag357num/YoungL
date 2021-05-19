@@ -19,6 +19,11 @@
 #include "CompiledShaders/BloomSunMergePS.h"
 #include "CompiledShaders/InstancePassVS.h"
 
+
+//add for GPU driven
+#include "CompiledShaders/FrustmCullCS.h"
+
+
 #include <d3d12.h>
 #include <map>
 

@@ -43,6 +43,9 @@
     <Filter Include="头文件\Math">
       <UniqueIdentifier>{3b8d2aa7-62b6-495b-b575-370962fbfbf8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\CS">
+      <UniqueIdentifier>{a9b59ab3-d7cd-4dae-b881-113bb31b5de6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -186,7 +189,7 @@
     <ClInclude Include="Render\RHI\RHIDepthStencilState.h">
       <Filter>头文件\Render\RHI</Filter>
     </ClInclude>
-    <ClInclude Include="Render\RHI\D3D12\FRHIShader_D3D12.h">
+    <ClInclude Include="Render\RHI\D3D12\RHIShader_D3D12.h">
       <Filter>头文件\Render\RHI\D3D12</Filter>
     </ClInclude>
     <ClInclude Include="Render\PostProcessing.h">
@@ -214,6 +217,15 @@
       <Filter>头文件\Game</Filter>
     </ClInclude>
     <ClInclude Include="Render\RenderResourceManager.h">
+      <Filter>头文件\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\RHIComputePipelineState.h">
+      <Filter>头文件\Render\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\RHI\D3D12\RHIComputePipelineState_D3D12.h">
+      <Filter>头文件\Render\RHI\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\PSOManager.h">
       <Filter>头文件\Render</Filter>
     </ClInclude>
   </ItemGroup>
@@ -293,6 +305,15 @@
     <ClCompile Include="Render\RenderResourceManager.cpp">
       <Filter>源文件\Render</Filter>
     </ClCompile>
+    <ClCompile Include="Render\RHI\RHIComputePipelineState.cpp">
+      <Filter>源文件\Render\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\RHI\D3D12\RHIComputePipelineState_D3D12.cpp">
+      <Filter>源文件\Render\RHI\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\PSOManager.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RenderCore.rc">
@@ -352,6 +373,9 @@
     </FxCompile>
     <FxCompile Include="Shaders\InstancePassVS.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CS\FrustmCullCS.hlsl">
+      <Filter>Shaders\CS</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

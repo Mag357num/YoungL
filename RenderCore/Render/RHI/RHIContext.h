@@ -12,6 +12,7 @@ using namespace std;
 #include "RHIColorResource.h"
 #include "../../Utilities.h"
 #include "RHIGraphicsPipelineState.h"
+#include "RHIComputePipelineState.h"
 #include "RHIConstantBuffer.h"
 #include "RHIRenderingMesh.h"
 #include "RHIShader.h"
@@ -120,8 +121,11 @@ public:
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload = false){ return nullptr; }
+	//called by postprocess
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
-	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource) { }
+	
+	//called by base pass or compute shader
+	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource, bool ShouldCreateUAV = false) { }
 	virtual void CopyTextureDataToResource(std::vector<FColor>& Colors, UINT Width, UINT Height, FRHIColorResource* ColorResource){}
 
 protected:

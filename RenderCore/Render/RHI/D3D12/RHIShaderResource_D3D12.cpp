@@ -5,6 +5,8 @@
 namespace ShaderMap
 {
 	std::map<std::wstring, D3D12_SHADER_BYTECODE> GlobalShaderMap;
+
+	std::map<std::wstring, D3D12_SHADER_BYTECODE> GlobalCSShaderMap;
 }
 
 
@@ -89,6 +91,13 @@ FRHIShaderResource_D3D12::FRHIShaderResource_D3D12()
 	ToneMapPS.BytecodeLength = sizeof(g_ToneMapPS);
 	ToneMapPS.pShaderBytecode = g_ToneMapPS;
 	GlobalShaderMap.insert(std::make_pair(L"ToneMapPS", ToneMapPS));
+
+
+	//for gpu driven
+	D3D12_SHADER_BYTECODE FrustmCullCS;
+	FrustmCullCS.BytecodeLength = sizeof(g_FrustmCullCS);
+	FrustmCullCS.pShaderBytecode = g_FrustmCullCS;
+	GlobalCSShaderMap.insert(std::make_pair(L"FrustmCullCS", FrustmCullCS));
 }
 
 

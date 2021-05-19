@@ -111,7 +111,7 @@ public:
 
 	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload = false)override;
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)override;
-	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource)override;
+	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource, bool ShouldCreateUAV = false)override;
 	virtual void CopyTextureDataToResource(std::vector<FColor>& Colors, UINT Width, UINT Height, FRHIColorResource* ColorResource)override;
 
 private:

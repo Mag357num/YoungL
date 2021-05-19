@@ -18,75 +18,6 @@ namespace ShaderMap
 using namespace ShaderMap;
 
 
-D3D12_SHADER_VISIBILITY TranslateShaderVisibility(EShaderParaVisibility Invisibility)
-{
-	D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL;
-	switch (Invisibility)
-	{
-	case Visibility_None:
-		break;
-	case Visibility_VS:
-		Visibility = D3D12_SHADER_VISIBILITY_VERTEX;
-		break;
-	case Visibility_PS:
-		Visibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		break;
-	case Visibility_All:
-		Visibility = D3D12_SHADER_VISIBILITY_ALL;
-		break;
-	default:
-		break;
-	}
-
-	return Visibility;
-}
-
-
-D3D12_FILTER TranslateFileter(ESamplerFilter InFilter)
-{
-	D3D12_FILTER OutFilter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-	switch (InFilter)
-	{
-	case Filter_MIN_MAG_LINEAR_MIP_POINT:
-		OutFilter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
-		break;
-	default:
-		break;
-	}
-
-	return OutFilter;
-}
-
-D3D12_TEXTURE_ADDRESS_MODE TranslateAddressMode(ESampleAddress InAddress)
-{
-	D3D12_TEXTURE_ADDRESS_MODE Mode;
-
-	switch (InAddress)
-	{
-	case Address_None:
-		break;
-	case ADDRESS_MODE_WRAP:
-		Mode = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		break;
-	case ADDRESS_MODE_MIRROR:
-		Mode = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-		break;
-	case ADDRESS_MODE_CLAMP:
-		Mode = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-		break;
-	case ADDRESS_MODE_BORDER:
-		Mode = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-		break;
-	case ADDRESS_MODE_MIRROR_ONCE:
-		Mode = D3D12_TEXTURE_ADDRESS_MODE_MIRROR_ONCE;
-		break;
-	default:
-		break;
-	}
-
-	return Mode;
-}
-
 void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_ROOT_PARAMETER>& InShaderParameters, 
 	std::vector<std::vector<CD3DX12_DESCRIPTOR_RANGE>>& D3D12Ranges)
 {
@@ -139,7 +70,7 @@ void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_R
 			D3D12Ranges.push_back(TempD3D12Ranges);
 			size_t TotalRangeSize = D3D12Ranges.size(); 
 			Parameter.InitAsDescriptorTable((UINT)Ranges->size(), D3D12Ranges[TotalRangeSize - 1].data(),
-				TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
+				FRHIGraphicsPipelineState_D3D12::TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
 			InShaderParameters.push_back(Parameter);
 
 		}
@@ -148,14 +79,14 @@ void FRHIGraphicsPipelineState_D3D12::ParseShaderParameter(std::vector<CD3DX12_R
 		case ParaType_Constant:
 			Parameter.InitAsConstants(ShaderParameters[Index]->GetNum32BitValues(), ShaderParameters[Index]->GetShaderRegister(),
 				ShaderParameters[Index]->GetShaderRegisterSpace(),
-			TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
+				FRHIGraphicsPipelineState_D3D12::TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
 
 			InShaderParameters.push_back(Parameter);
 			break;
 
 		case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
 			Parameter.InitAsConstantBufferView(ShaderParameters[Index]->GetShaderRegister(), ShaderParameters[Index]->GetShaderRegisterSpace(),
-				TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
+				FRHIGraphicsPipelineState_D3D12::TranslateShaderVisibility(ShaderParameters[Index]->GetShaderVisibility()));
 
 			InShaderParameters.push_back(Parameter);
 			break;
@@ -266,10 +197,10 @@ void FRHIGraphicsPipelineState_D3D12::ParseSamplerState(std::vector<CD3DX12_STAT
 		Desc.ShaderRegister = SamplerStates[SIndex]->GetShaderRegister();
 		Desc.RegisterSpace = SamplerStates[SIndex]->GetRegisterSpace();
 
-		Desc.Filter = TranslateFileter(SamplerStates[SIndex]->GetSamplerFiler());
-		Desc.AddressU = TranslateAddressMode(SamplerStates[SIndex]->GetAddressU());
-		Desc.AddressV = TranslateAddressMode(SamplerStates[SIndex]->GetAddressV());
-		Desc.AddressW = TranslateAddressMode(SamplerStates[SIndex]->GetAddressW());
+		Desc.Filter = FRHIGraphicsPipelineState_D3D12::TranslateFileter(SamplerStates[SIndex]->GetSamplerFiler());
+		Desc.AddressU = FRHIGraphicsPipelineState_D3D12::TranslateAddressMode(SamplerStates[SIndex]->GetAddressU());
+		Desc.AddressV = FRHIGraphicsPipelineState_D3D12::TranslateAddressMode(SamplerStates[SIndex]->GetAddressV());
+		Desc.AddressW = FRHIGraphicsPipelineState_D3D12::TranslateAddressMode(SamplerStates[SIndex]->GetAddressW());
 
 		Desc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		Desc.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;

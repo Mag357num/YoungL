@@ -33,10 +33,13 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	//create render resource manager
 	ResourceManager = new FRenderResourceManager();
 
-	CreateBasePassPSO_Static();
-	CreateBasePassPSO_Skinned();
-	CreateInstantcedPassPSO();
-	CreatePresentPSO();
+	//create PSO Manager
+	PSOManager = new FPSOManager();
+
+	PSOManager->CreateBasePassPSO_Static(RHIContext);
+	PSOManager->CreateBasePassPSO_Skinned(RHIContext);
+	PSOManager->CreateInstantcedPassPSO(RHIContext);
+	PSOManager->CreatePresentPSO(RHIContext);
 
 
 	//initialize scene constant
@@ -64,7 +67,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 		SceneConstant.LightViewProj = LightVP * T;
 		SceneConstant.LightViewProj = FMath::MatrixTranspose(SceneConstant.LightViewProj);
 
-		CreateDepthPassPSO();
+		PSOManager->CreateDepthPassPSO(RHIContext);
 	}
 
 	//create Scene Color
@@ -78,8 +81,8 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	ShouldRenderShadow = true;
 	ShouldRenderStatic = true;
 	ShouldRenderSkeletal = true;
-	ShouldRenderInstanced = true;
-
+	ShouldRenderInstanced = false;
+	ShouldAutoRotateLight = false;
 
 	//for postprocess
 	ShouldRenderPostProcess = false;
@@ -87,51 +90,47 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	{
 		PostProcessing = new FPostProcessing();
 		PostProcessing->InitRTs(RHIContext, InWidth, Inheight);
-		CreatePostProcessPSOs();
+		PSOManager->CreatePostProcessPSOs(RHIContext, PostProcessing);
 	}
 
 }
 
 void FRenderer::DestroyRHIContext()
 {
-	//release pso state object
-	for (auto It=GraphicsPSOs.begin(); It != GraphicsPSOs.end(); ++It)
-	{
-		delete It->second;
-		It->second = nullptr;
-	}
-	//empty
-	if (!GraphicsPSOs.empty())
-	{
-		printf("Empty Error!");
-	}
-
 	if (SceneConstantBuffer)
 	{
 		delete SceneConstantBuffer;
 		SceneConstantBuffer = nullptr;
 	}
 
-	for (auto It = RenderingMeshes.begin(); It != RenderingMeshes.end(); ++It)
+	if (RenderingMeshes.size() > 0)
 	{
-		It->second->Release();
-		delete It->second;
+		for (auto It = RenderingMeshes.begin(); It != RenderingMeshes.end(); ++It)
+		{
+			It->second->Release();
+			delete It->second;
+		}
+		if (!RenderingMeshes.empty())
+		{
+			Utilities::Print("Empty RenderingMeshes Error! \n");
+		}
 	}
-	if (!RenderingMeshes.empty())
-	{
-		printf("Empty Error!");
-	}
+	
 
 	//release skinned rendering mesh
-	for (auto It = SkinnedRenderingMeshes.begin(); It != SkinnedRenderingMeshes.end(); ++It)
+	if (SkinnedRenderingMeshes.size() > 0)
 	{
-		It->second->Release();
-		delete It->second;
+		for (auto It = SkinnedRenderingMeshes.begin(); It != SkinnedRenderingMeshes.end(); ++It)
+		{
+			It->second->Release();
+			delete It->second;
+		}
+		if (!SkinnedRenderingMeshes.empty())
+		{
+			Utilities::Print("Empty SkinnedRenderingMeshes Error! \n");
+		}
 	}
-	if (!SkinnedRenderingMeshes.empty())
-	{
-		printf("Empty Error!");
-	}
+	
 
 	if (InstanceRenderingMeshes.size() > 0)
 	{
@@ -143,6 +142,7 @@ void FRenderer::DestroyRHIContext()
 
 		if (!InstanceRenderingMeshes.empty())
 		{
+			Utilities::Print("Empty InstanceRenderingMeshes Error! \n");
 		}
 	}
 	
@@ -173,6 +173,12 @@ void FRenderer::DestroyRHIContext()
 	{
 		delete ResourceManager;
 		ResourceManager = nullptr;
+	}
+
+	if (PSOManager)
+	{
+		delete PSOManager;
+		PSOManager = nullptr;
 	}
 
 #ifdef _WIN32
@@ -370,21 +376,21 @@ void FRenderer::PostProcess()
 		return;
 	}
 
-	PostProcessing->BloomSetUp(RHIContext, SceneColor, GraphicsPSOs["BloomSetUp"]);
+	PostProcessing->BloomSetUp(RHIContext, SceneColor, PSOManager->GetGraphicsPSO("BloomSetUp"));
 
-	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 0);
-	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 1);
-	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 2);
-	PostProcessing->BloomDown(RHIContext, GraphicsPSOs["BloomDown"], 3);
+	PostProcessing->BloomDown(RHIContext, PSOManager->GetGraphicsPSO("BloomDown"), 0);
+	PostProcessing->BloomDown(RHIContext, PSOManager->GetGraphicsPSO("BloomDown"), 1);
+	PostProcessing->BloomDown(RHIContext, PSOManager->GetGraphicsPSO("BloomDown"), 2);
+	PostProcessing->BloomDown(RHIContext, PSOManager->GetGraphicsPSO("BloomDown"), 3);
 
-	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 0);
-	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 1);
-	PostProcessing->BloomUp(RHIContext, GraphicsPSOs["BloomUp"], 2);
+	PostProcessing->BloomUp(RHIContext, PSOManager->GetGraphicsPSO("BloomUp"), 0);
+	PostProcessing->BloomUp(RHIContext, PSOManager->GetGraphicsPSO("BloomUp"), 1);
+	PostProcessing->BloomUp(RHIContext, PSOManager->GetGraphicsPSO("BloomUp"), 2);
 
-	PostProcessing->BloomSunMerge(RHIContext, GraphicsPSOs["BloomSunMerge"]);
+	PostProcessing->BloomSunMerge(RHIContext, PSOManager->GetGraphicsPSO("BloomSunMerge"));
 
 	//PostProcessing->CombineLUTs(RHIContext, GraphicsPSOs["CombineLUTs"]);
-	PostProcessing->ToneMap(RHIContext, SceneColor, GraphicsPSOs["ToneMap"]);
+	PostProcessing->ToneMap(RHIContext, SceneColor, PSOManager->GetGraphicsPSO("ToneMap"));
 }
 
 
@@ -412,7 +418,7 @@ void FRenderer::RenderScene()
 	RHIContext->SetColorTarget(SceneColor);
 
 	//set pipeline state
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["BasePass"]);
+	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("BasePass"));
 
 	//prepare shader parameters
 	RHIContext->PrepareShaderParameter();
@@ -482,7 +488,7 @@ void FRenderer::RenderDepth()
 	RHIContext->TransitionResource(RHIResource, ERHIResourceState::State_DepthRead, ERHIResourceState::State_DepthWrite);
 
 	RHIContext->SetRenderTarget(nullptr, RHIResource);
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["DepthPass"]);
+	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("DepthPass"));
 
 	//pass sceen constant buffer
 	RHIContext->SetSceneConstantBufferView(ShadowMap->GetSceneConstantBuffer()->GetRootParameterIndex(), ShadowMap->GetSceneConstantBuffer());
@@ -504,7 +510,7 @@ void FRenderer::RenderSkinnedMesh()
 	RHIContext->BeginEvent(L"Skinned");
 
 	//draw skined Mesh
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["SkinPass"]);
+	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("SkinPass"));
 	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
 	DrawRenderingMeshes(SkinnedRenderingMeshes);
@@ -517,7 +523,7 @@ void FRenderer::RenderInstancedMesh()
 	RHIContext->BeginEvent(L"Instance");
 
 	//draw skined Mesh
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["InstancePass"]);
+	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("InstancePass"));
 	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
 	RHIContext->SetDepthAsSRV(2, ShadowMap->GetShadowMapResource());
 	DrawRenderingMeshes(InstanceRenderingMeshes);
@@ -540,7 +546,7 @@ void FRenderer::DrawToBackBuffer()
 	RHIContext->SetBackBufferAsRt();
 
 	//set pipeline state
-	RHIContext->SetGraphicsPipilineState(GraphicsPSOs["PresentPass"]);
+	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("PresentPass"));
 
 	//prepare shader parameters
 	RHIContext->PreparePresentShaderParameter();
@@ -624,10 +630,14 @@ void FRenderer::UpdateConstantBuffer()
 void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)
 {
 	//rotate lighting
-	FBoundSphere Bound;
-	Bound.Center = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-	Bound.Radius = 500.0f;
-	ShadowMap->AutomateRotateLight(Bound);
+	if (ShouldAutoRotateLight)
+	{
+		FBoundSphere Bound;
+		Bound.Center = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+		Bound.Radius = 500.0f;
+		ShadowMap->AutomateRotateLight(Bound);
+	}
+	
 
 	//copy to upload buffer transposed???
 	SceneConstant.ViewProj = InSceneConstant->ViewProj;
@@ -671,281 +681,4 @@ void FRenderer::CreateSceneColor()
 	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, SceneColorFormat);
 	//create srv and rtv for color resource
 	RHIContext->CreateSrvRtvForColorResource(SceneColor);
-}
-
-void FRenderer::CreateBasePassPSO_Static()
-{
-	IRHIGraphicsPipelineState* BasePassPSO_Static = RHIContext->CreateEmpltyGraphicsPSO();
-	
-	//for shader parameter
-	{
-		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
-		BasePassPSO_Static->AddShaderParameter(&SlotPara0);
-
-		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
-		BasePassPSO_Static->AddShaderParameter(&SlotPara1);
-
-		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
-		SlotPara2.AddRangeTable(ParamRange);
-		BasePassPSO_Static->AddShaderParameter(&SlotPara2);
-
-	}
-
-	{
-		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Static->AddShaderInputElement(&InputElement0);
-
-		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Static->AddShaderInputElement(&InputElement1);
-
-		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Static->AddShaderInputElement(&InputElement2);
-	}
-
-
-	BasePassPSO_Static->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
-	BasePassPSO_Static->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
-
-	IRHIShader* VS = new IRHIShader();
-	VS->SetShaderType(ShaderType_VS);
-	VS->SetShaderPath(L"BasePassVS");
-	BasePassPSO_Static->SetVS(VS);
-
-	IRHIShader* PS = new IRHIShader();
-	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BasePassPS");
-	BasePassPSO_Static->SetPS(PS);
-
-	BasePassPSO_Static->SetDepthEnable(TRUE);
-
-	BasePassPSO_Static->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO_Static));
-}
-
-void FRenderer::CreateBasePassPSO_Skinned()
-{
-	IRHIGraphicsPipelineState* BasePassPSO_Skinned = RHIContext->CreateEmpltyGraphicsPSO();
-
-	//for shader parameter
-	{
-		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
-		BasePassPSO_Skinned->AddShaderParameter(&SlotPara0);
-
-		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
-		BasePassPSO_Skinned->AddShaderParameter(&SlotPara1);
-
-		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
-		SlotPara2.AddRangeTable(ParamRange);
-		BasePassPSO_Skinned->AddShaderParameter(&SlotPara2);
-
-		FRHIShaderParameter SlotPara3(ParaType_CBV, 2, 0, Visibility_All);
-		BasePassPSO_Skinned->AddShaderParameter(&SlotPara3);
-	}
-
-	{
-		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement0);
-
-		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement1);
-
-		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement2);
-
-		FRHIShaderInputElement InputElement3("TAGANT", 0, PixelFormat_R32G32B32_Float, 0, 32, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement3);
-
-		FRHIShaderInputElement InputElement4("BONEINDEX", 0, PixelFormat_R32G32B32A32_UINT, 0, 44, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement4);
-
-		FRHIShaderInputElement InputElement5("BONEWEIGHT", 0, PixelFormat_R32G32B32A32_Float, 0, 60, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		BasePassPSO_Skinned->AddShaderInputElement(&InputElement5);
-	}
-
-
-	BasePassPSO_Skinned->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
-	BasePassPSO_Skinned->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
-
-	IRHIShader* VS = new IRHIShader();
-	VS->SetShaderType(ShaderType_VS);
-	VS->SetShaderPath(L"SkinnedMeshVS");
-	BasePassPSO_Skinned->SetVS(VS);
-
-	IRHIShader* PS = new IRHIShader();
-	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"SkinnedMeshPS");
-	BasePassPSO_Skinned->SetPS(PS);
-
-	BasePassPSO_Skinned->SetDepthEnable(TRUE);
-
-	BasePassPSO_Skinned->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("SkinPass", BasePassPSO_Skinned));
-}
-
-void FRenderer::CreateInstantcedPassPSO()
-{
-	IRHIGraphicsPipelineState* InstancePassPSO = RHIContext->CreateEmpltyGraphicsPSO();
-
-	//for shader parameter
-	{
-		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
-		InstancePassPSO->AddShaderParameter(&SlotPara0);
-
-		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
-		InstancePassPSO->AddShaderParameter(&SlotPara1);
-
-		FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-		FRHIShaderParameter SlotPara2(ParaType_Range, 0, 0, Visibility_PS);
-		SlotPara2.AddRangeTable(ParamRange);
-		InstancePassPSO->AddShaderParameter(&SlotPara2);
-
-		FRHIShaderParameter SlotPara3(ParaType_Constant, 2, 0, Visibility_All);
-		SlotPara3.SetNum32BitValues(2);
-		InstancePassPSO->AddShaderParameter(&SlotPara3);
-
-	}
-
-	{
-		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		InstancePassPSO->AddShaderInputElement(&InputElement0);
-
-		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		InstancePassPSO->AddShaderInputElement(&InputElement1);
-
-		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		InstancePassPSO->AddShaderInputElement(&InputElement2);
-
-		FRHIShaderInputElement InputElement3("INS_TRANS0ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 0, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
-		InstancePassPSO->AddShaderInputElement(&InputElement3);
-
-		FRHIShaderInputElement InputElement4("INS_TRANS1ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 16, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
-		InstancePassPSO->AddShaderInputElement(&InputElement4);
-
-		FRHIShaderInputElement InputElement5("INS_TRANS2ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 32, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
-		InstancePassPSO->AddShaderInputElement(&InputElement5);
-
-		FRHIShaderInputElement InputElement6("INS_TRANS3ROW", 0, PixelFormat_R32G32B32A32_Float, 1, 48, INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1);
-		InstancePassPSO->AddShaderInputElement(&InputElement6);
-	}
-
-
-	InstancePassPSO->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
-	InstancePassPSO->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
-
-	IRHIShader* VS = new IRHIShader();
-	VS->SetShaderType(ShaderType_VS);
-	VS->SetShaderPath(L"InstancePassVS");
-	InstancePassPSO->SetVS(VS);
-
-	IRHIShader* PS = new IRHIShader();
-	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"BasePassPS");
-	InstancePassPSO->SetPS(PS);
-
-	InstancePassPSO->SetDepthEnable(TRUE);
-
-	InstancePassPSO->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("InstancePass", InstancePassPSO));
-}
-
-void FRenderer::CreateDepthPassPSO()
-{
-	IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateEmpltyGraphicsPSO();
-
-	//for shader parameter
-	{
-		FRHIShaderParameter SlotPara0(ParaType_CBV, 0, 0, Visibility_All);
-		DepthPassPSO->AddShaderParameter(&SlotPara0);
-
-		FRHIShaderParameter SlotPara1(ParaType_CBV, 1, 0, Visibility_All);
-		DepthPassPSO->AddShaderParameter(&SlotPara1);
-
-	}
-
-	{
-		FRHIShaderInputElement InputElement0("POSITION", 0, PixelFormat_R32G32B32_Float, 0, 0, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		DepthPassPSO->AddShaderInputElement(&InputElement0);
-
-		FRHIShaderInputElement InputElement1("NORMAL", 0, PixelFormat_R32G32B32_Float, 0, 12, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		DepthPassPSO->AddShaderInputElement(&InputElement1);
-
-		FRHIShaderInputElement InputElement2("TEXCOORD", 0, PixelFormat_R32G32_Float, 0, 24, INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0);
-		DepthPassPSO->AddShaderInputElement(&InputElement2);
-	}
-
-
-	DepthPassPSO->SetCorlorTargetFormat(PixelFormat_R16G16B16A16_Float);
-	DepthPassPSO->SetDepthTargetFormat(PixelFormat_D24_UNORM_S8_UINT);
-
-	IRHIShader* VS = new IRHIShader();
-	VS->SetShaderType(ShaderType_VS);
-	VS->SetShaderPath(L"DepthVS");
-	DepthPassPSO->SetVS(VS);
-
-	IRHIShader* PS = new IRHIShader();
-	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"DepthPS");
-	DepthPassPSO->SetPS(PS);
-
-	DepthPassPSO->SetDepthEnable(TRUE);
-
-	DepthPassPSO->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
-}
-
-void FRenderer::CreatePresentPSO()
-{
-	//create present pass
-	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmpltyGraphicsPSO();
-
-	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
-	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
-	ShaderParam.AddRangeTable(ParamRange);
-	PresentPSO->AddShaderParameter(&ShaderParam);
-
-	FRHIShaderParameter ConstantPara(ParaType_Constant, 0, 0, Visibility_PS);
-	ConstantPara.SetNum32BitValues(2);
-	PresentPSO->AddShaderParameter(&ConstantPara);
-
-	PresentPSO->SetCorlorTargetFormat(PixelFormat_R8G8B8A8_Unorm);
-
-	FRHISamplerState SampleState(0, 0, Filter_MIN_MAG_LINEAR_MIP_POINT, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP, ADDRESS_MODE_CLAMP);
-	PresentPSO->AddSampleState(&SampleState);
-	
-	IRHIShader* VS = new IRHIShader();
-	VS->SetShaderType(ShaderType_VS);
-	VS->SetShaderPath(L"ScreenVS");
-	PresentPSO->SetVS(VS);
-
-	IRHIShader* PS = new IRHIShader();
-	PS->SetShaderType(ShaderType_PS);
-	PS->SetShaderPath(L"ScreenPS");
-	PresentPSO->SetPS(PS);
-	
-	PresentPSO->CreateGraphicsPSOInternal();
-
-	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
-}
-
-void FRenderer::CreatePostProcessPSOs()
-{
-	IRHIGraphicsPipelineState* BloomSetUpPSO = PostProcessing->CreateBloomSetUpPSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("BloomSetUp", BloomSetUpPSO));
-
-	IRHIGraphicsPipelineState* BloomDownPSO = PostProcessing->CreateBloomDownPSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("BloomDown", BloomDownPSO));
-
-	IRHIGraphicsPipelineState* BloomUpPSO = PostProcessing->CreateBloomUpPSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("BloomUp", BloomUpPSO));
-
-	IRHIGraphicsPipelineState* BloomSunMergePSO = PostProcessing->CreateBloomSunMergePSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("BloomSunMerge", BloomSunMergePSO));
-
-	IRHIGraphicsPipelineState* CombineLUTsPSO = PostProcessing->CreateCombineLUTsPSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("CombineLUTs", CombineLUTsPSO));
-
-	IRHIGraphicsPipelineState* ToneMapPSO = PostProcessing->CreateToneMapPSO(RHIContext);
-	GraphicsPSOs.insert(std::make_pair("ToneMap", ToneMapPSO));
 }

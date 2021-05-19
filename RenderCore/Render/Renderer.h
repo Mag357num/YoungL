@@ -6,6 +6,7 @@
 #include "ShadowMap.h"
 #include "PostProcessing.h"
 #include "RenderResourceManager.h"
+#include "PSOManager.h"
 
 class FRenderer
 {
@@ -37,14 +38,6 @@ protected:
 private:
 	void InitializeSceneConstant();
 
-	void CreateBasePassPSO_Static();
-	void CreateBasePassPSO_Skinned();
-	void CreateInstantcedPassPSO();
-	void CreateDepthPassPSO();
-	void CreatePresentPSO();
-	void CreatePostProcessPSOs();
-	
-
 	void CreateSceneColor();
 
 	void RenderDepth();
@@ -57,8 +50,6 @@ private:
 	void DrawRenderingMeshes(std::unordered_map<std::string, IRHIRenderingMesh*>& Items);
 
 	IRHIContext* RHIContext;
-
-	std::map<std::string, IRHIGraphicsPipelineState*> GraphicsPSOs;
 
 	std::unordered_map<std::string, IRHIRenderingMesh*> RenderingMeshes;
 	std::unordered_map<std::string, IRHIRenderingMesh*> SkinnedRenderingMeshes;
@@ -82,6 +73,7 @@ private:
 	bool ShouldRenderStatic;
 	bool ShouldRenderSkeletal;
 	bool ShouldRenderInstanced;
+	bool ShouldAutoRotateLight;
 
 	//for postprocess
 	bool ShouldRenderPostProcess;
@@ -89,4 +81,7 @@ private:
 
 	//render resource manager
 	FRenderResourceManager* ResourceManager;
+
+	//PSO manager
+	FPSOManager* PSOManager;
 };

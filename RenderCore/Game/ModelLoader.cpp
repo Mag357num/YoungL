@@ -284,10 +284,13 @@ std::unique_ptr<FGeometry<FSkinVertex>> FModelLoader::LoadSkinedMeshAndAnimation
 		Fin >> Ignore >> NumBones;
 		Fin >> Ignore >> NumAnimationClips;
 
-		std::vector<FMaterial> ModelMats;
-		ReadMaterials(Fin, NumMaterials, ModelMats);
-		std::vector<FSubset> SubSets;
-		ReadSubsetTable(Fin, NumMaterials, SubSets);
+		if (NumMaterials > 0)
+		{
+			std::vector<FMaterial> ModelMats;
+			ReadMaterials(Fin, NumMaterials, ModelMats);
+			std::vector<FSubset> SubSets;
+			ReadSubsetTable(Fin, NumMaterials, SubSets);
+		}
 		
 		ReadSkinnedVertices(Fin, NumVertices, Vertices);
 		

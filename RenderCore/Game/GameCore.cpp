@@ -87,7 +87,8 @@ void FGameCore::Initialize()
 		}
 	}
 
-	SkinedPaths.push_back(L"Models/soldier.m3d");
+	//SkinedPaths.push_back(L"Models/soldier.m3d");
+	SkinedPaths.push_back(L"Models/Skeleton.m3d");
 	for (size_t Index = 0; Index < SkinedPaths.size(); ++Index)
 	{
 		LoadActor(SkinedPaths[Index], true);

@@ -12,23 +12,45 @@ public:
 	IRHIGraphicsPipelineState() {}
 	virtual ~IRHIGraphicsPipelineState() {
 	
-		for (int SIndex = 0; SIndex < SamplerStates.size(); SIndex++)
+		if (SamplerStates.size() > 0)
 		{
-			SamplerStates[SIndex].reset();
+			for (int SIndex = 0; SIndex < SamplerStates.size(); SIndex++)
+			{
+				SamplerStates[SIndex].reset();
+			}
+
+			if (!SamplerStates.empty())
+			{
+				Utilities::Print("Empty SamplerStates Error! \n");
+			}
 		}
 
-		if (!SamplerStates.empty())
+		if (ShaderParameters.size() > 0)
 		{
+			for (int PIndex = 0; PIndex < ShaderParameters.size(); PIndex++)
+			{
+				ShaderParameters[PIndex].reset();
+			}
+
+			if (!ShaderParameters.empty())
+			{
+				Utilities::Print("Empty ShaderParameters Error! \n");
+			}
 		}
 
-		for (int PIndex = 0; PIndex < ShaderParameters.size(); PIndex++)
+		if (ShaderInputElements.size() > 0)
 		{
-			ShaderParameters[PIndex].reset();
+			for (int PIndex = 0; PIndex < ShaderInputElements.size(); PIndex++)
+			{
+				ShaderInputElements[PIndex].reset();
+			}
+
+			if (!ShaderInputElements.empty())
+			{
+				Utilities::Print("Empty ShaderParameters Error! \n");
+			}
 		}
 
-		if (!ShaderParameters.empty())
-		{
-		}
 
 		if (VS)
 		{

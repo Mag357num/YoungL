@@ -22,6 +22,12 @@ public:
 			delete RTVHandle;
 			RTVHandle = nullptr;
 		}
+
+		//if (UAVHandle)
+		//{
+		//	delete UAVHandle;
+		//	UAVHandle = nullptr;
+		//}
 	}
 
 
@@ -31,13 +37,16 @@ public:
 
 	void SetSrvHandle(IRHIResourceHandle* InHandle) { SRVHandle = InHandle; }
 	void SetRtvHandle(IRHIResourceHandle* InHandle) { RTVHandle = InHandle; }
+	//void SetUAVHandle(IRHIResourceHandle* InHandle) { UAVHandle = InHandle; }
 
 	IRHIResourceHandle* GetRTVHandle() { return RTVHandle; }
 	IRHIResourceHandle* GetSrvHandle() { return SRVHandle; }
+	//IRHIResourceHandle* GetUAVHandle(){return UAVHandle;}
 
 protected:
 	IRHIResourceHandle* SRVHandle;
 	IRHIResourceHandle* RTVHandle;
+	//IRHIResourceHandle* UAVHandle;
 
 	int Width;
 	int Height;

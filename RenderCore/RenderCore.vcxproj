@@ -217,13 +217,15 @@
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\PostProcessing.h" />
+    <ClInclude Include="Render\PSOManager.h" />
     <ClInclude Include="Render\Renderer.h" />
     <ClInclude Include="Render\RenderResourceManager.h" />
     <ClInclude Include="Render\RenderThread.h" />
     <ClInclude Include="Render\RenderThreadManager.h" />
     <ClInclude Include="Render\RHI\D3D12\d3dx12.h" />
-    <ClInclude Include="Render\RHI\D3D12\FRHIShader_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIShader_D3D12.h" />
     <ClInclude Include="Render\RHI\D3D12\RHIColorResource_D3D12.h" />
+    <ClInclude Include="Render\RHI\D3D12\RHIComputePipelineState_D3D12.h" />
     <ClInclude Include="Render\RHI\D3D12\RHIConstantBuffer_D3D12.h" />
     <ClInclude Include="Render\RHI\D3D12\RHIContext_D3D12.h" />
     <ClInclude Include="Render\RHI\D3D12\RHIDepthResource_D3D12.h" />
@@ -238,6 +240,7 @@
     <ClInclude Include="Render\RHI\Formats.h" />
     <ClInclude Include="Render\RHI\RHIBlendState.h" />
     <ClInclude Include="Render\RHI\RHIColorResource.h" />
+    <ClInclude Include="Render\RHI\RHIComputePipelineState.h" />
     <ClInclude Include="Render\RHI\RHIConstantBuffer.h" />
     <ClInclude Include="Render\RHI\RHIContext.h" />
     <ClInclude Include="Render\RHI\RHIDepthResource.h" />
@@ -274,15 +277,18 @@
     </ClCompile>
     <ClCompile Include="RenderCore.cpp" />
     <ClCompile Include="Render\PostProcessing.cpp" />
+    <ClCompile Include="Render\PSOManager.cpp" />
     <ClCompile Include="Render\Renderer.cpp" />
     <ClCompile Include="Render\RenderResourceManager.cpp" />
     <ClCompile Include="Render\RenderThreadManager.cpp" />
+    <ClCompile Include="Render\RHI\D3D12\RHIComputePipelineState_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIContext_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIGraphicsPipelineState_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIRenderingItem_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIResource_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIShaderResource_D3D12.cpp" />
     <ClCompile Include="Render\RHI\D3D12\RHIShader_D3D12.cpp" />
+    <ClCompile Include="Render\RHI\RHIComputePipelineState.cpp" />
     <ClCompile Include="Render\RHI\RHIContext.cpp" />
     <ClCompile Include="Render\RHI\RHIGraphicsPipelineState.cpp" />
     <ClCompile Include="Render\ShadowMap.cpp" />
@@ -333,6 +339,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\CS\FrustmCullCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\DepthPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

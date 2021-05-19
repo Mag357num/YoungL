@@ -861,7 +861,7 @@ void FRHIContext_D3D12::CreateSrvRtvForColorResource(FRHIColorResource* InColorR
 	RtvDHAllocatedCount++;
 }
 
-void FRHIContext_D3D12::CreateSrvForColorResource(FRHIColorResource* InColorResource)
+void FRHIContext_D3D12::CreateSrvForColorResource(FRHIColorResource* InColorResource, bool ShouldCreateUAV)
 {
 	FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InColorResource);
 
@@ -889,6 +889,32 @@ void FRHIContext_D3D12::CreateSrvForColorResource(FRHIColorResource* InColorReso
 
 	//incre Present cbv allocator
 	CbvDHAllocatedCount++;
+
+	//if (ShouldCreateUAV)
+	//{
+	//	D3D12_CPU_DESCRIPTOR_HANDLE UavCpuDescriptorStart(CbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart());//todo  add postprocess descriptor
+	//	UavCpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
+
+	//	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
+	//	UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	//	UAVDesc.Format = FRHIResource_D3D12::TranslateFormat(InColorResource->GetFormat());
+	//	UAVDesc.Texture2D.MipSlice = 0;
+	//	//UAVDesc.Texture2D.PlaneSlice = 0;
+
+	//	M_Device->CreateUnorderedAccessView(ColorResource_D3D12->Resource.Get(), nullptr, &UAVDesc, UavCpuDescriptorStart);
+
+	//	D3D12_GPU_DESCRIPTOR_HANDLE UavGpuDescriptorStart(CbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart());
+	//	UavGpuDescriptorStart.ptr += CbvDHAllocatedCount * CbvSrvUavDescriptorSize;
+
+	//	FRHIResourceHandle_D3D12* UavHandle = new FRHIResourceHandle_D3D12();
+	//	UavHandle->SetCpuhandle(UavCpuDescriptorStart);
+	//	UavHandle->SetGpuhandle(UavGpuDescriptorStart);
+	//	ColorResource_D3D12->SetUAVHandle(UavHandle);
+
+	//	//incre Present cbv allocator
+	//	CbvDHAllocatedCount++;
+	//}
+
 }
 
 //TODO:Copy Data to render resource
