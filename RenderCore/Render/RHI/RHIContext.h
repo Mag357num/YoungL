@@ -67,7 +67,8 @@ public:
 	virtual IRHIResource* CreateResource(){ return nullptr; }
 	virtual IRHIResource* GetBackBufferResource(){return nullptr;}
 
-	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO(){return nullptr;}
+	virtual IRHIGraphicsPipelineState* CreateEmptyGraphicsPSO(){return nullptr;}
+	virtual IRHIComputePipelineState* CreateEmptyComputePSO(){return nullptr;}
 
 
 	virtual void TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter){}
@@ -120,7 +121,7 @@ public:
 	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat){ return nullptr; }
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource) { }
 
-	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload = false){ return nullptr; }
+	virtual FRHIColorResource* CreateColorResource(FColorResourceDesc Desc) { return nullptr; }
 	//called by postprocess
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource) { }
 	

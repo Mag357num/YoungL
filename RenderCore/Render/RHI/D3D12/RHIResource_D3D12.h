@@ -82,6 +82,27 @@ public:
 		return DXGI_FORMAT_UNKNOWN;
 	}
 
+	static D3D12_RESOURCE_FLAGS TranslateResourceFlag(EResourcFlag InFlag)
+	{
+		D3D12_RESOURCE_FLAGS Ret = D3D12_RESOURCE_FLAG_NONE;
+		switch (InFlag)
+		{
+		case Resource_None:
+			Ret = D3D12_RESOURCE_FLAG_NONE;
+			break;
+		case Resource_Allow_Render_Target:
+			Ret = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			break;
+		case Resource_Allow_Unordered_Access:
+			Ret = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			break;
+		default:
+			break;
+		}
+
+		return Ret;
+	}
+
 	void Map(UINT SubResource, const D3D12_RANGE* ReadRange, void** Data);
 	void UnMap(UINT SubResource, const D3D12_RANGE* WriteRange);
 

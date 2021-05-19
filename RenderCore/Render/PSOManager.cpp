@@ -42,9 +42,9 @@ FPSOManager::~FPSOManager()
 }
 
 
-void FPSOManager::CreateBasePassPSO_Static(IRHIContext* RHIContext)
+void FPSOManager::CreateBasePassPSO_Static(IRHIContext* RHIContext, std::string PSOName)
 {
-	IRHIGraphicsPipelineState* BasePassPSO_Static = RHIContext->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BasePassPSO_Static = RHIContext->CreateEmptyGraphicsPSO();
 
 	//for shader parameter
 	{
@@ -89,12 +89,12 @@ void FPSOManager::CreateBasePassPSO_Static(IRHIContext* RHIContext)
 	BasePassPSO_Static->SetDepthEnable(TRUE);
 
 	BasePassPSO_Static->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("BasePass", BasePassPSO_Static));
+	GraphicsPSOs.insert(std::make_pair(PSOName, BasePassPSO_Static));
 }
 
-void FPSOManager::CreateBasePassPSO_Skinned(IRHIContext* RHIContext)
+void FPSOManager::CreateBasePassPSO_Skinned(IRHIContext* RHIContext, std::string PSOName)
 {
-	IRHIGraphicsPipelineState* BasePassPSO_Skinned = RHIContext->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BasePassPSO_Skinned = RHIContext->CreateEmptyGraphicsPSO();
 
 	//for shader parameter
 	{
@@ -150,12 +150,12 @@ void FPSOManager::CreateBasePassPSO_Skinned(IRHIContext* RHIContext)
 	BasePassPSO_Skinned->SetDepthEnable(TRUE);
 
 	BasePassPSO_Skinned->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("SkinPass", BasePassPSO_Skinned));
+	GraphicsPSOs.insert(std::make_pair(PSOName, BasePassPSO_Skinned));
 }
 
-void FPSOManager::CreateInstantcedPassPSO(IRHIContext* RHIContext)
+void FPSOManager::CreateInstantcedPassPSO(IRHIContext* RHIContext, std::string PSOName)
 {
-	IRHIGraphicsPipelineState* InstancePassPSO = RHIContext->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* InstancePassPSO = RHIContext->CreateEmptyGraphicsPSO();
 
 	//for shader parameter
 	{
@@ -216,12 +216,12 @@ void FPSOManager::CreateInstantcedPassPSO(IRHIContext* RHIContext)
 	InstancePassPSO->SetDepthEnable(TRUE);
 
 	InstancePassPSO->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("InstancePass", InstancePassPSO));
+	GraphicsPSOs.insert(std::make_pair(PSOName, InstancePassPSO));
 }
 
-void FPSOManager::CreateDepthPassPSO(IRHIContext* RHIContext)
+void FPSOManager::CreateDepthPassPSO(IRHIContext* RHIContext, std::string PSOName)
 {
-	IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* DepthPassPSO = RHIContext->CreateEmptyGraphicsPSO();
 
 	//for shader parameter
 	{
@@ -261,13 +261,13 @@ void FPSOManager::CreateDepthPassPSO(IRHIContext* RHIContext)
 	DepthPassPSO->SetDepthEnable(TRUE);
 
 	DepthPassPSO->CreateGraphicsPSOInternal();
-	GraphicsPSOs.insert(std::make_pair("DepthPass", DepthPassPSO));
+	GraphicsPSOs.insert(std::make_pair(PSOName, DepthPassPSO));
 }
 
-void FPSOManager::CreatePresentPSO(IRHIContext* RHIContext)
+void FPSOManager::CreatePresentPSO(IRHIContext* RHIContext, std::string PSOName)
 {
 	//create present pass
-	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* PresentPSO = RHIContext->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
@@ -295,7 +295,7 @@ void FPSOManager::CreatePresentPSO(IRHIContext* RHIContext)
 
 	PresentPSO->CreateGraphicsPSOInternal();
 
-	GraphicsPSOs.insert(std::make_pair("PresentPass", PresentPSO));
+	GraphicsPSOs.insert(std::make_pair(PSOName, PresentPSO));
 }
 
 void FPSOManager::CreatePostProcessPSOs(IRHIContext* RHIContext, FPostProcessing* PostProcessing)
@@ -318,6 +318,28 @@ void FPSOManager::CreatePostProcessPSOs(IRHIContext* RHIContext, FPostProcessing
 	IRHIGraphicsPipelineState* ToneMapPSO = PostProcessing->CreateToneMapPSO(RHIContext);
 	GraphicsPSOs.insert(std::make_pair("ToneMap", ToneMapPSO));
 }
+
+
+void FPSOManager::CreateFrustumCullPSO(IRHIContext* RHIContext, std::string PSOName)
+{
+
+	IRHIComputePipelineState* FrustmPSO = RHIContext->CreateEmptyComputePSO();
+
+	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
+	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
+	ShaderParam.AddRangeTable(ParamRange);
+	FrustmPSO->AddShaderParameter(&ShaderParam);
+
+	IRHIShader* CS = new IRHIShader();
+	CS->SetShaderType(ShaderType_CS);
+	CS->SetShaderPath(L"FrustmCullCS");
+	FrustmPSO->SetCS(CS);
+
+	FrustmPSO->CreateComputePSOInternal();
+
+	ComputePSOs.insert(std::make_pair(PSOName, FrustmPSO));
+}
+
 
 IRHIGraphicsPipelineState* FPSOManager::GetGraphicsPSO(std::string InPSOName)
 {

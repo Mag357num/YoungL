@@ -28,3 +28,22 @@ enum EPixelBufferFormat
 	PixelFormat_R32G32B32A32_Float,
 	PixelFormat_R32G32B32A32_UINT
 };
+
+enum EResourcFlag
+{
+	Resource_None = 0,
+	Resource_Allow_Render_Target,
+	Resource_Allow_Unordered_Access,
+
+};
+
+struct FColorResourceDesc
+{
+	int Width;
+	int Height;
+
+	ERHIResourceState ResourceState;
+	EResourcFlag ResourceFlag;
+
+	EPixelBufferFormat Format;
+};

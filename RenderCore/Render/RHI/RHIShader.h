@@ -4,7 +4,8 @@ enum EShaderType
 {
 	ShaderType_None = 0,
 	ShaderType_VS,
-	ShaderType_PS
+	ShaderType_PS,
+	ShaderType_CS
 };
 
 class IRHIShader

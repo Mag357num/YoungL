@@ -7,6 +7,7 @@
 #include "PostProcessing.h"
 #include "RenderResourceManager.h"
 #include "PSOManager.h"
+#include "GPUDriven/GPUDriven.h"
 
 class FRenderer
 {
@@ -84,4 +85,7 @@ private:
 
 	//PSO manager
 	FPSOManager* PSOManager;
+
+	//GPU driven
+	FGPUDriven* GPUDriven;
 };

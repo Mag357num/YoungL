@@ -14,12 +14,17 @@ public:
 	~FPSOManager();
 
 
-	void CreateBasePassPSO_Static(IRHIContext* RHIContext);
-	void CreateBasePassPSO_Skinned(IRHIContext* RHIContext);
-	void CreateInstantcedPassPSO(IRHIContext* RHIContext);
-	void CreateDepthPassPSO(IRHIContext* RHIContext);
-	void CreatePresentPSO(IRHIContext* RHIContext);
+	void CreateBasePassPSO_Static(IRHIContext* RHIContext, std::string PSOName);
+	void CreateBasePassPSO_Skinned(IRHIContext* RHIContext, std::string PSOName);
+	void CreateInstantcedPassPSO(IRHIContext* RHIContext, std::string PSOName);
+	void CreateDepthPassPSO(IRHIContext* RHIContext, std::string PSOName);
+	void CreatePresentPSO(IRHIContext* RHIContext, std::string PSOName);
 	void CreatePostProcessPSOs(IRHIContext* RHIContext, FPostProcessing* PostProcessing);
+
+
+	void CreateFrustumCullPSO(IRHIContext* RHIContext, std::string PSOName);
+
+
 
 
 	IRHIGraphicsPipelineState* GetGraphicsPSO(std::string InPSOName);

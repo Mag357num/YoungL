@@ -6,48 +6,95 @@ void FPostProcessing::InitRTs(IRHIContext* Context, int InWidth, int InHeight)
 	ViewWidth = InWidth;
 	ViewHeight = InHeight;
 
+	FColorResourceDesc ColorDesc;
+
 	int BloomSetUpResX = ViewWidth >> 2;
 	int BloomSetUpResY = ViewHeight >> 2;
-	BloomSetUpResult = Context->CreateColorResource(BloomSetUpResX, BloomSetUpResY, PostProcessFormat);
+
+
+	ColorDesc.Width = BloomSetUpResX;
+	ColorDesc.Height = BloomSetUpResY;
+	ColorDesc.ResourceFlag = Resource_Allow_Render_Target;
+	ColorDesc.ResourceState = State_GenerateRead;
+	ColorDesc.Format = PostProcessFormat;
+
+	BloomSetUpResult = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomSetUpResult);
 
 	int BloomDown0ResX = BloomSetUpResX >> 1;
 	int BloomDown0ResY = BloomSetUpResY >> 1;
-	BloomDown0 = Context->CreateColorResource(BloomDown0ResX, BloomDown0ResY, PostProcessFormat);
+
+	ColorDesc.Width = BloomDown0ResX;
+	ColorDesc.Height = BloomDown0ResY;
+
+	BloomDown0 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomDown0);
 
 	int BloomDown1ResX = BloomDown0ResX >> 1;
 	int BloomDown1ResY = BloomDown0ResY >> 1;
-	BloomDown1 = Context->CreateColorResource(BloomDown1ResX, BloomDown1ResY, PostProcessFormat);
+
+	ColorDesc.Width = BloomDown1ResX;
+	ColorDesc.Height = BloomDown1ResY;
+
+	BloomDown1 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomDown1);
 
 	int BloomDown2ResX = BloomDown1ResX >> 1;
 	int BloomDown2ResY = BloomDown1ResY >> 1;
-	BloomDown2 = Context->CreateColorResource(BloomDown2ResX, BloomDown2ResY, PostProcessFormat);
+
+	ColorDesc.Width = BloomDown2ResX;
+	ColorDesc.Height = BloomDown2ResY;
+
+	BloomDown2 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomDown2);
 
 	int BloomDown3ResX = BloomDown2ResX >> 1;
 	int BloomDown3ResY = BloomDown2ResY >> 1;
-	BloomDown3 = Context->CreateColorResource(BloomDown3ResX, BloomDown3ResY, PostProcessFormat);
+
+	ColorDesc.Width = BloomDown3ResX;
+	ColorDesc.Height = BloomDown3ResY;
+
+	BloomDown3 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomDown3);
 
 	//bloom up
-	BloomUp0 = Context->CreateColorResource(BloomDown2ResX, BloomDown2ResY, PostProcessFormat);
+	ColorDesc.Width = BloomDown2ResX;
+	ColorDesc.Height = BloomDown2ResY;
+
+	BloomUp0 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomUp0);
 
-	BloomUp1 = Context->CreateColorResource(BloomDown1ResX, BloomDown1ResY, PostProcessFormat);
+	ColorDesc.Width = BloomDown1ResX;
+	ColorDesc.Height = BloomDown1ResY;
+
+	BloomUp1 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomUp1);
 
-	BloomUp2 = Context->CreateColorResource(BloomDown0ResX, BloomDown0ResY, PostProcessFormat);
+	ColorDesc.Width = BloomDown0ResX;
+	ColorDesc.Height = BloomDown0ResY;
+
+	BloomUp2 = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(BloomUp2);
 
-	SunMerge = Context->CreateColorResource(BloomSetUpResX, BloomSetUpResY, SunMergeFormat);
+	ColorDesc.Width = BloomSetUpResX;
+	ColorDesc.Height = BloomSetUpResY;
+	ColorDesc.Format = SunMergeFormat;
+
+	SunMerge = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(SunMerge);
 
-	LUTs = Context->CreateColorResource(1024, 32, LUTFormat);
+	ColorDesc.Width = 1024;
+	ColorDesc.Height = 32;
+	ColorDesc.Format = LUTFormat;
+
+	LUTs = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(LUTs);
 
-	ToneMapResult = Context->CreateColorResource(ViewWidth, ViewHeight, TonemapFormat);
+	ColorDesc.Width = ViewWidth;
+	ColorDesc.Height = ViewHeight;
+	ColorDesc.Format = TonemapFormat;
+
+	ToneMapResult = Context->CreateColorResource(ColorDesc);
 	Context->CreateSrvRtvForColorResource(ToneMapResult);
 }
 
@@ -122,7 +169,7 @@ void FPostProcessing::DestroyRTs()
 
 IRHIGraphicsPipelineState* FPostProcessing::CreateBloomSetUpPSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* BloomSetUpPSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BloomSetUpPSO = Context->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
@@ -155,7 +202,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomSetUpPSO(IRHIContext* Con
 
 IRHIGraphicsPipelineState* FPostProcessing::CreateBloomDownPSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* BloomDownPSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BloomDownPSO = Context->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
@@ -187,7 +234,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomDownPSO(IRHIContext* Cont
 }
 IRHIGraphicsPipelineState* FPostProcessing::CreateBloomUpPSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* BloomUpPSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BloomUpPSO = Context->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
@@ -225,7 +272,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomUpPSO(IRHIContext* Contex
 
 IRHIGraphicsPipelineState* FPostProcessing::CreateBloomSunMergePSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* BloomSunMergePSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* BloomSunMergePSO = Context->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);
@@ -265,7 +312,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateBloomSunMergePSO(IRHIContext* 
 
 IRHIGraphicsPipelineState* FPostProcessing::CreateCombineLUTsPSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* CombineLUTsPSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* CombineLUTsPSO = Context->CreateEmptyGraphicsPSO();
 
 
 	FRHIShaderParameter ConstantPara(ParaType_Constant, 0, 0, Visibility_PS);
@@ -290,7 +337,7 @@ IRHIGraphicsPipelineState* FPostProcessing::CreateCombineLUTsPSO(IRHIContext* Co
 }
 IRHIGraphicsPipelineState* FPostProcessing::CreateToneMapPSO(IRHIContext* Context)
 {
-	IRHIGraphicsPipelineState* ToneMapPSO = Context->CreateEmpltyGraphicsPSO();
+	IRHIGraphicsPipelineState* ToneMapPSO = Context->CreateEmptyGraphicsPSO();
 
 	FParameterRange ParamRange(RangeType_SRV, 1, 0, 0);
 	FRHIShaderParameter ShaderParam(ParaType_Range, 0, 0, Visibility_PS);

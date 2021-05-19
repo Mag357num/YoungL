@@ -1,5 +1,6 @@
 #pragma once
 
+
 class FRHIColorResource : public IRHIResource
 {
 public:

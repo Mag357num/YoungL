@@ -2,6 +2,7 @@
 
 #include "RHIContext_D3D12.h"
 #include "RHIGraphicsPipelineState_D3D12.h"
+#include "RHIComputePipelineState_D3D12.h"
 #include "RHIShaderResource_D3D12.h"
 
 #include <DirectXColors.h>
@@ -280,12 +281,17 @@ void FRHIContext_D3D12::PostProcess_BuildDescriptorHeap()
 	M_Device->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&Present_CbvSrvUavHeap));
 }
 
-IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateEmpltyGraphicsPSO()
+IRHIGraphicsPipelineState* FRHIContext_D3D12::CreateEmptyGraphicsPSO()
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12GraphicsPSO = new FRHIGraphicsPipelineState_D3D12();
 	return D3D12GraphicsPSO;
 }
 
+IRHIComputePipelineState* FRHIContext_D3D12::CreateEmptyComputePSO()
+{
+	FRHIComputePipelineState_D3D12* D3D12ComputePSO = new FRHIComputePipelineState_D3D12();
+	return D3D12ComputePSO;
+}
 
 void FRHIContext_D3D12::BeginDraw(const wchar_t* Label)
 {
@@ -761,9 +767,10 @@ void FRHIContext_D3D12::CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthR
 	DsvDHAllocatedCount ++;
 }
 
-FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload)
+
+FRHIColorResource* FRHIContext_D3D12::CreateColorResource(FColorResourceDesc Desc)
 {
-	FRHIColorResource_D3D12* ColorResource = new FRHIColorResource_D3D12(InWidth, InHeight, InFormat);
+	FRHIColorResource_D3D12* ColorResource = new FRHIColorResource_D3D12(Desc.Width, Desc.Height, Desc.Format);
 
 	CD3DX12_HEAP_PROPERTIES HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 
@@ -774,11 +781,7 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 	ResourceDesc.DepthOrArraySize = 1;
 	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	if (!NeedUpload)
-	{
-		
-		ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-	}
+	ResourceDesc.Flags = FRHIResource_D3D12::TranslateResourceFlag(Desc.ResourceFlag);
 
 	ResourceDesc.Format = FRHIResource_D3D12::TranslateFormat(ColorResource->GetFormat());
 	ResourceDesc.Height = ColorResource->GetHeight();
@@ -798,20 +801,9 @@ FRHIColorResource* FRHIContext_D3D12::CreateColorResource(int InWidth, int InHei
 
 	ColorResource->SetClearValue(ClearValue);
 
-	if (NeedUpload)
-	{
-		M_Device->CreateCommittedResource(&HeapProperties,
-				D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST,
-				nullptr, IID_PPV_ARGS(&ColorResource->Resource));
-	}
-	else
-	{
-		M_Device->CreateCommittedResource(&HeapProperties,
-			D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-			&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
-	}
-	
-	
+	M_Device->CreateCommittedResource(&HeapProperties,
+		D3D12_HEAP_FLAG_NONE, &ResourceDesc, TranslateResourceState(Desc.ResourceState),
+		&ClearValue, IID_PPV_ARGS(&ColorResource->Resource));
 
 
 	return ColorResource;

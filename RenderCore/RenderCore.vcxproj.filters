@@ -46,6 +46,12 @@
     <Filter Include="Shaders\CS">
       <UniqueIdentifier>{a9b59ab3-d7cd-4dae-b881-113bb31b5de6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Render\GPUDriven">
+      <UniqueIdentifier>{f38d9120-98c6-454e-ac4b-4db180f48dc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Render\GPUDriven">
+      <UniqueIdentifier>{e692cf18-1391-4590-8726-bbcc35dc1e51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -228,6 +234,9 @@
     <ClInclude Include="Render\PSOManager.h">
       <Filter>头文件\Render</Filter>
     </ClInclude>
+    <ClInclude Include="Render\GPUDriven\GPUDriven.h">
+      <Filter>头文件\Render\GPUDriven</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -313,6 +322,9 @@
     </ClCompile>
     <ClCompile Include="Render\PSOManager.cpp">
       <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\GPUDriven\GPUDriven.cpp">
+      <Filter>源文件\Render\GPUDriven</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

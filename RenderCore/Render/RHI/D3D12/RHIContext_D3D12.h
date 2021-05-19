@@ -30,7 +30,8 @@ public:
 	virtual void InitializeRHI(int InWidth, int InHeight)override;
 	virtual void Resize(int InWidth, int InHeight)override;
 
-	virtual IRHIGraphicsPipelineState* CreateEmpltyGraphicsPSO()override;
+	virtual IRHIGraphicsPipelineState* CreateEmptyGraphicsPSO()override;
+	virtual IRHIComputePipelineState* CreateEmptyComputePSO()override;
 
 
 	// for populate commands
@@ -109,7 +110,7 @@ public:
 	virtual FRHIDepthResource* CreateDepthResource(int InWidth, int InHeight, EPixelBufferFormat InFormat)override;
 	virtual void CreateSrvDsvForDepthResource(FRHIDepthResource* InDepthResource)override;
 
-	virtual FRHIColorResource* CreateColorResource(int InWidth, int InHeight, EPixelBufferFormat InFormat, bool NeedUpload = false)override;
+	virtual FRHIColorResource* CreateColorResource(FColorResourceDesc Desc)override;
 	virtual void CreateSrvRtvForColorResource(FRHIColorResource* InColorResource)override;
 	virtual void CreateSrvForColorResource(FRHIColorResource* InColorResource, bool ShouldCreateUAV = false)override;
 	virtual void CopyTextureDataToResource(std::vector<FColor>& Colors, UINT Width, UINT Height, FRHIColorResource* ColorResource)override;

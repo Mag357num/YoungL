@@ -36,11 +36,10 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	//create PSO Manager
 	PSOManager = new FPSOManager();
 
-	PSOManager->CreateBasePassPSO_Static(RHIContext);
-	PSOManager->CreateBasePassPSO_Skinned(RHIContext);
-	PSOManager->CreateInstantcedPassPSO(RHIContext);
-	PSOManager->CreatePresentPSO(RHIContext);
-
+	PSOManager->CreateBasePassPSO_Static(RHIContext, "BasePass");
+	PSOManager->CreateBasePassPSO_Skinned(RHIContext, "SkinPass");
+	PSOManager->CreateInstantcedPassPSO(RHIContext, "InstancePass");
+	PSOManager->CreatePresentPSO(RHIContext, "PresentPass");
 
 	//initialize scene constant
 	InitializeSceneConstant();
@@ -67,7 +66,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 		SceneConstant.LightViewProj = LightVP * T;
 		SceneConstant.LightViewProj = FMath::MatrixTranspose(SceneConstant.LightViewProj);
 
-		PSOManager->CreateDepthPassPSO(RHIContext);
+		PSOManager->CreateDepthPassPSO(RHIContext, "DepthPass");
 	}
 
 	//create Scene Color
@@ -85,13 +84,19 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	ShouldAutoRotateLight = false;
 
 	//for postprocess
-	ShouldRenderPostProcess = false;
+	ShouldRenderPostProcess = true;
+
+
 	if (ShouldRenderPostProcess)
 	{
 		PostProcessing = new FPostProcessing();
 		PostProcessing->InitRTs(RHIContext, InWidth, Inheight);
 		PSOManager->CreatePostProcessPSOs(RHIContext, PostProcessing);
 	}
+
+	//create gpu driven
+	GPUDriven = new FGPUDriven();
+	//GPUDriven->InitFrustumCull(RHIContext, PSOManager);
 
 }
 
@@ -179,6 +184,12 @@ void FRenderer::DestroyRHIContext()
 	{
 		delete PSOManager;
 		PSOManager = nullptr;
+	}
+
+	if (GPUDriven)
+	{
+		delete GPUDriven;
+		GPUDriven = nullptr;
 	}
 
 #ifdef _WIN32
@@ -678,7 +689,14 @@ void FRenderer::CreateSceneColor()
 {
 	SceneColorFormat=EPixelBufferFormat::PixelFormat_R16G16B16A16_Float;
 
-	SceneColor = RHIContext->CreateColorResource(Viewport.Width, Viewport.Height, SceneColorFormat);
+	FColorResourceDesc ColorDesc;
+	ColorDesc.Width = Viewport.Width;
+	ColorDesc.Height = Viewport.Height;
+	ColorDesc.ResourceFlag = Resource_Allow_Render_Target;
+	ColorDesc.ResourceState = State_GenerateRead;
+	ColorDesc.Format = SceneColorFormat;
+
+	SceneColor = RHIContext->CreateColorResource(ColorDesc);
 	//create srv and rtv for color resource
 	RHIContext->CreateSrvRtvForColorResource(SceneColor);
 }
