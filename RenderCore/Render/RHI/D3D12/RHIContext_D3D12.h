@@ -59,6 +59,7 @@ public:
 	virtual void EndEvent()override;
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)override;
+	virtual void SetComputePipilineState(IRHIComputePipelineState* InPSO)override;
 
 	virtual void SetViewport(const FViewport& Viewport)override;
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight)override;
@@ -87,6 +88,10 @@ public:
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset /* = 0 */)override;
 
 
+	//for compute shader
+	virtual void DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)override;
+
+
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)override;
 	virtual void SetSceneConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
 	virtual void SetObjectConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FObjectConstants>* InBuffer)override;
@@ -95,6 +100,8 @@ public:
 
 	virtual void SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource)override;
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
+	virtual void SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
+
 
 	virtual void FlushCommandQueue()override;
 	virtual void Present()override;

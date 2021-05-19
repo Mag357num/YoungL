@@ -216,7 +216,9 @@
     <ClInclude Include="Game\Texture.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Render\GPUDriven\FrustumCull.h" />
     <ClInclude Include="Render\GPUDriven\GPUDriven.h" />
+    <ClInclude Include="Render\GPUDriven\GPUDrivenProcess.h" />
     <ClInclude Include="Render\PostProcessing.h" />
     <ClInclude Include="Render\PSOManager.h" />
     <ClInclude Include="Render\Renderer.h" />
@@ -277,6 +279,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RenderCore.cpp" />
+    <ClCompile Include="Render\GPUDriven\FrustumCull.cpp" />
     <ClCompile Include="Render\GPUDriven\GPUDriven.cpp" />
     <ClCompile Include="Render\PostProcessing.cpp" />
     <ClCompile Include="Render\PSOManager.cpp" />

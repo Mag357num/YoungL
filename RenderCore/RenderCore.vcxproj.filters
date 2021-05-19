@@ -237,6 +237,12 @@
     <ClInclude Include="Render\GPUDriven\GPUDriven.h">
       <Filter>头文件\Render\GPUDriven</Filter>
     </ClInclude>
+    <ClInclude Include="Render\GPUDriven\GPUDrivenProcess.h">
+      <Filter>头文件\Render\GPUDriven</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\GPUDriven\FrustumCull.h">
+      <Filter>头文件\Render\GPUDriven</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -324,6 +330,9 @@
       <Filter>源文件\Render</Filter>
     </ClCompile>
     <ClCompile Include="Render\GPUDriven\GPUDriven.cpp">
+      <Filter>源文件\Render\GPUDriven</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\GPUDriven\FrustumCull.cpp">
       <Filter>源文件\Render\GPUDriven</Filter>
     </ClCompile>
   </ItemGroup>

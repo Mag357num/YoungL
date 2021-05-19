@@ -85,6 +85,7 @@ public:
 	virtual void PreparePresentShaderParameter(){}
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
+	virtual void SetComputePipilineState(IRHIComputePipelineState* InPSO) {}
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues){}
 
@@ -101,7 +102,8 @@ public:
 	
 	virtual void SetShaderResourceView(){}
 	virtual void SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource){}
-	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){};
+	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){}
+	virtual void SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource){}
 
 	virtual void SetPrimitiveTopology(){}
 
@@ -109,6 +111,10 @@ public:
 								UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation){}
 
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset = 0){}
+
+	//for compute shader
+	virtual void DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ){}
+
 
 	virtual void FlushCommandQueue(){}
 

@@ -412,8 +412,17 @@ void FRenderer::PostProcess()
 
 void FRenderer::RenderScene()
 {
+
 	//reset command list and command allocator here
 	RHIContext->BeginDraw(L"BasePass");
+	
+	//for gpu driven
+	if (GPUDriven)
+	{
+		GPUDriven->PopulateGPUDriven(RHIContext, PSOManager);
+	}
+	// gpu driven end
+
 
 	//render depth map first
 	//for realtime shadow, prepass

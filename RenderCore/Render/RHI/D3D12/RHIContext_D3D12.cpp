@@ -327,6 +327,16 @@ void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPS
 	CommandList->SetGraphicsRootSignature(D3D12PSO->RootSignature.Get());
 }
 
+void FRHIContext_D3D12::SetComputePipilineState(IRHIComputePipelineState* InPSO)
+{
+	FRHIComputePipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIComputePipelineState_D3D12*>(InPSO);
+	CommandList->SetPipelineState(D3D12PSO->PSO.Get());
+	CommandList->SetComputeRootSignature(D3D12PSO->RootSignature.Get());
+
+	//TODO:prepare GPU driven Descriptor
+	PrepareShaderParameter();
+}
+
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
 {
 	D3D12_VIEWPORT VP;
@@ -611,6 +621,14 @@ void FRHIContext_D3D12::SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorRe
 	}
 }
 
+void FRHIContext_D3D12::SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource)
+{
+	if (InColorResource && InColorResource->GetUAVHandle())
+	{
+		FRHIResourceHandle_D3D12* UavHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InColorResource->GetUAVHandle());
+		CommandList->SetComputeRootDescriptorTable(ParaIndex, *UavHandle->GetGpuHandle());
+	}
+}
 
 void FRHIContext_D3D12::DrawIndexedInstanced(UINT IndexCountPerInstance, UINT IndexCount, 
 						UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)
@@ -622,6 +640,12 @@ void FRHIContext_D3D12::Draw(UINT VertexCount, UINT VertexStartOffset)
 {
 	CommandList->DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
 }
+
+void FRHIContext_D3D12::DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)
+{
+	CommandList->Dispatch(ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+}
+
 
 void FRHIContext_D3D12::FlushCommandQueue()
 {

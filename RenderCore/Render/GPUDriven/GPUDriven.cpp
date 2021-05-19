@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GPUDriven.h"
+#include "FrustumCull.h"
 
 FGPUDriven::FGPUDriven()
 {
@@ -8,26 +9,34 @@ FGPUDriven::FGPUDriven()
 
 FGPUDriven::~FGPUDriven()
 {
-	if (FrustumCullResult)
+
+	if (Processes.size() > 0)
 	{
-		delete FrustumCullResult;
-		FrustumCullResult = nullptr;
+		for (size_t Index = 0; Index < Processes.size(); ++Index)
+		{
+			delete Processes[Index];
+		}
+		Processes.clear();
+	}
+}
+
+void FGPUDriven::PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOManager)
+{
+	for (size_t Index = 0; Index < Processes.size(); ++Index)
+	{
+		if (Processes[Index]->GetActive())
+		{
+			Processes[Index]->Run(RHIContext, InPSOManager);
+		}
 	}
 }
 
 void FGPUDriven::InitFrustumCull(IRHIContext* RHIContext, FPSOManager* InPSOManager)
 {
-	//create frustum cull result buffer
-	FColorResourceDesc ColorDesc;
-	ColorDesc.Width = 64;
-	ColorDesc.Height = 64;
-	ColorDesc.Format = PixelFormat_R16G16B16A16_Float;
-	ColorDesc.ResourceFlag = Resource_Allow_Unordered_Access;
-	ColorDesc.ResourceState = State_None;
+	FFrustumCull* FrustumCull= new FFrustumCull();
+	FrustumCull->InitialFrustumCull(RHIContext, InPSOManager);
+	FrustumCull->SetActive(true);
 
-	FrustumCullResult = RHIContext->CreateColorResource(ColorDesc);
-	RHIContext->CreateSrvForColorResource(FrustumCullResult, true);
+	Processes.push_back(FrustumCull);
 
-
-	//InPSOManager->CreateFrustumCullPSO(RHIContext, "FrustumPSO");
 }

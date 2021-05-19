@@ -4,7 +4,7 @@ class IRHIComputePipelineState
 {
 public:
 	IRHIComputePipelineState(){}
-	~IRHIComputePipelineState(){
+	virtual ~IRHIComputePipelineState(){
 
 		if (SamplerStates.size() > 0)
 		{
