@@ -334,7 +334,6 @@ void FRHIContext_D3D12::SetComputePipilineState(IRHIComputePipelineState* InPSO)
 	CommandList->SetComputeRootSignature(D3D12PSO->RootSignature.Get());
 
 	//TODO:prepare GPU driven Descriptor
-	PrepareShaderParameter();
 }
 
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)

@@ -392,6 +392,8 @@ void FRenderer::PostProcess()
 		return;
 	}
 
+
+	RHIContext->BeginEvent(L"PostProcess");
 	PostProcessing->BloomSetUp(RHIContext, SceneColor, PSOManager->GetGraphicsPSO("BloomSetUp"));
 
 	PostProcessing->BloomDown(RHIContext, PSOManager->GetGraphicsPSO("BloomDown"), 0);
@@ -407,6 +409,7 @@ void FRenderer::PostProcess()
 
 	//PostProcessing->CombineLUTs(RHIContext, GraphicsPSOs["CombineLUTs"]);
 	PostProcessing->ToneMap(RHIContext, SceneColor, PSOManager->GetGraphicsPSO("ToneMap"));
+	RHIContext->EndEvent();
 }
 
 
@@ -414,8 +417,11 @@ void FRenderer::RenderScene()
 {
 
 	//reset command list and command allocator here
-	RHIContext->BeginDraw(L"BasePass");
+	RHIContext->BeginDraw(L"FrameDraw");
 	
+	//prepare shader parameters
+	RHIContext->PrepareShaderParameter();
+
 	//for gpu driven
 	if (GPUDriven)
 	{
@@ -431,7 +437,7 @@ void FRenderer::RenderScene()
 		RenderDepth();
 	}
 	
-
+	RHIContext->BeginEvent(L"StaticPass");
 	RHIContext->SetViewport(Viewport);
 	RHIContext->SetScissor(0, 0, (long)Viewport.Width, (long)Viewport.Height);
 	RHIContext->SetPrimitiveTopology(PrimitiveTopology_TRIANGLELIST);
@@ -444,9 +450,6 @@ void FRenderer::RenderScene()
 
 	//set pipeline state
 	RHIContext->SetGraphicsPipilineState(PSOManager->GetGraphicsPSO("BasePass"));
-
-	//prepare shader parameters
-	RHIContext->PrepareShaderParameter();
 
 	//pass sceen constant buffer
 	RHIContext->SetSceneConstantBufferView(SceneConstantBuffer->GetRootParameterIndex(), SceneConstantBuffer);
@@ -462,6 +465,7 @@ void FRenderer::RenderScene()
 		//Draw Rendering items in scene
 		DrawRenderingMeshes(RenderingMeshes);
 	}
+	RHIContext->EndEvent();
 	
 	if (ShouldRenderSkeletal)
 	{
