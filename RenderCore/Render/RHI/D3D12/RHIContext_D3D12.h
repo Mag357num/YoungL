@@ -58,8 +58,24 @@ public:
 	virtual void BeginEvent(const wchar_t* Label)override;
 	virtual void EndEvent()override;
 
+#ifdef ENABLE_GPU_DRIVEN
+	virtual void Compute_BeginDraw(const wchar_t* Label)override;
+	virtual void Compute_EndDraw()override;
+
+	virtual void Compute_BeginEvent(const wchar_t* Label)override;
+	virtual void Compute_EndEvent()override;
+
+	virtual void Compute_PrepareShaderParameter()override;
+	virtual void Compute_TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter)override;
+
+	virtual void Compute_SetPipilineState(IRHIComputePipelineState* InPSO)override;
+	virtual void Compute_SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource)override;
+
+	virtual void WaitForComputeTask()override;
+	virtual void Compute_Dispatch(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)override;
+#endif // ENABLE_GPU_DRIVEN
+
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)override;
-	virtual void SetComputePipilineState(IRHIComputePipelineState* InPSO)override;
 
 	virtual void SetViewport(const FViewport& Viewport)override;
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight)override;
@@ -86,11 +102,6 @@ public:
 	virtual void DrawIndexedInstanced(UINT IndexCountPerInstance, UINT IndexCount, 
 					UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation)override;
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset /* = 0 */)override;
-
-
-	//for compute shader
-	virtual void DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)override;
-
 
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues)override;
 	virtual void SetSceneConstantBufferView(UINT SlotParaIndex, IRHIConstantBuffer<FSceneConstant>* InBuffer)override;
@@ -141,6 +152,17 @@ private:
 	ComPtr<ID3D12CommandQueue> CommandQueue;
 	ComPtr<ID3D12GraphicsCommandList>	CommandList;
 	ComPtr<ID3D12Fence>	Fence;
+
+#ifdef ENABLE_GPU_DRIVEN
+	ComPtr<ID3D12CommandAllocator> Compute_CmdAllocator;
+	ComPtr<ID3D12CommandQueue> Compute_CmdQueue;
+	ComPtr<ID3D12GraphicsCommandList>	Compute_CmdList;
+	ComPtr<ID3D12Fence>	Compute_Fence;
+#endif // ENABLE_GPU_DRIVEN
+
+
+
+
 	UINT64 CurrentFenceValue;
 
 

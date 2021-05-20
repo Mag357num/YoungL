@@ -63,7 +63,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	DsvDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	CbvSrvUavDescriptorSize = M_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	//create commang objects
+	//create command objects
 	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocator));
 	D3D12_COMMAND_QUEUE_DESC QueueDesc = {};
 	QueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -76,6 +76,25 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 	//create fence
 	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
+
+
+#ifdef ENABLE_GPU_DRIVEN
+	//create compute command objects
+	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&Compute_CmdAllocator));
+	D3D12_COMMAND_QUEUE_DESC Compute_QueueDesc = {};
+	Compute_QueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	Compute_QueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+	M_Device->CreateCommandQueue(&Compute_QueueDesc, IID_PPV_ARGS(&Compute_CmdQueue));
+	M_Device->CreateCommandList(1, D3D12_COMMAND_LIST_TYPE_COMPUTE, Compute_CmdAllocator.Get(), nullptr, IID_PPV_ARGS(&Compute_CmdList));
+
+	Compute_CmdList->Close();
+
+	//create fence
+	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Compute_Fence));
+#endif // ENABLE_GPU_DRIVEN
+
+
 
 	//create swapchain
 	SwapChain.Reset();
@@ -320,6 +339,105 @@ void FRHIContext_D3D12::EndEvent()
 	::PIXEndEvent(CommandList.Get());
 }
 
+#ifdef ENABLE_GPU_DRIVEN
+
+void FRHIContext_D3D12::Compute_BeginDraw(const wchar_t* Label)
+{
+	Compute_CmdAllocator->Reset();
+	Compute_CmdList->Reset(Compute_CmdAllocator.Get(), nullptr);
+
+	::PIXBeginEvent(Compute_CmdList.Get(), PIX_COLOR_DEFAULT, Label);
+}
+
+void FRHIContext_D3D12::Compute_EndDraw()
+{
+	::PIXEndEvent(Compute_CmdList.Get());
+
+	Compute_CmdList->Close();
+	ID3D12CommandList* CmdLists[] = { Compute_CmdList.Get() };
+	Compute_CmdQueue->ExecuteCommandLists(_countof(CmdLists), CmdLists);
+}
+
+void FRHIContext_D3D12::Compute_BeginEvent(const wchar_t* Label)
+{
+	::PIXBeginEvent(Compute_CmdList.Get(), PIX_COLOR_DEFAULT, Label);
+}
+
+void FRHIContext_D3D12::Compute_EndEvent()
+{
+	::PIXEndEvent(Compute_CmdList.Get());
+}
+
+void FRHIContext_D3D12::WaitForComputeTask()
+{
+	Compute_CmdQueue->Signal(Compute_Fence.Get(), CurrentFenceValue);
+
+	// Execute the rendering work only when the compute work is complete.
+	CommandQueue->Wait(Compute_Fence.Get(), CurrentFenceValue);
+}
+
+void FRHIContext_D3D12::Compute_Dispatch(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)
+{
+	Compute_CmdList->Dispatch(ThreadGroupX, ThreadGroupY, ThreadGroupZ);
+}
+
+void FRHIContext_D3D12::Compute_PrepareShaderParameter()
+{
+	ID3D12DescriptorHeap* DescriporHeaps[] = { CbvSrvUavHeap.Get() };
+	Compute_CmdList->SetDescriptorHeaps(_countof(DescriporHeaps), DescriporHeaps);
+}
+
+void FRHIContext_D3D12::Compute_TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter)
+{
+	if (!InResource)
+	{
+		return;
+	}
+
+
+	D3D12_RESOURCE_STATES Before = TranslateResourceState(StateBefore);
+	D3D12_RESOURCE_STATES After = TranslateResourceState(StateAfter);
+
+	ID3D12Resource* NativeResource = nullptr;
+
+	if (InResource->GetIsDepth())
+	{
+		FRHIDepthResource_D3D12* DepthResource_D3D12 = reinterpret_cast<FRHIDepthResource_D3D12*>(InResource);
+		NativeResource = DepthResource_D3D12->Resource.Get();
+	}
+	else
+	{
+		FRHIColorResource_D3D12* ColorResource_D3D12 = reinterpret_cast<FRHIColorResource_D3D12*>(InResource);
+		NativeResource = ColorResource_D3D12->Resource.Get();
+	}
+
+	D3D12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(NativeResource, Before, After);
+
+	Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	
+
+	Compute_CmdList->ResourceBarrier(1, &Barrier);
+}
+
+void FRHIContext_D3D12::Compute_SetPipilineState(IRHIComputePipelineState* InPSO)
+{
+	FRHIComputePipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIComputePipelineState_D3D12*>(InPSO);
+	Compute_CmdList->SetPipelineState(D3D12PSO->PSO.Get());
+	Compute_CmdList->SetComputeRootSignature(D3D12PSO->RootSignature.Get());
+}
+
+void FRHIContext_D3D12::Compute_SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource)
+{
+	if (InColorResource && InColorResource->GetUAVHandle())
+	{
+		FRHIResourceHandle_D3D12* UavHandle = reinterpret_cast<FRHIResourceHandle_D3D12*>(InColorResource->GetUAVHandle());
+		Compute_CmdList->SetComputeRootDescriptorTable(ParaIndex, *UavHandle->GetGpuHandle());
+	}
+}
+
+#endif // ENABLE_GPU_DRIVEN
+
+
 void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)
 {
 	FRHIGraphicsPipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIGraphicsPipelineState_D3D12*>(InPSO);
@@ -327,14 +445,6 @@ void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPS
 	CommandList->SetGraphicsRootSignature(D3D12PSO->RootSignature.Get());
 }
 
-void FRHIContext_D3D12::SetComputePipilineState(IRHIComputePipelineState* InPSO)
-{
-	FRHIComputePipelineState_D3D12* D3D12PSO = reinterpret_cast<FRHIComputePipelineState_D3D12*>(InPSO);
-	CommandList->SetPipelineState(D3D12PSO->PSO.Get());
-	CommandList->SetComputeRootSignature(D3D12PSO->RootSignature.Get());
-
-	//TODO:prepare GPU driven Descriptor
-}
 
 void FRHIContext_D3D12::SetViewport(const FViewport& Viewport)
 {
@@ -639,12 +749,6 @@ void FRHIContext_D3D12::Draw(UINT VertexCount, UINT VertexStartOffset)
 {
 	CommandList->DrawInstanced(VertexCount, 1, VertexStartOffset, 0);
 }
-
-void FRHIContext_D3D12::DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)
-{
-	CommandList->Dispatch(ThreadGroupX, ThreadGroupY, ThreadGroupZ);
-}
-
 
 void FRHIContext_D3D12::FlushCommandQueue()
 {

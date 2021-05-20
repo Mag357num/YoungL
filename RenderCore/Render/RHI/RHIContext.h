@@ -18,6 +18,7 @@ using namespace std;
 #include "RHIShader.h"
 #include "Formats.h"
 
+#define ENABLE_GPU_DRIVEN 1
 
 struct FViewport
 {
@@ -50,15 +51,35 @@ public:
 	}
 	virtual ~IRHIContext(){}
 
-	virtual void InitializeRHI(int InWidth, int InHeight){}
+	virtual void InitializeRHI(int InWidth, int InHeight) = 0;
 
-	virtual void Resize(int InWidth, int InHeight){}
+	virtual void Resize(int InWidth, int InHeight) = 0;
 
-	virtual void BeginDraw(const wchar_t* Label){}
-	virtual void EndDraw() {}
+	virtual void BeginDraw(const wchar_t* Label) = 0;
+	virtual void EndDraw() = 0;
 
-	virtual void BeginEvent(const wchar_t* Label){}
-	virtual void EndEvent(){}
+	virtual void BeginEvent(const wchar_t* Label) = 0;
+	virtual void EndEvent() = 0;
+
+#ifdef ENABLE_GPU_DRIVEN
+	virtual void Compute_BeginDraw(const wchar_t* Label) = 0;
+	virtual void Compute_EndDraw() = 0;
+
+	virtual void Compute_BeginEvent(const wchar_t* Label) = 0;
+	virtual void Compute_EndEvent() = 0;
+
+	virtual void WaitForComputeTask() = 0;
+
+	virtual void Compute_PrepareShaderParameter() = 0;
+
+	virtual void Compute_TransitionResource(IRHIResource* InResource, ERHIResourceState StateBefore, ERHIResourceState StateAfter) = 0;
+
+	virtual void Compute_SetPipilineState(IRHIComputePipelineState* InPSO) = 0;
+	virtual void Compute_SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource) = 0;
+
+	virtual void Compute_Dispatch(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ) = 0;
+#endif // ENABLE_GPU_DRIVEN
+
 
 	virtual void SetViewport(const FViewport& Viewport){}
 	virtual void SetScissor(long InX, long InY, long InWidth, long InHeight){}
@@ -85,8 +106,6 @@ public:
 	virtual void PreparePresentShaderParameter(){}
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO){}
-	virtual void SetComputePipilineState(IRHIComputePipelineState* InPSO) {}
-
 	virtual void SetGraphicRootConstant(UINT SlotParaIndex, UINT SrcData, UINT DestOffsetIn32BitValues){}
 
 	//for draw call info
@@ -103,7 +122,7 @@ public:
 	virtual void SetShaderResourceView(){}
 	virtual void SetDepthAsSRV(UINT ParaIndex, FRHIDepthResource* InDepthResource){}
 	virtual void SetColorSRV(UINT ParaIndex, FRHIColorResource* InColorResource){}
-	virtual void SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource){}
+	virtual void SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource) = 0;
 
 	virtual void SetPrimitiveTopology(){}
 
@@ -111,9 +130,6 @@ public:
 								UINT StartIndexLocation, INT BaseVertexLocation, UINT StartInstanceLocation){}
 
 	virtual void Draw(UINT VertexCount, UINT VertexStartOffset = 0){}
-
-	//for compute shader
-	virtual void DispatchCS(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ){}
 
 
 	virtual void FlushCommandQueue(){}

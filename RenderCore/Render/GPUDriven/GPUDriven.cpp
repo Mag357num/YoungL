@@ -22,7 +22,9 @@ FGPUDriven::~FGPUDriven()
 
 void FGPUDriven::PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOManager)
 {
-	RHIContext->BeginEvent(L"GPUDriven");
+#ifdef ENABLE_GPU_DRIVEN
+	RHIContext->Compute_BeginDraw(L"GPUDriven");
+	RHIContext->Compute_PrepareShaderParameter();
 	for (size_t Index = 0; Index < Processes.size(); ++Index)
 	{
 		if (Processes[Index]->GetActive())
@@ -30,7 +32,12 @@ void FGPUDriven::PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOMa
 			Processes[Index]->Run(RHIContext, InPSOManager);
 		}
 	}
-	RHIContext->EndEvent();
+	RHIContext->Compute_EndDraw();
+
+	RHIContext->WaitForComputeTask();
+#endif // ENABLE_GPU_DRIVEN
+
+
 }
 
 void FGPUDriven::InitFrustumCull(IRHIContext* RHIContext, FPSOManager* InPSOManager)

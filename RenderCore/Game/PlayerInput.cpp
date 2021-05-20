@@ -121,6 +121,8 @@ void UPlayerInput::OnWPressed(float DeltaTime)
 	//Utilities::Print(L"*** On W Pressed ***\n");
 	FVector CharacterPos = BindedCharacter.lock()->GetLocation();
 	FVector ForwarDir = BindedCamera.lock()->GetForwardDirection();
+	ForwarDir.Z = 0.0f;//reduce z move to 0
+	ForwarDir = ForwarDir.Normalize();
 
 	FVector TargetLoc = CharacterPos + ForwarDir * (DeltaTime * 100.0f);
 	BindedCharacter.lock()->SetLocation(TargetLoc);

@@ -82,7 +82,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	ShouldRenderSkeletal = true;
 	ShouldRenderInstanced = false;
 	ShouldAutoRotateLight = false;
-	EnableGPUDriven = false;
+	EnableGPUDriven = true;
 
 	//for postprocess
 	ShouldRenderPostProcess = true;
