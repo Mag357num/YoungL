@@ -3,15 +3,15 @@
 
 #include "ModelLoader.h"
 
-FGameCore::FGameCore(int ViewWidth, int ViewHeigt)
+UGameCore::UGameCore(int ViewWidth, int ViewHeigt)
 {
-	Camera = std::make_unique<FCamera>(ViewWidth, ViewHeigt);
+	Camera = std::make_shared<UCamera>(ViewWidth, ViewHeigt);
 
 	bMouseButtonDown = false;
 	MousePosition = FVector2D(0.0f, 0.0f);
 }
 
-FGameCore::~FGameCore()
+UGameCore::~UGameCore()
 {
 	Camera.reset();
 
@@ -22,17 +22,17 @@ FGameCore::~FGameCore()
 	}
 }
 
-void FGameCore::OnKeyDown(UINT8 Key)
+void UGameCore::OnKeyDown(UINT8 Key)
 {
 
 }
 
-void FGameCore::OnKeyUp(UINT8 Key)
+void UGameCore::OnKeyUp(UINT8 Key)
 {
 
 }
 
-void FGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
+void UGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
 {
 	MousePosition.X = (float)X;
 	MousePosition.Y = (float)Y;
@@ -45,12 +45,12 @@ void FGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
 	bMouseButtonDown = true;
 }
 
-void FGameCore::OnMouseButtonUp(WPARAM BtnState, int X, int Y)
+void UGameCore::OnMouseButtonUp(WPARAM BtnState, int X, int Y)
 {
 	bMouseButtonDown = false;
 }
 
-void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
+void UGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 {
 	if (bMouseButtonDown)
 	{
@@ -67,9 +67,12 @@ void FGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
 	}
 }
 
-void FGameCore::Initialize()
+void UGameCore::Initialize()
 {
 	AssetManager = new UGameAssetManager();
+
+	PlayerInput = new UPlayerInput();
+
 
 	AssetPaths.push_back(L"Models/ModelFloor.Bin");
 	AssetPaths.push_back(L"Models/ModelSave.Bin");
@@ -87,7 +90,7 @@ void FGameCore::Initialize()
 		}
 	}
 
-	SkinedPaths.push_back(L"Models/soldier.m3d");
+	//SkinedPaths.push_back(L"Models/soldier.m3d");
 	SkinedPaths.push_back(L"Models/Skeleton.m3d");
 	for (size_t Index = 0; Index < SkinedPaths.size(); ++Index)
 	{
@@ -97,8 +100,8 @@ void FGameCore::Initialize()
 		if (Index == 0)
 		{
 			SkinedActors[0]->InitiallySetLocation(FVector(200.0f, 0.0f, 0.0f));
-			SkinedActors[0]->InitiallySetScaling(FVector(3.0f, 3.0f, 3.0f));
-			SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
+			SkinedActors[0]->InitiallySetScaling(FVector(1.0f, 1.0f, 1.0f));
+			//SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
 		}
 	}
 
@@ -119,7 +122,7 @@ void FGameCore::Initialize()
 			std::string Name = "InstancedStaticMeshActor";
 			Name += to_string(RandomInt);
 
-			std::unique_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_unique<AInstancedStaticMeshActor>(Name);
+			std::shared_ptr<AInstancedStaticMeshActor> TestInstanceActor = std::make_shared<AInstancedStaticMeshActor>(Name);
 			TestInstanceActor->SetStaticMesh(InstanceStatic);
 
 			TestInstanceActor->InitiallySetLocation(FVector(200.0f, 200.0f, 0.0f));
@@ -139,7 +142,7 @@ void FGameCore::Initialize()
 				}
 			}
 
-			InstanceStaticActors.push_back(std::move(TestInstanceActor));
+			InstanceStaticActors.push_back(TestInstanceActor);
 		}
 	}
 
@@ -182,7 +185,7 @@ static void UpdateSceneConstantBuffer_RenderThread(FSceneConstant* SceneConstant
 	FRenderThreadManager::UpdateSceneConstantBuffer(SceneConstant);
 }
 
-void FGameCore::Tick(float DeltaTime)
+void UGameCore::Tick(float DeltaTime)
 {
 
 	//Utilities::Print(L"Game Thread Tick.....\n");
@@ -244,7 +247,7 @@ void FGameCore::Tick(float DeltaTime)
 	}
 }
 
-void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
+void UGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 {
 	int RandomInt = rand();
 
@@ -252,7 +255,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 	{
 		std::string Name = "SkinnedMeshActor";
 		Name += to_string(RandomInt);
-		std::unique_ptr<ASkeletalMeshActor> SkinedActor = std::make_unique<ASkeletalMeshActor>(Name);
+		std::shared_ptr<ASkeletalMeshActor> SkinedActor = std::make_shared<ASkeletalMeshActor>(Name);
 
 		std::shared_ptr<USkeletalMesh> SkeletalMesh = AssetManager->CheckSkeletalMeshLoaded(Path);
 		if (!SkeletalMesh)
@@ -268,7 +271,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 		SkinedActor->SetSkeletalMesh(SkeletalMesh);
 		//SkinedActor->SetSkinGeometry(SkinGeo);
 		SkinedActor->TestPlayAnimation();//test play
-		SkinedActors.push_back(std::move(SkinedActor));
+		SkinedActors.push_back(SkinedActor);
 
 	}
 	else
@@ -276,7 +279,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 		
 		std::string Name = "StaticMeshActor";
 		Name += to_string(RandomInt);
-		std::unique_ptr<AStaticMeshActor> GeoActor = std::make_unique<AStaticMeshActor>(Name);
+		std::shared_ptr<AStaticMeshActor> GeoActor = std::make_shared<AStaticMeshActor>(Name);
 
 		std::shared_ptr<UStaticMesh> StaticMesh = AssetManager->CheckStaticMeshLoaded(Path);
 		if (!StaticMesh)
@@ -291,7 +294,7 @@ void FGameCore::LoadActor(std::wstring& Path, bool bSkinedActor)
 		
 
 		GeoActor->SetStaticMesh(StaticMesh);
-		StaticActors.push_back(std::move(GeoActor));
+		StaticActors.push_back(GeoActor);
 	}
 	
 

@@ -50,10 +50,6 @@ private:
 	int ClientWidth = 800;
 	int ClientHeight = 600;
 
-	//game and render
-	FGameCore* GameCore;
-	FGameTimer* GameTimer;
-
 	std::shared_ptr<FRenderThreadManager> RenderThreadManager;
 };
 

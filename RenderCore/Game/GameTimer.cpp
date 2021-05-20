@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-FGameTimer::FGameTimer()
+UGameTimer::UGameTimer()
 {
 	__int64 CountPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&CountPerSec);
@@ -13,12 +13,12 @@ FGameTimer::FGameTimer()
 	FrameRate = 90;
 }
 
-FGameTimer::~FGameTimer()
+UGameTimer::~UGameTimer()
 {
 
 }
 
-float FGameTimer::GetTotalTime()const
+float UGameTimer::GetTotalTime()const
 {
 	// If we are stopped, do not count the time that has passed since we stopped.
 // Moreover, if we previously already had a pause, the distance 
@@ -50,12 +50,12 @@ float FGameTimer::GetTotalTime()const
 	}
 }
 
-float FGameTimer::GetDeltaTime()const
+float UGameTimer::GetDeltaTime()const
 {
 	return (float)DelteTime;
 }
 
-void FGameTimer::Reset()
+void UGameTimer::Reset()
 {
 	__int64 TemCurrTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&TemCurrTime);
@@ -66,7 +66,7 @@ void FGameTimer::Reset()
 	bStoped = true;
 }
 
-void FGameTimer::Start()
+void UGameTimer::Start()
 {
 	if (bStoped)
 	{
@@ -80,7 +80,7 @@ void FGameTimer::Start()
 	}
 }
 
-void FGameTimer::Stop()
+void UGameTimer::Stop()
 {
 	if (!bStoped)
 	{
@@ -92,7 +92,7 @@ void FGameTimer::Stop()
 	}
 }
 
-void FGameTimer::Tick()
+void UGameTimer::Tick()
 {
 	if (bStoped)
 	{
@@ -113,7 +113,7 @@ void FGameTimer::Tick()
 	}
 }
 
-double FGameTimer::GetFPS()
+double UGameTimer::GetFPS()
 {
 	double ActoruallyFrame = DelteTime;
 	double FreeStateFrameTime = 1.0f / FrameRate;
@@ -129,7 +129,7 @@ double FGameTimer::GetFPS()
 	return 1.0f / ActoruallyFrame;
 }
 
-__int64 FGameTimer::GetCurrentTimeCount()
+__int64 UGameTimer::GetCurrentTimeCount()
 {
 	__int64 TemCurrTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&TemCurrTime);
@@ -137,7 +137,7 @@ __int64 FGameTimer::GetCurrentTimeCount()
 	return TemCurrTime;
 }
 
-double FGameTimer::GetDeltaTimeBetweenTwoCount(__int64 Start, __int64 End)
+double UGameTimer::GetDeltaTimeBetweenTwoCount(__int64 Start, __int64 End)
 {
 	double RetDelta;
 	RetDelta = (CurrTime - PrevTime) * SecondsPerCount;

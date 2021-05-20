@@ -3,7 +3,7 @@
 
 #define  CAMERAPI 3.1416f
 
-FCamera::FCamera(int ViewWidth, int ViewHeigt)
+UCamera::UCamera(int ViewWidth, int ViewHeigt)
 	:CamPos(FVector4D(800.0f, 0.0f, 150.0f, 0.0f)),
 	CamTarget(FVector(0.0f, 0.0f, 150.0f)),
 	CamUp(FVector(0.0f, 0.0f, 1.0f)),
@@ -32,12 +32,12 @@ FCamera::FCamera(int ViewWidth, int ViewHeigt)
 	IsCamerInfoDirty = true;
 }
 
-FCamera::~FCamera()
+UCamera::~UCamera()
 {
 
 }
 
-void FCamera::UpdateView()
+void UCamera::UpdateView()
 {
 	FVector4D TempCameraTarget = FVector4D(CamTarget.X, CamTarget.Y, CamTarget.Z, 0.0f);
 	FVector4D TempCameraLoc = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
@@ -48,13 +48,13 @@ void FCamera::UpdateView()
 	IsCamerInfoDirty = true;
 }
 
-void FCamera::UpdateProj()
+void UCamera::UpdateProj()
 {
 	Proj = FMath::MatrixPerspectiveFovLH(CAMERAPI * Fov / 180.0f, AspectRatio, NearPlan, FarPlan);
 	IsCamerInfoDirty = true;
 }
 
-void FCamera::Pitch(float Dy)
+void UCamera::Pitch(float Dy)
 {
 	float Radians = CAMERAPI * Dy/180.0f;
 	CamPitch += Radians;
@@ -75,7 +75,7 @@ void FCamera::Pitch(float Dy)
 	UpdateView();
 }
 
-void FCamera::Rotate(float Dx)
+void UCamera::Rotate(float Dx)
 {
 	float Radians = CAMERAPI * Dx / 180.0f;
 	CamRotate += Radians;
@@ -91,22 +91,22 @@ void FCamera::Rotate(float Dx)
 	UpdateView();
 }
 
-void FCamera::SetCameraLocation(FVector InNewLoc)
+void UCamera::SetCameraLocation(FVector InNewLoc)
 {
 
 }
 
-void FCamera::SetCameraTargetLoc(FVector InNewTarget)
+void UCamera::SetCameraTargetLoc(FVector InNewTarget)
 {
 
 }
 
-void FCamera::SetFov(float InFov)
+void UCamera::SetFov(float InFov)
 {
 
 }
 
-void FCamera::SetAspectRatio(float InAspectRatio)
+void UCamera::SetAspectRatio(float InAspectRatio)
 {
 
 }

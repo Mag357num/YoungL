@@ -39,17 +39,17 @@ void FRenderThreadManager::NotifyRenderThreadJob()
 	RenderThread->NotifyRenderThreadJob();
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AStaticMeshActor>>& Actors)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::shared_ptr<AStaticMeshActor>>& Actors)
 {
 	Renderer->CreateRenderingItem(Actors);
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<ASkeletalMeshActor>>& Actors)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::shared_ptr<ASkeletalMeshActor>>& Actors)
 {
 	Renderer->CreateRenderingItem(Actors);
 }
 
-void FRenderThreadManager::CreateRenderingItems(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& Actors)
+void FRenderThreadManager::CreateRenderingItems(std::vector<std::shared_ptr<AInstancedStaticMeshActor>>& Actors)
 {
 	Renderer->CreateRenderingItem(Actors);
 }

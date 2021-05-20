@@ -17,7 +17,7 @@ public:
 	void InitRenderer(int InWidth, int InHeight);
 	virtual void Tick();
 
-	FGameCore* GetGameCore(){return GameCore;}
+	UGameCore* GetGameCore(){return GameCore;}
 	FRenderThreadManager* GetRenderThreadManager(){return RenderThreadManager.get();}
 	
 	double GetFPS(){
@@ -38,8 +38,8 @@ private:
 
 
 	//game and render
-	FGameCore* GameCore;
-	FGameTimer* GameTimer;
+	UGameCore* GameCore;
+	UGameTimer* GameTimer;
 
 	std::shared_ptr<FRenderThreadManager> RenderThreadManager;
 };

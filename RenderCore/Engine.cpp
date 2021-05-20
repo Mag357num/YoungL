@@ -24,21 +24,21 @@ void FEngine::InitGame(int InWidth, int InHeight)
 	//init game core
 	if (!GameCore)
 	{
-		GameCore = new FGameCore(InWidth, InHeight);
+		GameCore = new UGameCore(InWidth, InHeight);
 		GameCore->Initialize();
 	}
 
 	//init game timer
 	if (!GameTimer)
 	{
-		GameTimer = new FGameTimer();
+		GameTimer = new UGameTimer();
 		//prepare timer start
 		GameTimer->Reset();
 		GameTimer->Start();
 	}
 }
 
-static void CreateRenderingItem_RenderThread(FGameCore* InGame)
+static void CreateRenderingItem_RenderThread(UGameCore* InGame)
 {
 	FRenderThreadManager::CreateRenderingItems(InGame->GetStaticActors());
 	FRenderThreadManager::CreateRenderingItems(InGame->GetSkinedActors());

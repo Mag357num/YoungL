@@ -13,14 +13,15 @@
 #include "Camera.h"
 #include "GameAssetManager.h"
 #include "../Render/RenderThreadManager.h"
+#include "PlayerInput.h"
 
-class FGameCore
+class UGameCore
 {
 public:
-	FGameCore(int ViewWidth, int ViewHeigt);
-	~FGameCore();
+	UGameCore(int ViewWidth, int ViewHeigt);
+	~UGameCore();
 
-	FGameCore(){}
+	UGameCore(){}
 
 	virtual void Initialize();
 	virtual void ShutDown()
@@ -72,6 +73,12 @@ public:
 			delete AssetManager;
 			AssetManager = nullptr;
 		}
+
+		if (PlayerInput)
+		{
+			delete PlayerInput;
+			PlayerInput = nullptr;
+		}
 	}
 
 	virtual void Tick(float DeltaTime);
@@ -83,31 +90,33 @@ public:
 	virtual void OnMouseButtonUp(WPARAM BtnState, int X, int Y);
 	virtual void OnMouseMove(WPARAM BtnState, int X, int Y);
 
-	std::vector<std::unique_ptr<AStaticMeshActor>>& GetStaticActors() {
+	std::vector<std::shared_ptr<AStaticMeshActor>>& GetStaticActors() {
 		return StaticActors;}
 
-	std::vector<std::unique_ptr<ASkeletalMeshActor>>& GetSkinedActors() {
+	std::vector<std::shared_ptr<ASkeletalMeshActor>>& GetSkinedActors() {
 		return SkinedActors;
 	}
-	std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& GetInstancedStaticMeshActors() {
+	std::vector<std::shared_ptr<AInstancedStaticMeshActor>>& GetInstancedStaticMeshActors() {
 		return InstanceStaticActors;
 	}
 
 	std::weak_ptr<FRenderThreadManager> RenderThreadManager_Weak;
 private:
 	UGameAssetManager* AssetManager;
+
+	UPlayerInput* PlayerInput;	
 	
 	void LoadActor(std::wstring& Path, bool bSkinedActor = false);
 
-	//unique_ptr will be automated released when ~FGameCore
-	std::vector<std::unique_ptr<AStaticMeshActor>> StaticActors;
-	std::vector<std::unique_ptr<ASkeletalMeshActor>> SkinedActors;
-	std::vector<std::unique_ptr<AInstancedStaticMeshActor>> InstanceStaticActors;
+	//unique_ptr will be automated released when ~UGameCore
+	std::vector<std::shared_ptr<AStaticMeshActor>> StaticActors;
+	std::vector<std::shared_ptr<ASkeletalMeshActor>> SkinedActors;
+	std::vector<std::shared_ptr<AInstancedStaticMeshActor>> InstanceStaticActors;
 
 	std::vector<std::wstring> AssetPaths;
 	std::vector<std::wstring> SkinedPaths;
 
-	std::unique_ptr<FCamera> Camera;
+	std::shared_ptr<UCamera> Camera;
 
 	FSceneConstant* SceneConstant;
 

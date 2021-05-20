@@ -243,6 +243,9 @@
     <ClInclude Include="Render\GPUDriven\FrustumCull.h">
       <Filter>头文件\Render\GPUDriven</Filter>
     </ClInclude>
+    <ClInclude Include="Game\PlayerInput.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -334,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="Render\GPUDriven\FrustumCull.cpp">
       <Filter>源文件\Render\GPUDriven</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\PlayerInput.cpp">
+      <Filter>源文件\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

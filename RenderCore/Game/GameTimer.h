@@ -1,10 +1,10 @@
 #pragma once
 
-class FGameTimer
+class UGameTimer
 {
 public:
-	FGameTimer();
-	~FGameTimer();
+	UGameTimer();
+	~UGameTimer();
 
 	float GetTotalTime()const;
 	float GetDeltaTime()const;

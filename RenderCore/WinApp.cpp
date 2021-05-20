@@ -11,7 +11,7 @@ namespace WinApp
 
 LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPara)
 {
-	FGameCore* Game = reinterpret_cast<FGameCore*>(GetWindowLongPtr(Hwnd, GWLP_USERDATA));
+	UGameCore* Game = reinterpret_cast<UGameCore*>(GetWindowLongPtr(Hwnd, GWLP_USERDATA));
 	switch (Msg)
 	{
 	case WM_CREATE:

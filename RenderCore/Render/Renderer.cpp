@@ -224,7 +224,7 @@ void FRenderer::Resize(int InWidth, int InHeight)
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& StaticMeshActors)
+void FRenderer::CreateRenderingItem(std::vector<std::shared_ptr<AStaticMeshActor>>& StaticMeshActors)
 {
 	for (int Index = 0; Index < StaticMeshActors.size(); ++Index)
 	{
@@ -275,7 +275,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& SkeletalMeshActors)
+void FRenderer::CreateRenderingItem(std::vector<std::shared_ptr<ASkeletalMeshActor>>& SkeletalMeshActors)
 {
 	for (int Index = 0; Index < SkeletalMeshActors.size(); ++Index)
 	{
@@ -329,7 +329,7 @@ void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshAct
 	}
 }
 
-void FRenderer::CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& InstancedActors)
+void FRenderer::CreateRenderingItem(std::vector<std::shared_ptr<AInstancedStaticMeshActor>>& InstancedActors)
 {
 	for (int Index = 0; Index < InstancedActors.size(); ++Index)
 	{

@@ -1,14 +1,14 @@
 #pragma once
 #include "Utilities.h"
 
-class FCamera
+class UCamera
 {
 public:
-	FCamera(int ViewWidth, int ViewHeigt);
+	UCamera(int ViewWidth, int ViewHeigt);
 
-	FCamera(){}
+	UCamera(){}
 
-	~FCamera();
+	~UCamera();
 
 	FMatrix* GetCameraView(){return &View;}
 	FMatrix* GetCameraProj(){return &Proj;}

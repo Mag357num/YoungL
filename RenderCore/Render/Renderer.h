@@ -29,9 +29,9 @@ public:
 	void Resize(int InWidth, int InHeight);
 
 	//
-	void CreateRenderingItem(std::vector<std::unique_ptr<AStaticMeshActor>>& StaticMeshActors);
-	void CreateRenderingItem(std::vector<std::unique_ptr<ASkeletalMeshActor>>& SkeletalMeshActors);
-	void CreateRenderingItem(std::vector<std::unique_ptr<AInstancedStaticMeshActor>>& InstancedActors);
+	void CreateRenderingItem(std::vector<std::shared_ptr<AStaticMeshActor>>& StaticMeshActors);
+	void CreateRenderingItem(std::vector<std::shared_ptr<ASkeletalMeshActor>>& SkeletalMeshActors);
+	void CreateRenderingItem(std::vector<std::shared_ptr<AInstancedStaticMeshActor>>& InstancedActors);
 
 	void PostProcess();
 

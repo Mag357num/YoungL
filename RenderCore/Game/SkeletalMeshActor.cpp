@@ -36,7 +36,8 @@ ASkeletalMeshActor::~ASkeletalMeshActor()
 
 void ASkeletalMeshActor::TestPlayAnimation()
 {
-	PlayAnimationClip("Take1");
+	//PlayAnimationClip("Idle");
+	PlayAnimationClip("Walk");
 }
 
 void ASkeletalMeshActor::PlayAnimationClip(std::string ClipName)
