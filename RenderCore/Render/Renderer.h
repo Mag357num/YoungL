@@ -20,9 +20,8 @@ public:
 
 	void RenderScene();
 
-	void UpdateConstantBuffer();
-
 	void UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant);
+	void UpdateActorConstantBuffer(std::string ActorName, FObjectConstants* ObjConstants);
 
 	void UpdateSkinnedMeshBoneTransform(std::string ActorName, FBoneTransforms* InBoneTrans);
 
@@ -75,7 +74,7 @@ private:
 	bool ShouldRenderSkeletal;
 	bool ShouldRenderInstanced;
 	bool ShouldAutoRotateLight;
-
+	bool EnableGPUDriven;
 	//for postprocess
 	bool ShouldRenderPostProcess;
 	FPostProcessing* PostProcessing;

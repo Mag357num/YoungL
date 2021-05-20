@@ -15,9 +15,10 @@ public:
 			Utilities::Print(L"Error!! Actor should have a name!!\n");
 		}
 
+		bActorTransformDirty = false;
 		ActorName = new std::string(InName);
 
-		ObjectConstants = std::make_unique<FObjectConstants>();
+		ObjectConstants = std::make_shared<FObjectConstants>();
 
 		Translation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
 		Rotation = FVector4D(0.0f, 0.0f, 0.0f, 0.0f);
@@ -29,7 +30,7 @@ public:
 
 	}
 
-	virtual void Tick(float DeltaTime){}
+	virtual void Tick(float DeltaTime);
 
 	std::string* GetName(){return ActorName;}
 
@@ -39,35 +40,22 @@ public:
 	FObjectConstants* GetObjectConstants(){return ObjectConstants.get();}
 
 	//called before create rendering mesh
-	void InitiallySetLocation(FVector InLoc){
-		Translation.X = InLoc.X;
-		Translation.Y = InLoc.Y;
-		Translation.Z = InLoc.Z;
+	void InitiallySetLocation(FVector InLoc);
 
-		ObjectConstants->ObjectWorld = FMath::MatrixAffineTransformation(Scaling, Rotation, Translation);
-		ObjectConstants->ObjectWorld = FMath::MatrixTranspose(ObjectConstants->ObjectWorld);
-	}
+	void InitiallySetRotation(FVector4D InQuat);
 
-	void InitiallySetRotation(FVector4D InQuat) {
-		Rotation.X = InQuat.X;
-		Rotation.Y = InQuat.Y;
-		Rotation.Z = InQuat.Z;
-		Rotation.W = InQuat.W;
-
-		ObjectConstants->ObjectWorld = FMath::MatrixAffineTransformation(Scaling, Rotation, Translation);
-		ObjectConstants->ObjectWorld = FMath::MatrixTranspose(ObjectConstants->ObjectWorld);
-	}
-
-	void InitiallySetScaling(FVector InScaling) {
-		Scaling.X = InScaling.X;
-		Scaling.Y = InScaling.Y;
-		Scaling.Z = InScaling.Z;
-
-		ObjectConstants->ObjectWorld = FMath::MatrixAffineTransformation(Scaling, Rotation, Translation);
-		ObjectConstants->ObjectWorld = FMath::MatrixTranspose(ObjectConstants->ObjectWorld);
-	}
+	void InitiallySetScaling(FVector InScaling);
 
 	//TODO: Dirty Constant Data
+	void SetLocation(FVector NewLoc);
+	FVector GetLocation();
+
+	void SetRotation(FVector NewRot);
+	FVector GetRotation();
+
+	void SetScale(FVector NewScale);
+	FVector GetScale();
+
 
 protected:
 	
@@ -76,9 +64,12 @@ protected:
 	FVector4D Scaling;
 
 	std::string* ActorName;
-	std::unique_ptr<FObjectConstants> ObjectConstants;
+	std::shared_ptr<FObjectConstants> ObjectConstants;
+
+	void MarkActorTransformDirty() { bActorTransformDirty = true; }
+
+	bool bActorTransformDirty;
 
 private:
-
 	std::weak_ptr<UStaticMesh> StaticMesh;
 };

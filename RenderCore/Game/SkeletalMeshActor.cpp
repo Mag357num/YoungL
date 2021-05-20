@@ -70,6 +70,8 @@ static void UpdateSkinnedMeshBoneTransform_RenderThread(std::string* ActorName, 
 
 void ASkeletalMeshActor::Tick(float DeltaTime)
 {
+	AStaticMeshActor::Tick(DeltaTime);
+
 	if (SkinedData)
 	{
 		//start to play

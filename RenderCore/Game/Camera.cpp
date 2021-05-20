@@ -91,6 +91,19 @@ void UCamera::Rotate(float Dx)
 	UpdateView();
 }
 
+FVector UCamera::GetForwardDirection()
+{
+	FVector Ret( CamTarget.X - CamPos.X, CamTarget.Y - CamPos.Y, CamTarget.Z - CamPos.Z);
+	return Ret.Normalize();
+}
+
+//FVector UCamera::GetLeftDirection()
+//{
+//	FVector Ret(CamTarget.X - CamPos.X, CamTarget.Y - CamPos.Y, CamTarget.Z - CamPos.Z);
+//
+//	return Ret;
+//}
+
 void UCamera::SetCameraLocation(FVector InNewLoc)
 {
 

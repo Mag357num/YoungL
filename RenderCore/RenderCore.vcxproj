@@ -205,6 +205,7 @@
     <ClInclude Include="Game\GameAssetManager.h" />
     <ClInclude Include="Game\GameCore.h" />
     <ClInclude Include="Game\GameTimer.h" />
+    <ClInclude Include="Game\InputBinding.h" />
     <ClInclude Include="Game\InstancedStaticMeshActor.h" />
     <ClInclude Include="Game\Object.h" />
     <ClInclude Include="Game\PlayerInput.h" />
@@ -275,6 +276,7 @@
     <ClCompile Include="Game\PlayerInput.cpp" />
     <ClCompile Include="Game\SkinData.cpp" />
     <ClCompile Include="Game\SkeletalMeshActor.cpp" />
+    <ClCompile Include="Game\StaticMeshActor.cpp" />
     <ClCompile Include="Game\Texture.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

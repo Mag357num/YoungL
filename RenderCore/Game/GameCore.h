@@ -83,12 +83,7 @@ public:
 
 	virtual void Tick(float DeltaTime);
 
-	virtual void OnKeyDown(UINT8 Key);
-	virtual void OnKeyUp(UINT8 Key);
-
-	virtual void OnMouseButtonDown(WPARAM BtnState, int X, int Y);
-	virtual void OnMouseButtonUp(WPARAM BtnState, int X, int Y);
-	virtual void OnMouseMove(WPARAM BtnState, int X, int Y);
+	UPlayerInput* GetPlayerInput(){return PlayerInput;}
 
 	std::vector<std::shared_ptr<AStaticMeshActor>>& GetStaticActors() {
 		return StaticActors;}
@@ -120,12 +115,7 @@ private:
 
 	FSceneConstant* SceneConstant;
 
-	//mouse position
-	FVector2D MousePosition;
-	//saved to update delta x && delta Y in window
-	POINT WindowOffset;
 
-	bool bMouseButtonDown;
 
 };
 

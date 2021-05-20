@@ -17,6 +17,7 @@ public:
 	static void CreateRenderingItems(std::vector<std::shared_ptr<ASkeletalMeshActor>>& Actors);
 	static void CreateRenderingItems(std::vector<std::shared_ptr<AInstancedStaticMeshActor>>& Actors);
 	static void UpdateSceneConstantBuffer(FSceneConstant* SceneConstant);
+	static void UpdateActorConstantBuffer(std::string ActorName, FObjectConstants* ObjConstants);
 
 	static void UpdateSkinnedMeshBoneTransform(std::string* ActorName, FBoneTransforms* InBoneTrans);
 

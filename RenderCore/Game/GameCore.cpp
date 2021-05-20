@@ -7,8 +7,6 @@ UGameCore::UGameCore(int ViewWidth, int ViewHeigt)
 {
 	Camera = std::make_shared<UCamera>(ViewWidth, ViewHeigt);
 
-	bMouseButtonDown = false;
-	MousePosition = FVector2D(0.0f, 0.0f);
 }
 
 UGameCore::~UGameCore()
@@ -22,56 +20,12 @@ UGameCore::~UGameCore()
 	}
 }
 
-void UGameCore::OnKeyDown(UINT8 Key)
-{
-
-}
-
-void UGameCore::OnKeyUp(UINT8 Key)
-{
-
-}
-
-void UGameCore::OnMouseButtonDown(WPARAM BtnState, int X, int Y)
-{
-	MousePosition.X = (float)X;
-	MousePosition.Y = (float)Y;
-
-	POINT CurPoint = { 0, 0 };
-	GetCursorPos(&CurPoint);
-	WindowOffset.x = CurPoint.x - X;
-	WindowOffset.y = CurPoint.y - Y;
-
-	bMouseButtonDown = true;
-}
-
-void UGameCore::OnMouseButtonUp(WPARAM BtnState, int X, int Y)
-{
-	bMouseButtonDown = false;
-}
-
-void UGameCore::OnMouseMove(WPARAM BtnState, int X, int Y)
-{
-	if (bMouseButtonDown)
-	{
-		//get window offset
-		float Dx = X - MousePosition.X;
-		float Dy = Y - MousePosition.Y;
-
-		Camera->Pitch(Dy * 0.2f);
-		Camera->Rotate(Dx * 0.2f);
-
-
-		MousePosition.X = (float)X;
-		MousePosition.Y = (float)Y;
-	}
-}
-
 void UGameCore::Initialize()
 {
 	AssetManager = new UGameAssetManager();
 
 	PlayerInput = new UPlayerInput();
+	PlayerInput->SetBindedCamera(Camera);
 
 
 	AssetPaths.push_back(L"Models/ModelFloor.Bin");
@@ -102,8 +56,11 @@ void UGameCore::Initialize()
 			SkinedActors[0]->InitiallySetLocation(FVector(200.0f, 0.0f, 0.0f));
 			SkinedActors[0]->InitiallySetScaling(FVector(1.0f, 1.0f, 1.0f));
 			//SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
+
+			PlayerInput->SetBindedCharacter(SkinedActors[0]);
 		}
 	}
+	
 
 	//test for InstancedStaticMeshActor
 	//"Models/skull.txt"
@@ -187,18 +144,19 @@ static void UpdateSceneConstantBuffer_RenderThread(FSceneConstant* SceneConstant
 
 void UGameCore::Tick(float DeltaTime)
 {
+	
+	//Tick player input
+	if (PlayerInput)
+	{
+		PlayerInput->Tick(DeltaTime);
+	}
 
 	//Utilities::Print(L"Game Thread Tick.....\n");
 	
 	//Tick Game Logic...
 	//todo:
 	//deal with Rotate event
-	if (bMouseButtonDown)
-	{
-		POINT CurPoint = { 0, 0 };
-		GetCursorPos(&CurPoint);
-		OnMouseMove(WM_LBUTTONDOWN, CurPoint.x - WindowOffset.x, CurPoint.y - WindowOffset.y);
-	}
+
 
 	//update camera canstant
 	if (Camera->CameraInfoDirty())

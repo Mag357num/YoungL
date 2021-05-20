@@ -27,6 +27,9 @@ public:
 		return IsCamerInfoDirty;
 	}
 
+	FVector GetForwardDirection();
+	//FVector GetLeftDirection();
+
 	//called from game tick
 	void ResetDirtyFlat(){IsCamerInfoDirty = false;}
 private:

@@ -12,6 +12,13 @@ namespace WinApp
 LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPara)
 {
 	UGameCore* Game = reinterpret_cast<UGameCore*>(GetWindowLongPtr(Hwnd, GWLP_USERDATA));
+	UPlayerInput* Input = nullptr;
+	if (Game)
+	{
+		Input = Game->GetPlayerInput();
+	}
+	
+
 	switch (Msg)
 	{
 	case WM_CREATE:
@@ -23,25 +30,32 @@ LRESULT CALLBACK WndProc_CallBack(HWND Hwnd, UINT Msg, WPARAM WPara, LPARAM LPar
 	return 0;
 
 	case WM_KEYDOWN:
-		if (Game)
+		if (Input)
 		{
-			Game->OnKeyDown(static_cast<UINT8>(WPara));
+			Input->OnKeyDown(static_cast<UINT8>(WPara));
 		}
 		return 0;
 
 	case WM_KEYUP:
-		if (Game)
+		if (Input)
 		{
-			Game->OnKeyUp(static_cast<UINT8>(WPara));
+			Input->OnKeyUp(static_cast<UINT8>(WPara));
 		}
 		return 0;
 
 	case WM_LBUTTONDOWN:
-		Game->OnMouseButtonDown(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		if (Input)
+		{
+			Input->OnMouseButtonDown(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		}
+		
 		break;
 
 	case WM_LBUTTONUP:
-		Game->OnMouseButtonUp(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		if (Input)
+		{
+			Input->OnMouseButtonUp(WPara, GET_X_LPARAM(LPara), GET_Y_LPARAM(LPara));
+		}
 		break;
 
 	//case WM_MOUSEMOVE:

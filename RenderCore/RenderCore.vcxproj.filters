@@ -246,6 +246,9 @@
     <ClInclude Include="Game\PlayerInput.h">
       <Filter>头文件\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\InputBinding.h">
+      <Filter>头文件\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -339,6 +342,9 @@
       <Filter>源文件\Render\GPUDriven</Filter>
     </ClCompile>
     <ClCompile Include="Game\PlayerInput.cpp">
+      <Filter>源文件\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\StaticMeshActor.cpp">
       <Filter>源文件\Game</Filter>
     </ClCompile>
   </ItemGroup>

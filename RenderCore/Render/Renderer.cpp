@@ -82,6 +82,7 @@ void FRenderer::CreateRHIContext(int InWidth, int Inheight)
 	ShouldRenderSkeletal = true;
 	ShouldRenderInstanced = false;
 	ShouldAutoRotateLight = false;
+	EnableGPUDriven = false;
 
 	//for postprocess
 	ShouldRenderPostProcess = true;
@@ -423,7 +424,7 @@ void FRenderer::RenderScene()
 	RHIContext->PrepareShaderParameter();
 
 	//for gpu driven
-	if (GPUDriven)
+	if (GPUDriven && EnableGPUDriven)
 	{
 		GPUDriven->PopulateGPUDriven(RHIContext, PSOManager);
 	}
@@ -651,9 +652,24 @@ void FRenderer::InitializeSceneConstant()
 }
 
 
-void FRenderer::UpdateConstantBuffer()
+void FRenderer::UpdateActorConstantBuffer(std::string ActorName, FObjectConstants* ObjConstants)
 {
+	std::unordered_map<std::string, IRHIRenderingMesh*>::iterator Iter;
+	Iter = SkinnedRenderingMeshes.find(ActorName);
+	if (Iter != SkinnedRenderingMeshes.end())
+	{
+		Iter->second->GetConstantBuffer()->CopyData(0, *ObjConstants);
 
+		return;
+	}
+
+	Iter = RenderingMeshes.find(ActorName);
+	if (Iter != RenderingMeshes.end())
+	{
+		Iter->second->GetConstantBuffer()->CopyData(0, *ObjConstants);
+
+		return;
+	}
 }
 
 void FRenderer::UpdateSceneConstantsBuffer(FSceneConstant* InSceneConstant)

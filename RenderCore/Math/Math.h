@@ -44,6 +44,11 @@ struct FVector
 		return FVector(X + InVec.X, Y + InVec.Y, Z + InVec.Z);
 	}
 
+	FVector operator- (const FVector& InVec)const
+	{
+		return FVector(X - InVec.X, Y - InVec.Y, Z - InVec.Z);
+	}
+
 	FVector operator* (float Scale)const
 	{
 		return FVector(Scale * X, Scale * Y, Scale * Z);
@@ -52,6 +57,25 @@ struct FVector
 	FVector operator* (const FVector& InVec)const
 	{
 		return FVector(X * InVec.X, Y * InVec.Y, Z * InVec.Z);
+	}
+
+	FVector Normalize() const
+	{
+		FVector vResult;
+
+		float Square = X * X + Y * Y + Z * Z;
+		float fLength = sqrtf(Square);
+
+		// Prevent divide by zero
+		if (fLength > 0) {
+			fLength = 1.0f / fLength;
+		}
+
+		vResult.X = X * fLength;
+		vResult.Y = Y * fLength;
+		vResult.Z = Z * fLength;
+
+		return vResult;
 	}
 
 	float X;
