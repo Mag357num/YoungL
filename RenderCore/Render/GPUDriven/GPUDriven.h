@@ -9,7 +9,7 @@ public:
 	FGPUDriven();
 	~FGPUDriven();
 
-	void PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOManager);
+	void PopulateComputePipeline(IRHIContext* RHIContext, FPSOManager* InPSOManager);
 
 	void InitFrustumCull(IRHIContext* RHIContext, FPSOManager* InPSOManager);
 

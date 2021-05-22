@@ -20,9 +20,9 @@ FGPUDriven::~FGPUDriven()
 	}
 }
 
-void FGPUDriven::PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOManager)
+void FGPUDriven::PopulateComputePipeline(IRHIContext* RHIContext, FPSOManager* InPSOManager)
 {
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	RHIContext->Compute_BeginDraw(L"GPUDriven");
 	RHIContext->Compute_PrepareShaderParameter();
 	for (size_t Index = 0; Index < Processes.size(); ++Index)
@@ -35,7 +35,7 @@ void FGPUDriven::PopulateGPUDriven(IRHIContext* RHIContext, FPSOManager* InPSOMa
 	RHIContext->Compute_EndDraw();
 
 	RHIContext->WaitForComputeTask();
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 }

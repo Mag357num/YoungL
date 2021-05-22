@@ -91,35 +91,95 @@ void UCamera::Rotate(float Dx)
 	UpdateView();
 }
 
+void UCamera::RecalcAngles()
+{
+	FVector4D TempCameraTarget = FVector4D(CamTarget.X, CamTarget.Y, CamTarget.Z, 0.0f);
+	FVector4D TempCameraLoc = FVector4D(CamPos.X, CamPos.Y, CamPos.Z, 0.0f);
+	FVector4D Delta = FMath::VectorSubtract(TempCameraTarget, TempCameraLoc);
+	FVector4D LengthRe = FMath::Vector3Length(Delta);
+
+	CamRadius = LengthRe.X;
+	RecalcRotAndPitch();
+}
+
 FVector UCamera::GetForwardDirection()
 {
 	FVector Ret( CamTarget.X - CamPos.X, CamTarget.Y - CamPos.Y, CamTarget.Z - CamPos.Z);
 	return Ret.Normalize();
 }
 
-//FVector UCamera::GetLeftDirection()
-//{
-//	FVector Ret(CamTarget.X - CamPos.X, CamTarget.Y - CamPos.Y, CamTarget.Z - CamPos.Z);
-//
-//	return Ret;
-//}
+FVector UCamera::GetLeftDirection()
+{
+	double Degree = CamRotate + CAMERAPI * 0.5;
+
+
+	FVector Ret((float)cos(Degree), (float)sin(Degree), 0);
+
+	return Ret;
+}
 
 void UCamera::SetCameraLocation(FVector InNewLoc)
 {
+	CamPos.X = InNewLoc.X;
+	CamPos.Y = InNewLoc.Y;
+	CamPos.Z = InNewLoc.Z;
 
+	RecalcRotAndPitch();
+
+	UpdateView();
 }
 
 void UCamera::SetCameraTargetLoc(FVector InNewTarget)
 {
+	CamTarget.X = InNewTarget.X;
+	CamTarget.Y = InNewTarget.Y;
+	CamTarget.Z = InNewTarget.Z;
 
+	RecalcRotAndPitch();
+
+	UpdateView();
+}
+
+void UCamera::RecalcRotAndPitch()
+{
+	FVector Distance = FVector(CamTarget.X - CamPos.X, CamTarget.Y - CamPos.Y, CamTarget.Z - CamPos.Z);
+	FVector Direction = Distance.Normalize();
+	float Sqaure = Direction.X * Direction.X + Direction.Y * Direction.Y;
+	float SqrtXY = sqrtf(Sqaure);
+	float SineRotateF = Direction.Y / SqrtXY;
+
+	if (Direction.X > 0.0f && Direction.Y > 0.0f)
+	{
+		CamRotate = asinf(SineRotateF);
+	}
+	else if (Direction.X < 0.0f && Direction.Y > 0.0f)
+	{
+		CamRotate = CAMERAPI - asinf(SineRotateF);
+	}
+	else if (Direction.X < 0.0f && Direction.Y < 0.0f)
+	{
+		CamRotate = CAMERAPI + asinf(SineRotateF);
+	}
+	else
+	{
+		CamRotate = 0.0f - asinf(SineRotateF);
+	}
+	
+
+	Sqaure = Sqaure + Direction.Z * Direction.Z;
+	float SqrtXYZ = sqrtf(Sqaure);
+	float SinePitch = Direction.Z / SqrtXYZ;
+	CamPitch = 0.0f - asinf(SinePitch);
 }
 
 void UCamera::SetFov(float InFov)
 {
-
+	Fov = InFov;
+	UpdateProj();
 }
 
 void UCamera::SetAspectRatio(float InAspectRatio)
 {
-
+	AspectRatio = InAspectRatio;
+	UpdateProj();
 }

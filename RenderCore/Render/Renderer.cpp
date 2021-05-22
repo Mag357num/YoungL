@@ -426,7 +426,7 @@ void FRenderer::RenderScene()
 	//for gpu driven
 	if (GPUDriven && EnableGPUDriven)
 	{
-		GPUDriven->PopulateGPUDriven(RHIContext, PSOManager);
+		GPUDriven->PopulateComputePipeline(RHIContext, PSOManager);
 	}
 	// gpu driven end
 

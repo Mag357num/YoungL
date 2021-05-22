@@ -21,7 +21,7 @@ void FFrustumCull::InitialFrustumCull(IRHIContext* RHIContext, FPSOManager* InPS
 void FFrustumCull::Run(IRHIContext* RHIContext, FPSOManager* InPSOManager)
 {
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	RHIContext->Compute_BeginEvent(L"FrustumCull");
 
 	RHIContext->Compute_TransitionResource(FrustumCullResult, State_GenerateRead, State_Uav);
@@ -34,7 +34,7 @@ void FFrustumCull::Run(IRHIContext* RHIContext, FPSOManager* InPSOManager)
 	RHIContext->Compute_TransitionResource(FrustumCullResult, State_Uav, State_GenerateRead);
 
 	RHIContext->Compute_EndEvent();
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 	

@@ -28,7 +28,9 @@ public:
 	}
 
 	FVector GetForwardDirection();
-	//FVector GetLeftDirection();
+	FVector GetLeftDirection();
+
+	void RecalcAngles();
 
 	//called from game tick
 	void ResetDirtyFlat(){IsCamerInfoDirty = false;}
@@ -36,6 +38,7 @@ private:
 
 	void UpdateView();
 	void UpdateProj();
+	void RecalcRotAndPitch();
 	
 	FMatrix View;
 	FMatrix Proj;

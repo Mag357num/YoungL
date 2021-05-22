@@ -30,6 +30,9 @@ private:
 	void BindCameraToCharacter();
 
 	void OnWPressed(float DeltaTime);
+	void OnSPressed(float DeltaTime);
+	void OnAPressed(float DeltaTime);
+	void OnDPressed(float DeltaTime);
 
 	
 	std::weak_ptr<UCamera> BindedCamera;

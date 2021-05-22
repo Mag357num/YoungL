@@ -55,7 +55,7 @@ void UGameCore::Initialize()
 		{
 			SkinedActors[0]->InitiallySetLocation(FVector(200.0f, 0.0f, 0.0f));
 			SkinedActors[0]->InitiallySetScaling(FVector(1.0f, 1.0f, 1.0f));
-			//SkinedActors[0]->InitiallySetRotation(FVector4D(1.57f, 0.0f, 0.0f, 0.0f));
+			SkinedActors[0]->InitiallySetRotation(FVector4D(0.0f, 0.0f, 3.14f, 0.0f));
 
 			PlayerInput->SetBindedCharacter(SkinedActors[0]);
 		}

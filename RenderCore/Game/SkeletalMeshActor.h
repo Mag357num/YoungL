@@ -3,6 +3,13 @@
 #include "SkinData.h"
 #include "SkeletalMesh.h"
 
+enum EAnimationState
+{
+	State_Idle,
+	State_Walk
+};
+
+
 class ASkeletalMeshActor : public AStaticMeshActor
 {
 public:
@@ -23,10 +30,25 @@ public:
 
 	void PlayAnimationClip(std::string ClipName);
 	void StopAnimationClip();
+
+
+	EAnimationState GetAnimState(){return AniState;}
+	void SetAniState(EAnimationState InState){
+		if (InState != AniState)
+		{
+			bAniStateDirty = true;
+			AniState = InState;
+		}
+	}
+
 private:
 	FSkinedData* SkinedData;
 
 private:
+	void TickAniState(float DeltaTime);
+
+	EAnimationState AniState;
+	bool bAniStateDirty;
 
 	std::weak_ptr<USkeletalMesh> SkeletalMesh;
 

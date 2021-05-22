@@ -58,7 +58,7 @@ public:
 	virtual void BeginEvent(const wchar_t* Label)override;
 	virtual void EndEvent()override;
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	virtual void Compute_BeginDraw(const wchar_t* Label)override;
 	virtual void Compute_EndDraw()override;
 
@@ -73,7 +73,7 @@ public:
 
 	virtual void WaitForComputeTask()override;
 	virtual void Compute_Dispatch(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ)override;
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 	virtual void SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)override;
 
@@ -153,12 +153,12 @@ private:
 	ComPtr<ID3D12GraphicsCommandList>	CommandList;
 	ComPtr<ID3D12Fence>	Fence;
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	ComPtr<ID3D12CommandAllocator> Compute_CmdAllocator;
 	ComPtr<ID3D12CommandQueue> Compute_CmdQueue;
 	ComPtr<ID3D12GraphicsCommandList>	Compute_CmdList;
 	ComPtr<ID3D12Fence>	Compute_Fence;
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 

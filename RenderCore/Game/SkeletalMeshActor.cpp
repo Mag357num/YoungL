@@ -11,6 +11,8 @@ ASkeletalMeshActor::ASkeletalMeshActor(std::string InName)
 	PlayInfo = new FAnimationPlayInfo();
 
 	BoneTransforms = new FBoneTransforms();
+
+	bAniStateDirty = false;
 }
 
 ASkeletalMeshActor::~ASkeletalMeshActor()
@@ -36,8 +38,8 @@ ASkeletalMeshActor::~ASkeletalMeshActor()
 
 void ASkeletalMeshActor::TestPlayAnimation()
 {
-	//PlayAnimationClip("Idle");
-	PlayAnimationClip("Walk");
+	PlayAnimationClip("Idle");
+	//PlayAnimationClip("Walk");
 }
 
 void ASkeletalMeshActor::PlayAnimationClip(std::string ClipName)
@@ -100,5 +102,28 @@ void ASkeletalMeshActor::Tick(float DeltaTime)
 			UpdateBoneTransfomrsCommand.Wrap(UpdateSkinnedMeshBoneTransform_RenderThread, ActorName, BoneTransforms);
 			FEngine::GetEngine()->GetRenderThreadManager()->PushRenderCommand(UpdateBoneTransfomrsCommand);
 		}
+
+		//tick ani state
+		TickAniState(DeltaTime);
+	}
+}
+
+void ASkeletalMeshActor::TickAniState(float DeltaTime)
+{
+	if (bAniStateDirty)
+	{
+		switch (AniState)
+		{
+		case State_Idle:
+			PlayAnimationClip("Idle");
+			break;
+		case State_Walk:
+			PlayAnimationClip("Walk");
+			break;
+		default:
+			break;
+		}
+
+		bAniStateDirty = false;
 	}
 }

@@ -78,7 +78,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
 
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	//create compute command objects
 	M_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&Compute_CmdAllocator));
 	D3D12_COMMAND_QUEUE_DESC Compute_QueueDesc = {};
@@ -92,7 +92,7 @@ void FRHIContext_D3D12::InitializeRHI(int InWidth, int InHeight)
 
 	//create fence
 	M_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Compute_Fence));
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 
@@ -339,7 +339,7 @@ void FRHIContext_D3D12::EndEvent()
 	::PIXEndEvent(CommandList.Get());
 }
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 
 void FRHIContext_D3D12::Compute_BeginDraw(const wchar_t* Label)
 {
@@ -435,7 +435,7 @@ void FRHIContext_D3D12::Compute_SetColorUAV(UINT ParaIndex, FRHIColorResource* I
 	}
 }
 
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 void FRHIContext_D3D12::SetGraphicsPipilineState(IRHIGraphicsPipelineState* InPSO)

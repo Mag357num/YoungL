@@ -18,7 +18,8 @@ using namespace std;
 #include "RHIShader.h"
 #include "Formats.h"
 
-#define ENABLE_GPU_DRIVEN 1
+#define ENABLE_COMPUTE_PIPELINE 1
+#define ENABLE_INDIRECT_DRAW 1
 
 struct FViewport
 {
@@ -61,7 +62,7 @@ public:
 	virtual void BeginEvent(const wchar_t* Label) = 0;
 	virtual void EndEvent() = 0;
 
-#ifdef ENABLE_GPU_DRIVEN
+#ifdef ENABLE_COMPUTE_PIPELINE
 	virtual void Compute_BeginDraw(const wchar_t* Label) = 0;
 	virtual void Compute_EndDraw() = 0;
 
@@ -78,7 +79,7 @@ public:
 	virtual void Compute_SetColorUAV(UINT ParaIndex, FRHIColorResource* InColorResource) = 0;
 
 	virtual void Compute_Dispatch(UINT ThreadGroupX, UINT ThreadGroupY, UINT ThreadGroupZ) = 0;
-#endif // ENABLE_GPU_DRIVEN
+#endif // ENABLE_COMPUTE_PIPELINE
 
 
 	virtual void SetViewport(const FViewport& Viewport){}
